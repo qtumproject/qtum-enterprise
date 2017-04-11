@@ -32,6 +32,7 @@ def make_op_create_output(node, value, version, gas_limit, gas_price, data):
     scriptPubKey += gas_price
     scriptPubKey += data
     scriptPubKey += OP_CREATE
+    print("PUB", bytes_to_hex_str(ser_string(scriptPubKey)))
     return CTxOut(value, scriptPubKey)
 
 def make_op_create_transaction(node, vin, vout):
@@ -41,6 +42,8 @@ def make_op_create_transaction(node, vin, vout):
     tx.rehash()
     
     unsigned_raw_tx = bytes_to_hex_str(tx.serialize_without_witness())
+    print(bytes_to_hex_str(tx.vin[0].serialize()))
+    print(unsigned_raw_tx)
     signed_raw_tx = node.signrawtransaction(unsigned_raw_tx)['hex']
     return signed_raw_tx
 
@@ -152,11 +155,37 @@ class OpCreateTest(BitcoinTestFramework):
         assert_equal(node.getblockcount(), old_block_height)
         assert_equal(len(node.listcontracts(1, 1000)), num_old_contracts)
 
+
+    def gas_limit_signedness_test(self):
+        node = self.nodes[0]
+        num_old_contracts = len(node.listcontracts(1, 1000))
+
+        """
+        pragma solidity ^0.4.10;
+        contract Example {
+            function () payable {}
+        }
+        """
+        tx = make_op_create_transaction(node,
+            [make_vin(node, 500000000)],
+            # changing the gas limit \xff\xff -> \xff\xff\x00 results in success.
+            [make_op_create_output(node, 0, b"\x01", b"\xff\xff", 1000, bytes.fromhex("60606040523415600b57fe5b5b60398060196000396000f30060606040525b600b5b5b565b0000a165627a7a7230582092926a9814888ff08700cbd86cf4ff8c50052f5fd894e794570d9551733591d60029"))]
+        )
+        node.sendrawtransaction(tx)
+        node.generate(1)
+        sync_blocks(self.nodes)
+        print(len(node.listcontracts(1, 10000)), num_old_contracts)
+        for i in range(2):
+            assert(len(self.nodes[i].listcontracts(1, 10000))-num_old_contracts == 1)
+
+
+
     def run_test(self):
         self.nodes[0].generate(200)
         self.basic_contract_is_created_raw_tx_test()
         self.large_contract_creation_test()
         self.many_contracts_in_one_block_test()
+        self.gas_limit_signedness_test()
         self.contract_reorg_test()
 
 if __name__ == '__main__':
