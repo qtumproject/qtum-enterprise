@@ -2904,6 +2904,53 @@ uint64_t CWallet::GetStakeWeight() const
     return nWeight;
 }
 
+bool CWallet::AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight)
+{
+    CBlock block;
+    CBlockIndex* pblockindex = chainActive[nHeight];
+    if(!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) 
+        return false;
+
+    if(block.vtx.size() > 1 && block.vtx[1]->IsCoinStake() && block.vtx[1]->vout.size() > 1 )
+    {
+        CScript script = block.vtx[1]->vout[1].scriptPubKey;
+        mposScriptList.push_back(script);
+        return true;
+    }
+
+    return false;
+}
+
+bool CWallet::GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHeight)
+{
+    bool ret = true;
+    nHeight -= COINBASE_MATURITY;
+
+    const CChainParams& chainParams = Params();
+    for(int i = 0; (i < chainParams.GetConsensus().nMPoSRewardRecipients - 1) && ret; i++)
+    {
+        ret &= AddMPoSScript(mposScriptList, nHeight - i);
+    }
+
+    return ret;
+}
+
+bool CWallet::CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight)
+{
+    std::vector<CScript> mposScriptList;
+    if(!GetMPoSOutputScripts(mposScriptList, nHeight)) 
+        return false;
+
+    for(unsigned int i = 0; i < mposScriptList.size(); i++)
+    {
+        CTxOut txOut(CTxOut(0, mposScriptList[i]));
+        txOut.nValue = nRewardPiece;
+        txNew.vout.push_back(txOut);
+    }
+
+    return true;
+}
+
 bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, uint32_t nSearchInterval, const CAmount& nTotalFees, uint32_t& nTimeBlock, CMutableTransaction& tx, CKey& key)
 {
     CBlockIndex* pindexPrev = pindexBestHeader;
@@ -3040,17 +3087,25 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, uin
         }
     }
 
+    const CChainParams& chainParams = Params();
+    int64_t nRewardPiece = 0;
     // Calculate reward
     {
         if (!CheckTransactionTimestamp(txNew, nTimeBlock, *pblocktree))
             return error("CreateCoinStake : Transaction timestamp check failure.");
-        const CChainParams& chainParams = Params();
-        int64_t nReward = nTotalFees + GetBlockSubsidy(pindexPrev->nHeight, chainParams.GetConsensus());;
+        int64_t nReward = nTotalFees + GetBlockSubsidy(pindexPrev->nHeight, chainParams.GetConsensus());
         if (nReward < 0)
             return false;
-
-        nCredit += nReward;
-    }
+        if(pindexPrev->nHeight < chainParams.GetConsensus().nFirstMPoSBlock)
+        {
+            nCredit += nReward;
+        }
+        else
+        {
+            nRewardPiece = nReward / chainParams.GetConsensus().nMPoSRewardRecipients;
+            nCredit += nRewardPiece + nReward % chainParams.GetConsensus().nMPoSRewardRecipients;
+        }
+   }
 
     if (nCredit >= GetStakeSplitThreshold())
         txNew.vout.push_back(CTxOut(0, txNew.vout[1].scriptPubKey)); //split stake
@@ -3063,6 +3118,12 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, uin
     }
     else
         txNew.vout[1].nValue = nCredit;
+
+    if(pindexPrev->nHeight >= chainParams.GetConsensus().nFirstMPoSBlock)
+    {
+        if(!CreateMPoSOutputs(txNew, nRewardPiece, pindexPrev->nHeight))
+            return error("CreateCoinStake : failed to create MPoS reward outputs");
+    }
 
     // Append the Refunds To Sender to the transaction outputs
     for(unsigned int i = 2; i < tx.vout.size(); i++)
