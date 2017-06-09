@@ -1230,7 +1230,7 @@ CAmount CWallet::GetDebit(const CTxIn &txin, const isminefilter& filter) const
         {
             const CWalletTx& prev = (*mi).second;
             if (txin.prevout.n < prev.tx->vout.size())
-                if (IsMine(prev.tx->vout[txin.prevout.n]) & filter)
+                if (IsMine(prev.tx->vout[txin.prevout.n]) & filter && !prev.tx->vout[txin.prevout.n].scriptPubKey.HasOpREFUND())
                     return prev.tx->vout[txin.prevout.n].nValue;
         }
     }

@@ -2039,7 +2039,7 @@ ByteCodeExecResult ByteCodeExec::processingResults(){
             resultBCE.usedFee += CAmount(result[i].execRes.gasUsed);
             CAmount ref(txs[i].gas() - result[i].execRes.gasUsed);
             if(ref > 0){
-                CScript script(CScript() << OP_DUP << OP_HASH160 << txs[i].sender().asBytes() << OP_EQUALVERIFY << OP_CHECKSIG);
+                CScript script(CScript() << OP_DUP << OP_HASH160 << txs[i].sender().asBytes() << OP_EQUALVERIFY << OP_CHECKSIG << OP_REFUND);
                 resultBCE.refundVOuts.push_back(CTxOut(ref, script));
                 resultBCE.refundSender += ref;
             }

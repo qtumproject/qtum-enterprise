@@ -110,7 +110,7 @@ void checkBCEResult(ByteCodeExecResult result, CAmount usedFee, CAmount refundSe
     BOOST_CHECK(result.refundVOuts.size() == nVouts);
     for(size_t i = 0; i < result.refundVOuts.size(); i++){
         BOOST_CHECK(result.refundVOuts[i].nValue == CAmount(GASLIMIT - (result.usedFee/result.refundVOuts.size())));
-        BOOST_CHECK(result.refundVOuts[i].scriptPubKey == CScript() << OP_DUP << OP_HASH160 << SENDERADDRESS.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG);
+        BOOST_CHECK(result.refundVOuts[i].scriptPubKey == CScript() << OP_DUP << OP_HASH160 << SENDERADDRESS.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG << OP_REFUND);
     }
     BOOST_CHECK(result.refundValueTx.size() == nTxs);
 }

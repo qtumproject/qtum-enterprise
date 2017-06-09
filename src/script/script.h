@@ -181,6 +181,7 @@ enum opcodetype
     OP_CREATE = 0xc1,
     OP_CALL = 0xc2,
     OP_TXHASH = 0xc3,
+    OP_REFUND = 0xc4,
 
     // template matching params
     OP_VERSION = 0xf6,
@@ -682,6 +683,10 @@ public:
     bool HasOpTXHASH() const
     {
         return Find(OP_TXHASH) > 0;
+    }
+    bool HasOpREFUND() const
+    {
+        return Find(OP_REFUND) > 0;
     }
     /////////////////////////////////////////
 
