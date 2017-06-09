@@ -1044,6 +1044,10 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     return true; // temp
                 }
                 break;
+                case OP_REFUND:
+                {
+                    return true;
+                }
                 ////////////////////////////////////////////////////////
 
                 default:

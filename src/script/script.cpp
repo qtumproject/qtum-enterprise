@@ -145,6 +145,7 @@ const char* GetOpName(opcodetype opcode)
     case OP_CREATE                 : return "OP_CREATE";
     case OP_CALL                   : return "OP_CALL";
     case OP_TXHASH                 : return "OP_TXHASH";
+    case OP_REFUND                 : return "OP_REFUND";
 
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
 
