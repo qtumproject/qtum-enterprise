@@ -19,6 +19,11 @@
 #include "transactionview.h"
 #include "walletmodel.h"
 
+////////////////////////////////////////// // qtum
+#include <createcontract.h>
+#include <contractsinfo.h>
+//////////////////////////////////////////
+
 #include "ui_interface.h"
 
 #include <QAction>
@@ -56,6 +61,11 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     receiveCoinsPage = new ReceiveCoinsDialog(platformStyle);
     sendCoinsPage = new SendCoinsDialog(platformStyle);
 
+////////////////////////////////////////////////////// // qtum
+    createContract = new CreateContract(walletModel, this);
+    contractsInfo = new ContractsInfo(walletModel, this);
+//////////////////////////////////////////////////////
+
     usedSendingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
 
@@ -63,6 +73,11 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
+
+/////////////////////////////////////////// // qtum
+    addWidget(createContract);
+    addWidget(contractsInfo);
+///////////////////////////////////////////
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
@@ -168,6 +183,18 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
 
     Q_EMIT incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address, label);
 }
+
+/////////////////////////////////////////// // qtum
+void WalletView::gotoCreateContractPage()
+{
+    setCurrentWidget(createContract);
+}
+
+void WalletView::gotoContractsInfoPage()
+{
+    setCurrentWidget(contractsInfo);
+}
+///////////////////////////////////////////
 
 void WalletView::gotoOverviewPage()
 {

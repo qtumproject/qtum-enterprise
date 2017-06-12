@@ -95,7 +95,6 @@ enum WalletFeature
     FEATURE_LATEST = FEATURE_COMPRPUBKEY // HD is optional, use FEATURE_COMPRPUBKEY as latest version
 };
 
-
 /** A key pool entry */
 class CKeyPool
 {
@@ -705,6 +704,15 @@ public:
     CPubKey vchDefaultKey;
 
     std::set<COutPoint> setLockedCoins;
+
+///////////////////////////////////////////////////////////////////////////////////////// // qtum
+    std::map<std::vector<unsigned char>, CContractInfo> mapContractInfo;
+
+    bool addContractInfo(CContractInfo info){
+        mapContractInfo[info.getAddressContract()] = info;
+        return CWalletDB(strWalletFile).WriteContractInfo(info);
+    }
+/////////////////////////////////////////////////////////////////////////////////////////
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
 

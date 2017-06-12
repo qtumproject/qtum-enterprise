@@ -34,6 +34,7 @@
 #include "consensus/consensus.h"
 
 /////////////////////////////////////////// qtum
+#include "wallet/wallet.h"
 #include <qtum/qtumstate.h>
 #include <libethereum/ChainParams.h>
 #include <libethashseal/Ethash.h>
@@ -614,6 +615,11 @@ void DumpMempool();
 bool LoadMempool();
 
 //////////////////////////////////////////////////////// qtum
+std::string createQtumAddress(const CWalletTx& wtx);
+
+CWalletTx createTransactionOpCreate(CReserveKey& reservekey, const CCoinControl& coinControl, const std::string& bytecode, 
+    const uint64_t nGasLimit, const CAmount nGasPrice, std::string& strError, bool fHasSender = false);
+
 void writeVMlog(const std::vector<ResultExecute>& res, const CTransaction& tx = CTransaction(), const CBlock& block = CBlock());
 
 class VersionVM{

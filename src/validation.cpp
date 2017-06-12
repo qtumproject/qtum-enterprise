@@ -39,7 +39,7 @@
 #include "serialize.h"
 #include "pubkey.h"
 #include "key.h"
-#include "wallet/wallet.h"
+// #include "wallet/wallet.h"
 
 
 #include <atomic>
@@ -1913,6 +1913,57 @@ static int64_t nTimeCallbacks = 0;
 static int64_t nTimeTotal = 0;
 
 /////////////////////////////////////////////////////////////////////// qtum
+std::string createQtumAddress(const CWalletTx& wtx){
+    std::vector<unsigned char> SHA256TxVout(32);
+    std::vector<unsigned char> contractAddress(20);
+    std::vector<unsigned char> txIdAndVout(wtx.GetHash().begin(), wtx.GetHash().end());
+    unsigned char nOut=0;
+    for(const CTxOut& txout : wtx.tx->vout){
+        if(txout.scriptPubKey.HasOpCreate()){
+            txIdAndVout.push_back(nOut);
+        }
+    	nOut++;
+    }
+    CSHA256().Write(txIdAndVout.data(), txIdAndVout.size()).Finalize(SHA256TxVout.data());
+    CRIPEMD160().Write(SHA256TxVout.data(), SHA256TxVout.size()).Finalize(contractAddress.data());
+    return HexStr(contractAddress);
+}
+
+CWalletTx createTransactionOpCreate(CReserveKey& reservekey, const CCoinControl& coinControl, const std::string& bytecode, 
+    const uint64_t nGasLimit, const CAmount nGasPrice, std::string& strError, bool fHasSender){
+    CWalletTx wtx;
+
+    wtx.nTimeSmart = GetAdjustedTime();
+
+    CAmount nGasFee=nGasPrice*nGasLimit;
+
+    CAmount curBalance = pwalletMain->GetBalance();
+
+    // Check amount
+	if (nGasFee <= 0 || nGasFee > curBalance){
+        strError = "Invalid amount or insufficient funds";
+        return CWalletTx();
+    }
+
+	// Build OP_EXEC script
+    CScript scriptPubKey = CScript() << ParseHex("01") << CScriptNum(nGasLimit) << CScriptNum(nGasPrice) << ParseHex(bytecode) <<OP_CREATE;
+
+    // Create and send the transaction
+    CAmount nFeeRequired;
+    // std::string strError;
+    std::vector<CRecipient> vecSend;
+    int nChangePosRet = -1;
+    CRecipient recipient = {scriptPubKey, 0, false};
+    vecSend.push_back(recipient);
+
+    if (!pwalletMain->CreateTransaction(vecSend, wtx, reservekey, nFeeRequired, nChangePosRet, strError, &coinControl, true, nGasFee, fHasSender)) {
+        if (nFeeRequired > pwalletMain->GetBalance())
+            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
+        return CWalletTx();
+    }
+    return wtx;
+}
+
 bool CheckRefund(const CBlock& block, const std::vector<CTxOut>& vouts){
     size_t offset = block.IsProofOfStake() ? 1 : 0;
     for(size_t i = 0; i < vouts.size(); i++){

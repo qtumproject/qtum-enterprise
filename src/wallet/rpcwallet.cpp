@@ -432,8 +432,9 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
 
     return wtx.GetHash().GetHex();
 }
-UniValue createcontract(const JSONRPCRequest& request){
 
+UniValue createcontract(const JSONRPCRequest& request){
+    
     if (!EnsureWalletIsAvailable(request.fHelp))
         return NullUniValue;
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 5)
@@ -466,11 +467,11 @@ UniValue createcontract(const JSONRPCRequest& request){
     string bytecode=request.params[0].get_str();
 
     uint64_t nGasLimit=DEFAULT_GAS_LIMIT;
-   if (request.params.size() > 1){
-	   nGasLimit = request.params[1].get_int64();
-	   if (nGasLimit <= 0)
-		   throw JSONRPCError(RPC_TYPE_ERROR, "Invalid value for gasLimit");
-   }
+    if (request.params.size() > 1){
+        nGasLimit = request.params[1].get_int64();
+        if (nGasLimit <= 0)
+            throw JSONRPCError(RPC_TYPE_ERROR, "Invalid value for gasLimit");
+    }
 
     CAmount nGasPrice = DEFAULT_GAS_PRICE;
     if (request.params.size() > 2){
@@ -497,69 +498,43 @@ UniValue createcontract(const JSONRPCRequest& request){
     CCoinControl coinControl;
 
     if(fHasSender){
-    //find a UTXO with sender address
+        //find a UTXO with sender address
 
-     UniValue results(UniValue::VARR);
-     vector<COutput> vecOutputs;
+        UniValue results(UniValue::VARR);
+        vector<COutput> vecOutputs;
 
-     coinControl.fAllowOtherInputs=true;
+        coinControl.fAllowOtherInputs=true;
 
-     assert(pwalletMain != NULL);
-     pwalletMain->AvailableCoins(vecOutputs, false, NULL, true);
+        assert(pwalletMain != NULL);
+        pwalletMain->AvailableCoins(vecOutputs, false, NULL, true);
 
-     BOOST_FOREACH(const COutput& out, vecOutputs) {
-         CTxDestination address;
-         const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
-         bool fValidAddress = ExtractDestination(scriptPubKey, address);
+        BOOST_FOREACH(const COutput& out, vecOutputs) {
+            CTxDestination address;
+            const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+            bool fValidAddress = ExtractDestination(scriptPubKey, address);
 
-         CBitcoinAddress destAdress(address);
+            CBitcoinAddress destAdress(address);
 
-         if (!fValidAddress || senderAddress.Get() != destAdress.Get())
-             continue;
+            if (!fValidAddress || senderAddress.Get() != destAdress.Get())
+                continue;
 
-         coinControl.Select(COutPoint(out.tx->GetHash(),out.i));
+            coinControl.Select(COutPoint(out.tx->GetHash(),out.i));
 
-         break;
+            break;
 
-     }
+        }
 
-    if(!coinControl.HasSelected()){
-    	throw JSONRPCError(RPC_TYPE_ERROR, "Sender address does not have any unspent outputs");
-    }
+        if(!coinControl.HasSelected()){
+            throw JSONRPCError(RPC_TYPE_ERROR, "Sender address does not have any unspent outputs");
+        }
     }
     EnsureWalletIsUnlocked();
 
-    CWalletTx wtx;
-
-    wtx.nTimeSmart = GetAdjustedTime();
-
-    CAmount nGasFee=nGasPrice*nGasLimit;
-
-    CAmount curBalance = pwalletMain->GetBalance();
-
-    // Check amount
-	if (nGasFee <= 0)
-		throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
-
-	if (nGasFee > curBalance)
-		throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
-
-	// Build OP_EXEC script
-    CScript scriptPubKey = CScript() << ParseHex("01") << CScriptNum(nGasLimit) << CScriptNum(nGasPrice) << ParseHex(bytecode) <<OP_CREATE;
-
-    // Create and send the transaction
+    std::string error;
     CReserveKey reservekey(pwalletMain);
-    CAmount nFeeRequired;
-    std::string strError;
-    vector<CRecipient> vecSend;
-    int nChangePosRet = -1;
-    CRecipient recipient = {scriptPubKey, 0, false};
-    vecSend.push_back(recipient);
-
-    if (!pwalletMain->CreateTransaction(vecSend, wtx, reservekey, nFeeRequired, nChangePosRet, strError, &coinControl, true, nGasFee, fHasSender)) {
-        if (nFeeRequired > pwalletMain->GetBalance())
-            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
-        throw JSONRPCError(RPC_WALLET_ERROR, strError);
+    CWalletTx wtx(createTransactionOpCreate(reservekey, coinControl, bytecode, nGasLimit, nGasPrice, error, fHasSender));
+    if(!error.empty()){
+        throw JSONRPCError(RPC_WALLET_ERROR, error);
     }
 
     CTxDestination txSenderDest;
@@ -571,36 +546,23 @@ UniValue createcontract(const JSONRPCRequest& request){
 
     UniValue result(UniValue::VOBJ);
     if(fBroadcast){
-    CValidationState state;
-    if (!pwalletMain->CommitTransaction(wtx, reservekey, g_connman.get(), state))
-        throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of the wallet and coins were spent in the copy but not marked as spent here.");
+        CValidationState state;
+        if (!pwalletMain->CommitTransaction(wtx, reservekey, g_connman.get(), state))
+            throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of the wallet and coins were spent in the copy but not marked as spent here.");
 
-    std::string txId=wtx.GetHash().GetHex();
-    result.push_back(Pair("txid", txId));
+        std::string txId=wtx.GetHash().GetHex();
+        result.push_back(Pair("txid", txId));
 
-    CBitcoinAddress txSenderAdress(txSenderDest);
-    CKeyID keyid;
-    txSenderAdress.GetKeyID(keyid);
+        CBitcoinAddress txSenderAdress(txSenderDest);
+        CKeyID keyid;
+        txSenderAdress.GetKeyID(keyid);
 
-    result.push_back(Pair("sender", txSenderAdress.ToString()));
-    result.push_back(Pair("hash160", HexStr(valtype(keyid.begin(),keyid.end()))));
-
-    std::vector<unsigned char> SHA256TxVout(32);
-    vector<unsigned char> contractAddress(20);
-    vector<unsigned char> txIdAndVout(wtx.GetHash().begin(), wtx.GetHash().end());
-    unsigned char nOut=0;
-    BOOST_FOREACH(const CTxOut& txout, wtx.tx->vout) {
-    	if(txout.scriptPubKey.HasOpCreate()){
-    		txIdAndVout.push_back(nOut);
-    	}
-    	nOut++;
-    }
-    CSHA256().Write(txIdAndVout.data(), txIdAndVout.size()).Finalize(SHA256TxVout.data());
-    CRIPEMD160().Write(SHA256TxVout.data(), SHA256TxVout.size()).Finalize(contractAddress.data());
-    result.push_back(Pair("address", HexStr(contractAddress)));
-    }else{
-    string strHex = EncodeHexTx(*wtx.tx, RPCSerializationFlags());
-    result.push_back(Pair("raw transaction", strHex));
+        result.push_back(Pair("sender", txSenderAdress.ToString()));
+        result.push_back(Pair("hash160", HexStr(valtype(keyid.begin(),keyid.end()))));
+        result.push_back(Pair("address", createQtumAddress(wtx)));
+    } else {
+        string strHex = EncodeHexTx(*wtx.tx, RPCSerializationFlags());
+        result.push_back(Pair("raw transaction", strHex));
     }
     return result;
 }

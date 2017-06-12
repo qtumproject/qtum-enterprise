@@ -108,6 +108,22 @@ void WalletFrame::showOutOfSyncWarning(bool fShow)
         i.value()->showOutOfSyncWarning(fShow);
 }
 
+///////////////////////////////////////////////////////// // qtum
+void WalletFrame::gotoCreateContractPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoCreateContractPage();
+}
+
+void WalletFrame::gotoContractsInfoPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoContractsInfoPage();
+}
+/////////////////////////////////////////////////////////
+
 void WalletFrame::gotoOverviewPage()
 {
     QMap<QString, WalletView*>::const_iterator i;

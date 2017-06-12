@@ -114,6 +114,11 @@ private:
     QAction *openAction;
     QAction *showHelpMessageAction;
 
+/////////////////////////////////////////// // qtum
+    QAction *createContractAction;
+    QAction *contractsInfoAction;
+///////////////////////////////////////////
+
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
     Notificator *notificator;
@@ -193,6 +198,12 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 #ifdef ENABLE_WALLET
+
+///////////////////////////////////////////// // qtum
+    void gotoCreateContractPage();
+    void gotoContractsInfoPage();
+/////////////////////////////////////////////
+
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */

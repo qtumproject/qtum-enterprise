@@ -28,6 +28,8 @@ BITCOIN_INCLUDES += -I$(srcdir)/cpp-ethereum/
 
 BITCOIN_INCLUDES += -I$(srcdir)/cpp-ethereum/deps/include/
 
+BITCOIN_INCLUDES += -I$(srcdir)/solidity/
+
 LIBBITCOIN_SERVER=libbitcoin_server.a
 LIBBITCOIN_COMMON=libbitcoin_common.a
 LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
@@ -49,6 +51,9 @@ LIBSECP256K1ETH=cpp-ethereum/deps/lib/libsecp256k1.a
 LIBSCRYIPT=cpp-ethereum/utils/libscrypt/libscrypt.a
 LIBETHASHSEAL=cpp-ethereum/libethashseal/libethashseal.a
 LIBETHASH=cpp-ethereum/libethash/libethash.a
+
+LIBSOLIDITY=solidity/libsolidity/libsolidity.a
+LIBSOLEVMASM=solidity/libevmasm/libsolevmasm.a
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a

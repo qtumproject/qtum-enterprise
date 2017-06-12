@@ -20,6 +20,11 @@ class TransactionView;
 class WalletModel;
 class AddressBookPage;
 
+///////////////////////////////// // qtum
+class CreateContract;
+class ContractsInfo;
+/////////////////////////////////
+
 QT_BEGIN_NAMESPACE
 class QModelIndex;
 class QProgressDialog;
@@ -65,12 +70,23 @@ private:
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
 
+///////////////////////////////////////////////// // qtum
+    CreateContract *createContract;
+    ContractsInfo *contractsInfo;
+/////////////////////////////////////////////////
+
     TransactionView *transactionView;
 
     QProgressDialog *progressDialog;
     const PlatformStyle *platformStyle;
 
 public Q_SLOTS:
+
+/////////////////////////////////////////// // qtum
+    void gotoCreateContractPage();
+    void gotoContractsInfoPage();
+///////////////////////////////////////////
+
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */

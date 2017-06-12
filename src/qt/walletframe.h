@@ -62,6 +62,12 @@ private:
     WalletView *currentWalletView();
 
 public Q_SLOTS:
+
+//////////////////////////////////////////// // qtum
+    void gotoCreateContractPage();
+    void gotoContractsInfoPage();
+////////////////////////////////////////////
+
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */

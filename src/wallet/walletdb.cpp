@@ -539,6 +539,13 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
                 return false;
             }
         }
+        else if (strType == "contractInfo"){
+            std::vector<unsigned char> key;
+            ssKey >> key;
+            CContractInfo contractInfo;
+            ssValue >> contractInfo;
+            pwallet->mapContractInfo[key] = contractInfo;
+        }
     } catch (...)
     {
         return false;
@@ -961,3 +968,24 @@ unsigned int CWalletDB::GetUpdateCounter()
 {
     return nWalletDBUpdateCounter;
 }
+
+///////////////////////////////////////////////////// // qtum
+bool CWalletDB::WriteContractInfo(const CContractInfo contractInfo){
+    nWalletDBUpdateCounter++;
+    return Write(std::make_pair(std::string("contractInfo"), contractInfo.getAddressContract()), contractInfo);
+}
+
+bool CWalletDB::EraseContractInfo(const CContractInfo contractInfo){
+    nWalletDBUpdateCounter++;
+    return Erase(std::make_pair(std::string("contractInfo"), contractInfo.getAddressContract()));
+}
+
+CContractInfo::CContractInfo(bool stat, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi){
+    status = stat;
+    nTime = time;
+    hashTX = hash;
+    nVout = vout;
+    addressContract = addrContract;
+    abiContract = abi;
+}
+/////////////////////////////////////////////////////

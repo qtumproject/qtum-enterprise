@@ -30,6 +30,49 @@ class CWalletTx;
 class uint160;
 class uint256;
 
+////////////////////////////////////////////////////////////// // qtum
+class CContractInfo{
+
+public:
+    
+    CContractInfo() { SetNull(); }
+    CContractInfo(bool stat, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        READWRITE(status);
+        READWRITE(nTime);
+        READWRITE(hashTX);
+        READWRITE(nVout);
+        READWRITE(addressContract);
+        READWRITE(abiContract);
+    }
+
+    void SetNull()
+    {
+        status = false;
+        nTime = 0;
+        hashTX = uint256();
+        nVout = 0;
+        addressContract.clear();
+        abiContract.clear();
+    }
+
+    std::vector<unsigned char> getAddressContract() const { return addressContract; }
+
+private:
+
+    bool status;
+    uint32_t nTime;
+    uint256 hashTX;
+    int64_t nVout;
+    std::string abiContract;
+    std::vector<unsigned char> addressContract;
+};
+//////////////////////////////////////////////////////////////
+
 /** Error statuses for the wallet database */
 enum DBErrors
 {
@@ -119,6 +162,12 @@ public:
     CWalletDB(const std::string& strFilename, const char* pszMode = "r+", bool fFlushOnClose = true) : CDB(strFilename, pszMode, fFlushOnClose)
     {
     }
+
+    //////////////////////////////////////////////// // qtum
+    bool WriteContractInfo(const CContractInfo contractInfo);
+
+    bool EraseContractInfo(const CContractInfo contractInfo);
+    ////////////////////////////////////////////////
 
     bool WriteName(const std::string& strAddress, const std::string& strName);
     bool EraseName(const std::string& strAddress);
