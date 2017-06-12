@@ -52,8 +52,8 @@ const uint32_t BIP32_HARDENED_KEY_LIMIT = 0x80000000;
  */
 CFeeRate CWallet::minTxFee = CFeeRate(DEFAULT_TRANSACTION_MINFEE);
 CAmount nReserveBalance = 0;
-static int64_t GetStakeCombineThreshold() { return 100 * COIN; }
-static int64_t GetStakeSplitThreshold() { return 2 * GetStakeCombineThreshold(); }
+int64_t GetStakeCombineThreshold() { return 100 * COIN; }
+int64_t GetStakeSplitThreshold() { return 2 * GetStakeCombineThreshold(); }
 
 /**
  * If fee estimation does not have enough data to provide estimates, use this fee instead.
@@ -2904,7 +2904,7 @@ uint64_t CWallet::GetStakeWeight() const
     return nWeight;
 }
 
-bool CWallet::AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight)
+bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight)
 {
     CBlock block;
     CBlockIndex* pblockindex = chainActive[nHeight];
@@ -2921,7 +2921,7 @@ bool CWallet::AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight)
     return false;
 }
 
-bool CWallet::GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHeight)
+bool GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHeight)
 {
     bool ret = true;
     nHeight -= COINBASE_MATURITY;
@@ -2935,7 +2935,7 @@ bool CWallet::GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHe
     return ret;
 }
 
-bool CWallet::CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight)
+bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight)
 {
     std::vector<CScript> mposScriptList;
     if(!GetMPoSOutputScripts(mposScriptList, nHeight)) 

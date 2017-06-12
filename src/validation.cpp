@@ -1922,6 +1922,61 @@ bool CheckRefund(const CBlock& block, const std::vector<CTxOut>& vouts){
     return true;
 }
 
+bool CheckReward(const CBlock& block, int height, CAmount blockReward, int refundVouts)
+{
+    if(!block.IsProofOfStake())
+        return false;
+
+    size_t offset = 1;
+    CAmount refundReward = 0;
+    for(size_t i = block.vtx[offset]->vout.size() - refundVouts; i <block.vtx[offset]->vout.size(); i++)
+    {
+        refundReward += block.vtx[offset]->vout[i].nValue;
+    }
+    const CChainParams& chainParams = Params();
+    int rewardRecipients = chainParams.GetConsensus().nMPoSRewardRecipients;
+    CAmount splitReward = (blockReward - refundReward) / rewardRecipients;
+
+    int okRewardRecipients = 0;
+    size_t beginRecipients = block.vtx[offset]->vout.size() - refundVouts - rewardRecipients + 1;
+    size_t endRecipients = block.vtx[offset]->vout.size() - refundVouts;
+    for(size_t i = beginRecipients; i < endRecipients; i++)
+    {
+        if(block.vtx[offset]->vout[i].nValue == splitReward)
+        {
+            okRewardRecipients++;
+        }
+    }
+    if(okRewardRecipients != rewardRecipients -1)
+        return false;
+
+    int voutsStaker = block.vtx[offset]->vout.size() - rewardRecipients - refundVouts;
+    if(voutsStaker < 1 || voutsStaker > 2)
+        return false;
+
+    CAmount stake = 0;
+    for(size_t i = 1; i <= voutsStaker; i++)
+    {
+        stake += block.vtx[offset]->vout[i].nValue;
+    }
+    if(voutsStaker == 2 && stake < GetStakeSplitThreshold())
+        return false;
+
+    std::vector<CScript> mposScroptList;
+    if(!GetMPoSOutputScripts(mposScroptList, height))
+        return false;
+
+    for(size_t i = 0; i < okRewardRecipients; i++)
+    {
+        if(block.vtx[offset]->vout[beginRecipients + i].scriptPubKey != mposScroptList[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 valtype GetSenderAddress(const CTransaction& tx, const CCoinsViewCache* coinsView){
     CTransactionRef txPrevout;
     uint256 hashBlock;
@@ -2429,6 +2484,9 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
 
     if(!CheckRefund(block, checkVouts))
+        return state.DoS(100,error("ConnectBlock(): Gas refund missing"));
+
+    if(!CheckReward(block, pindex->nHeight, nActualStakeReward, checkVouts.size()))
         return state.DoS(100,error("ConnectBlock(): Gas refund missing"));
 
     if (!control.Wait())

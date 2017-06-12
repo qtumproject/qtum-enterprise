@@ -169,6 +169,9 @@ struct COutputEntry
     int vout;
 };
 
+int64_t GetStakeSplitThreshold();
+bool GetMPoSOutputScripts(std::vector<CScript> &mposScroptList, int nHeight);
+
 /** A transaction with a merkle branch linking it to the block chain. */
 class CMerkleTx
 {
@@ -825,9 +828,6 @@ public:
 
     void ListAccountCreditDebit(const std::string& strAccount, std::list<CAccountingEntry>& entries);
     uint64_t GetStakeWeight() const;
-    bool AddMPoSScript(std::vector<CScript> &mposScroptList, int nHeight);
-    bool GetMPoSOutputScripts(std::vector<CScript> &mposScroptList, int nHeight);
-    bool CreateMPoSOutputs(CMutableTransaction& tx, int64_t nRewardPiece, int nHeight);
     bool CreateCoinStake(const CKeyStore &keystore, unsigned int nBits, uint32_t nSearchInterval, const CAmount& nTotalFees, uint32_t& nTimeBlock, CMutableTransaction& tx, CKey& key);
     bool AddAccountingEntry(const CAccountingEntry&);
     bool AddAccountingEntry(const CAccountingEntry&, CWalletDB *pwalletdb);
