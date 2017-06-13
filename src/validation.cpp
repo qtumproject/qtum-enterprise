@@ -1922,55 +1922,109 @@ bool CheckRefund(const CBlock& block, const std::vector<CTxOut>& vouts){
     return true;
 }
 
-bool CheckReward(const CBlock& block, int height, CAmount blockReward, int refundVouts)
+bool CheckReward(const CBlock& block, CValidationState& state, int nHeight, const Consensus::Params& consensusParams, CAmount nFees, CAmount nActualStakeReward, int nRefundVouts)
 {
-    if(!block.IsProofOfStake())
-        return false;
+    size_t offset = block.IsProofOfStake() ? 1 : 0;
 
-    size_t offset = 1;
-    CAmount refundReward = 0;
-    for(size_t i = block.vtx[offset]->vout.size() - refundVouts; i <block.vtx[offset]->vout.size(); i++)
+    // Check block reward
+    if (block.IsProofOfWork())
     {
-        refundReward += block.vtx[offset]->vout[i].nValue;
+        // Check proof-of-work reward
+        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+        if (block.vtx[offset]->GetValueOut() > blockReward)
+            return state.DoS(100,
+                             error("CheckReward(): coinbase pays too much (actual=%d vs limit=%d)",
+                                   block.vtx[offset]->GetValueOut(), blockReward),
+                             REJECT_INVALID, "bad-cb-amount");
     }
-    const CChainParams& chainParams = Params();
-    int rewardRecipients = chainParams.GetConsensus().nMPoSRewardRecipients;
-    CAmount splitReward = (blockReward - refundReward) / rewardRecipients;
-
-    int okRewardRecipients = 0;
-    size_t beginRecipients = block.vtx[offset]->vout.size() - refundVouts - rewardRecipients + 1;
-    size_t endRecipients = block.vtx[offset]->vout.size() - refundVouts;
-    for(size_t i = beginRecipients; i < endRecipients; i++)
+    else
     {
-        if(block.vtx[offset]->vout[i].nValue == splitReward)
+        // Check proof-of-stake timestamp
+        if (!CheckTransactionTimestamp(*block.vtx[offset], block.nTime, *pblocktree))
+            return error("CheckReward() : %s transaction timestamp check failure", block.vtx[offset]->GetHash().ToString());
+
+        // Check full reward
+        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+        if (nActualStakeReward > blockReward)
+            return state.DoS(100,
+                             error("CheckReward(): coinstake pays too much (actual=%d vs limit=%d)",
+                                   nActualStakeReward, blockReward),
+                             REJECT_INVALID, "bad-cs-amount");
+
+        // The first proof-of-stake blocks get full reward, the rest of them are splitted between recipients
+        int rewardRecipients = 1;
+        int nPrevHeight = nHeight -1;
+        if(nPrevHeight >= consensusParams.nFirstMPoSBlock)
+            rewardRecipients = consensusParams.nMPoSRewardRecipients;
+
+        // Check reward recipients number
+        if(rewardRecipients < 1)
+            return error("CheckReward(): invalid reward recipients");
+
+        // Check block creator outputs
+        int voutsStaker = block.vtx[offset]->vout.size() - rewardRecipients - nRefundVouts;
+        if(voutsStaker < 1 || voutsStaker > 2)
+            return state.DoS(100,
+                             error("CheckReward(): invalid number of outputs for the block creator"),
+                             REJECT_INVALID, "bad-cs-stake-output");
+
+        // Check block creator stake split into outputs
+        CAmount stake = 0;
+        for(int i = 1; i <= voutsStaker; i++)
         {
-            okRewardRecipients++;
+            stake += block.vtx[offset]->vout[i].nValue;
         }
-    }
-    if(okRewardRecipients != rewardRecipients -1)
-        return false;
 
-    int voutsStaker = block.vtx[offset]->vout.size() - rewardRecipients - refundVouts;
-    if(voutsStaker < 1 || voutsStaker > 2)
-        return false;
+        // Check block creator stake split when exceed the threshold
+        if(voutsStaker == 2 && stake < GetStakeSplitThreshold())
+            return state.DoS(100,
+                             error("CheckReward(): stake does not split when exceed the threshold"),
+                             REJECT_INVALID, "bad-cs-stake-split");
 
-    CAmount stake = 0;
-    for(size_t i = 1; i <= voutsStaker; i++)
-    {
-        stake += block.vtx[offset]->vout[i].nValue;
-    }
-    if(voutsStaker == 2 && stake < GetStakeSplitThreshold())
-        return false;
-
-    std::vector<CScript> mposScroptList;
-    if(!GetMPoSOutputScripts(mposScroptList, height))
-        return false;
-
-    for(size_t i = 0; i < okRewardRecipients; i++)
-    {
-        if(block.vtx[offset]->vout[beginRecipients + i].scriptPubKey != mposScroptList[i])
+        // Check block total reward split when multiple recipients
+        if(rewardRecipients > 1)
         {
-            return false;
+            // Compute the contracts refund reward
+            CAmount refundReward = 0;
+            for(size_t i = block.vtx[offset]->vout.size() - nRefundVouts; i <block.vtx[offset]->vout.size(); i++)
+            {
+                refundReward += block.vtx[offset]->vout[i].nValue;
+            }
+
+            // Check that the block creator split the reward with the rest of the recipients into equal shares
+            size_t okRewardRecipients = 0;
+            size_t beginRecipients = block.vtx[offset]->vout.size() - nRefundVouts - rewardRecipients + 1;
+            size_t endRecipients = block.vtx[offset]->vout.size() - nRefundVouts;
+            CAmount splitReward = (blockReward - refundReward) / rewardRecipients;
+            for(size_t i = beginRecipients; i < endRecipients; i++)
+            {
+                if(block.vtx[offset]->vout[i].nValue == splitReward)
+                {
+                    okRewardRecipients++;
+                }
+            }
+            
+            // Check the reward reward recipents that receive equal shares
+            if((int)okRewardRecipients != rewardRecipients -1)
+                return state.DoS(100,
+                                 error("CheckReward(): block reward doesn't split into equal shares"),
+                                 REJECT_INVALID, "bad-cs-shares");
+
+            // Get list of script recipients
+            std::vector<CScript> mposScriptList;
+            if(!GetMPoSOutputScripts(mposScriptList, nPrevHeight))
+                return error("CheckReward(): cannot create the list of MPoS output scripts");
+            
+            // Check the list of script recipients
+            for(size_t i = 0; i < okRewardRecipients; i++)
+            {
+                if(block.vtx[offset]->vout[beginRecipients + i].scriptPubKey != mposScriptList[i])
+                {
+                    return state.DoS(100,
+                                     error("CheckReward(): MPoS block reward script not correct"),
+                                     REJECT_INVALID, "bad-cs-mpos-sctipt");
+                }
+            }
         }
     }
 
@@ -2460,33 +2514,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime3 - nTime2), 0.001 * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * 0.000001);
 
-    if (block.IsProofOfWork())
-    {
-        CAmount blockReward = nFees + GetBlockSubsidy(pindex->nHeight, chainparams.GetConsensus());
-        if (block.vtx[0]->GetValueOut() > blockReward)
-            return state.DoS(100,
-                             error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
-                                   block.vtx[0]->GetValueOut(), blockReward),
-                                   REJECT_INVALID, "bad-cb-amount");
-    }
-    else
-    {
-        if (!CheckTransactionTimestamp(*block.vtx[1], block.nTime, *pblocktree))
-            return error("ConnectBlock() : %s transaction timestamp check failure", block.vtx[1]->GetHash().ToString());
-
-        CAmount blockReward = nFees + GetBlockSubsidy(pindex->nHeight, chainparams.GetConsensus());
-         if (nActualStakeReward > blockReward)
-            return state.DoS(100,
-                             error("ConnectBlock(): coinstake pays too much (actual=%d vs limit=%d)",
-                                   nActualStakeReward, blockReward),
-                                   REJECT_INVALID, "bad-cs-amount");
-        
-    }
+    if(!CheckReward(block, state, pindex->nHeight, chainparams.GetConsensus(), nFees, nActualStakeReward, checkVouts.size()))
+        return state.DoS(100,error("ConnectBlock(): Reward check failed"));
 
     if(!CheckRefund(block, checkVouts))
-        return state.DoS(100,error("ConnectBlock(): Gas refund missing"));
-
-    if(!CheckReward(block, pindex->nHeight, nActualStakeReward, checkVouts.size()))
         return state.DoS(100,error("ConnectBlock(): Gas refund missing"));
 
     if (!control.Wait())
