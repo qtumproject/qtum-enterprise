@@ -2012,7 +2012,7 @@ bool CheckReward(const CBlock& block, CValidationState& state, int nHeight, cons
 
             // Get list of script recipients
             std::vector<CScript> mposScriptList;
-            if(!GetMPoSOutputScripts(mposScriptList, nPrevHeight))
+            if(!GetMPoSOutputScripts(mposScriptList, nPrevHeight, consensusParams))
                 return error("CheckReward(): cannot create the list of MPoS output scripts");
             
             // Check the list of script recipients

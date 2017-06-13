@@ -62,6 +62,13 @@ int64_t GetStakeSplitThreshold() { return 2 * GetStakeCombineThreshold(); }
  */
 CFeeRate CWallet::fallbackFee = CFeeRate(DEFAULT_FALLBACK_FEE);
 
+struct ScriptsElement{
+    CScript script;
+    uint256 hash;
+};
+
+std::map<int, ScriptsElement> scriptsMap;
+
 const uint256 CMerkleTx::ABANDON_HASH(uint256S("0000000000000000000000000000000000000000000000000000000000000001"));
 
 /** @defgroup mapWallet
@@ -2904,41 +2911,107 @@ uint64_t CWallet::GetStakeWeight() const
     return nWeight;
 }
 
-bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight)
+bool NeedToEraseScriptFromCache(int nBlockHeight, int nCacheScripts, int nScriptHeight, const ScriptsElement& scriptElement)
 {
-    CBlock block;
+    if(nScriptHeight < (nBlockHeight - nCacheScripts) ||
+            nScriptHeight > (nBlockHeight + nCacheScripts))
+        return true;
+
+    CBlockIndex* pblockindex = chainActive[nScriptHeight];
+    if(pblockindex && pblockindex->GetBlockHash() != scriptElement.hash)
+        return true;
+
+    return false;
+}
+
+void CleanScriptCache(int nHeight, const Consensus::Params& consensusParams)
+{
+    int nCacheScripts = consensusParams.nMPoSRewardRecipients * 1.5;
+
+    for (std::map<int, ScriptsElement>::iterator it=scriptsMap.begin(); it!=scriptsMap.end();){
+        if(NeedToEraseScriptFromCache(nHeight, nCacheScripts, it->first, it->second))
+        {
+            it = scriptsMap.erase(it);
+        }
+        else{
+            it++;
+        }
+    }
+}
+
+bool ReadFromScriptCache(CScript &script, CBlockIndex* pblockindex, int nHeight, const Consensus::Params& consensusParams)
+{
+    CleanScriptCache(nHeight, consensusParams);
+
+    std::map<int, ScriptsElement>::iterator it = scriptsMap.find(nHeight);
+
+    if(it != scriptsMap.end())
+    {
+        if(it->second.hash == pblockindex->GetBlockHash())
+        {
+            script = it->second.script;
+            return true;
+        }
+    }
+    return false;
+}
+
+void AddToScriptCache(CScript script, CBlockIndex* pblockindex, int nHeight, const Consensus::Params& consensusParams)
+{
+    CleanScriptCache(nHeight, consensusParams);
+
+    ScriptsElement listElement;
+    listElement.script = script;
+    listElement.hash = pblockindex->GetBlockHash();
+    scriptsMap.insert(std::pair<int, ScriptsElement>(nHeight, listElement));
+}
+
+bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight, const Consensus::Params& consensusParams)
+{
     CBlockIndex* pblockindex = chainActive[nHeight];
-    if(!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) 
+    if(!pblockindex)
+        return false;
+
+    CScript script;
+    if(ReadFromScriptCache(script, pblockindex, nHeight, consensusParams))
+    {
+        mposScriptList.push_back(script);
+        return true;
+    }
+
+    CBlock block;
+    if (!ReadBlockFromDisk(block, pblockindex, consensusParams))
         return false;
 
     if(block.vtx.size() > 1 && block.vtx[1]->IsCoinStake() && block.vtx[1]->vout.size() > 1 )
     {
         CScript script = block.vtx[1]->vout[1].scriptPubKey;
         mposScriptList.push_back(script);
-        return true;
+        AddToScriptCache(script, pblockindex, nHeight, consensusParams);
     }
+    else
+        return false;
 
-    return false;
+    return true;
 }
 
-bool GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHeight)
+bool GetMPoSOutputScripts(std::vector<CScript>& mposScriptList, int nHeight, const Consensus::Params& consensusParams)
 {
     bool ret = true;
     nHeight -= COINBASE_MATURITY;
 
-    const CChainParams& chainParams = Params();
-    for(int i = 0; (i < chainParams.GetConsensus().nMPoSRewardRecipients - 1) && ret; i++)
+    for(int i = 0; (i < consensusParams.nMPoSRewardRecipients - 1) && ret; i++)
     {
-        ret &= AddMPoSScript(mposScriptList, nHeight - i);
+        ret &= AddMPoSScript(mposScriptList, nHeight - i, consensusParams);
     }
 
     return ret;
 }
 
-bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight)
+bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHeight, const Consensus::Params& consensusParams)
 {
     std::vector<CScript> mposScriptList;
-    if(!GetMPoSOutputScripts(mposScriptList, nHeight)) 
+    if(!GetMPoSOutputScripts(mposScriptList, nHeight, consensusParams))
         return false;
 
     for(unsigned int i = 0; i < mposScriptList.size(); i++)
@@ -3087,23 +3160,23 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, uin
         }
     }
 
-    const CChainParams& chainParams = Params();
+    const Consensus::Params& consensusParams = Params().GetConsensus();
     int64_t nRewardPiece = 0;
     // Calculate reward
     {
         if (!CheckTransactionTimestamp(txNew, nTimeBlock, *pblocktree))
             return error("CreateCoinStake : Transaction timestamp check failure.");
-        int64_t nReward = nTotalFees + GetBlockSubsidy(pindexPrev->nHeight, chainParams.GetConsensus());
+        int64_t nReward = nTotalFees + GetBlockSubsidy(pindexPrev->nHeight, consensusParams);
         if (nReward < 0)
             return false;
-        if(pindexPrev->nHeight < chainParams.GetConsensus().nFirstMPoSBlock)
+        if(pindexPrev->nHeight < consensusParams.nFirstMPoSBlock)
         {
             nCredit += nReward;
         }
         else
         {
-            nRewardPiece = nReward / chainParams.GetConsensus().nMPoSRewardRecipients;
-            nCredit += nRewardPiece + nReward % chainParams.GetConsensus().nMPoSRewardRecipients;
+            nRewardPiece = nReward / consensusParams.nMPoSRewardRecipients;
+            nCredit += nRewardPiece + nReward % consensusParams.nMPoSRewardRecipients;
         }
    }
 
@@ -3119,9 +3192,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, uin
     else
         txNew.vout[1].nValue = nCredit;
 
-    if(pindexPrev->nHeight >= chainParams.GetConsensus().nFirstMPoSBlock)
+    if(pindexPrev->nHeight >= consensusParams.nFirstMPoSBlock)
     {
-        if(!CreateMPoSOutputs(txNew, nRewardPiece, pindexPrev->nHeight))
+        if(!CreateMPoSOutputs(txNew, nRewardPiece, pindexPrev->nHeight, consensusParams))
             return error("CreateCoinStake : failed to create MPoS reward outputs");
     }
 
