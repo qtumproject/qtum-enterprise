@@ -19,3 +19,8 @@ git submodule update --init
 ./scripts/install_deps.sh
 cmake .
 make -j `nproc`
+
+cd ..
+cd solidity
+cmake .
+make -j `nproc`
