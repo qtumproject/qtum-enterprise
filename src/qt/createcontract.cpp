@@ -83,11 +83,21 @@ void CreateContract::compileSourceCode(){
         unsigned runs = 0;
         bool successful = compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
 
+        // if(successful){
+        //     std::vector<std::string> contracts = compiler.contractNames();
+        //     for(std::string s : contracts){
+        //         std::string key(s.begin() + 1, s.end());
+        //         byteCodeContracts[key] = compiler.object(s).toHex();
+        //     }
+        // }
         if(successful){
             std::vector<std::string> contracts = compiler.contractNames();
             for(std::string s : contracts){
+                Contract contr;
                 std::string key(s.begin() + 1, s.end());
-                byteCodeContracts[key] = compiler.object(s).toHex();
+                contr.code = compiler.object(s).toHex();
+                contr.abi = dev::jsonCompactPrint(compiler.contractABI(s));
+                byteCodeContracts[key] = contr;
             }
         }
     }
@@ -96,7 +106,10 @@ void CreateContract::compileSourceCode(){
 void CreateContract::fillingComboBoxSelectContract(){
     ui->comboBoxSelectContract->clear();
     if(!byteCodeContracts.empty()){
-        for(std::pair<std::string, std::string> contr : byteCodeContracts){
+        // for(std::pair<std::string, std::string> contr : byteCodeContracts){
+        //     ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
+        // }
+        for(std::pair<std::string, Contract> contr : byteCodeContracts){
             ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
         }
     }
@@ -110,7 +123,8 @@ void CreateContract::deployContract(){
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
     if(!typeCode && byteCodeContracts.count(key)){
-        bytecode = byteCodeContracts[key];
+        // bytecode = byteCodeContracts[key];
+        bytecode = byteCodeContracts[key].code;
     } else {
         bytecode = ui->textEditCode->toPlainText().toUtf8().constData();
     }

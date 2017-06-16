@@ -17,9 +17,16 @@ public:
     explicit ContractsInfo(WalletModel *_walletModel, QWidget *parent = 0);
     ~ContractsInfo();
 
+    void setWalletModel(WalletModel *walletModel);
+
+public Q_SLOTS:
+
+void test();
+
 private:
     QStandardItemModel *model;
-    WalletModel* walletModel;
+    WalletModel *walletModel;
+    TransactionTableModel *txTableModel;
     Ui::ContractsInfo *ui;
 };
 

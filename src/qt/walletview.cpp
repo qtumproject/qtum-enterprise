@@ -140,6 +140,10 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     usedReceivingAddressesPage->setModel(_walletModel->getAddressTableModel());
     usedSendingAddressesPage->setModel(_walletModel->getAddressTableModel());
 
+////////////////////////////////////////////////////////////////////// // qtum
+    contractsInfo->setWalletModel(_walletModel);
+//////////////////////////////////////////////////////////////////////
+
     if (_walletModel)
     {
         // Receive and pass through messages from wallet model

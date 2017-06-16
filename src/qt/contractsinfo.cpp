@@ -2,8 +2,7 @@
 #include "ui_contractsinfo.h"
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
-    QWidget(parent), walletModel(_walletModel),
-    ui(new Ui::ContractsInfo)
+    QWidget(parent), ui(new Ui::ContractsInfo), walletModel(_walletModel)
 {
     ui->setupUi(this);
 
@@ -28,5 +27,20 @@ ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
 ContractsInfo::~ContractsInfo()
 {
     delete ui;
+}
+
+void ContractsInfo::test(){
+    std::cout << "TEST" << std::endl;
+}
+
+void ContractsInfo::setWalletModel(WalletModel *model)
+{
+    this->walletModel = model;
+
+    if(model){
+        txTableModel = model->getTransactionTableModel();
+        const QObject* tempd = reinterpret_cast<QObject*>(txTableModel);
+        connect(tempd, SIGNAL(changedData()), this, SLOT(test()));
+    }
 }
 

@@ -115,6 +115,12 @@ public Q_SLOTS:
     void setProcessingQueuedTransactions(bool value) { fProcessingQueuedTransactions = value; }
 
     friend class TransactionTablePriv;
+
+///////////////////////////////////////////////////// // qtum
+Q_SIGNALS:
+
+    void changedData();
+/////////////////////////////////////////////////////
 };
 
 #endif // BITCOIN_QT_TRANSACTIONTABLEMODEL_H

@@ -12,11 +12,21 @@
 #include <QMessageBox>
 
 #include "libsolidity/interface/CompilerStack.h"
+#include "libdevcore/JSON.h"
+
+
 #include <walletmodel.h>
 #include "validation.h"
 #include "consensus/validation.h"
 #include "net.h"
 #include "base58.h"
+
+
+struct Contract{
+    std::string code = "";
+    std::string abi = "";
+};
+
 
 namespace Ui {
     class CreateContract;
@@ -44,7 +54,8 @@ private:
     bool typeCode;
     QString sourceCode;
     QString byteCode;
-    std::map<std::string, std::string> byteCodeContracts;
+    // std::map<std::string, std::string> byteCodeContracts;
+    std::map<std::string, Contract> byteCodeContracts;
 
     WalletModel* walletModel;
     Ui::CreateContract *ui;
