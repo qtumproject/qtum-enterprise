@@ -54,7 +54,6 @@ private:
     bool typeCode;
     QString sourceCode;
     QString byteCode;
-    // std::map<std::string, std::string> byteCodeContracts;
     std::map<std::string, Contract> byteCodeContracts;
 
     WalletModel* walletModel;

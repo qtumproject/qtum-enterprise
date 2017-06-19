@@ -2,7 +2,7 @@
 #include "ui_contractsinfo.h"
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
-    QWidget(parent), ui(new Ui::ContractsInfo), walletModel(_walletModel)
+    QWidget(parent), walletModel(_walletModel), ui(new Ui::ContractsInfo)
 {
     ui->setupUi(this);
 
@@ -30,7 +30,7 @@ ContractsInfo::~ContractsInfo()
 }
 
 void ContractsInfo::test(){
-    std::cout << "TEST" << std::endl;
+    
 }
 
 void ContractsInfo::setWalletModel(WalletModel *model)
@@ -43,4 +43,3 @@ void ContractsInfo::setWalletModel(WalletModel *model)
         connect(tempd, SIGNAL(changedData()), this, SLOT(test()));
     }
 }
-

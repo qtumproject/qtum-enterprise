@@ -1,8 +1,8 @@
 #include "createcontract.h"
 #include "ui_createcontract.h"
 
-CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), ui(new Ui::CreateContract), 
-    walletModel(_walletModel){
+CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), 
+    walletModel(_walletModel), ui(new Ui::CreateContract){
     ui->setupUi(this);
 
     typeCode = false;
@@ -83,13 +83,6 @@ void CreateContract::compileSourceCode(){
         unsigned runs = 0;
         bool successful = compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
 
-        // if(successful){
-        //     std::vector<std::string> contracts = compiler.contractNames();
-        //     for(std::string s : contracts){
-        //         std::string key(s.begin() + 1, s.end());
-        //         byteCodeContracts[key] = compiler.object(s).toHex();
-        //     }
-        // }
         if(successful){
             std::vector<std::string> contracts = compiler.contractNames();
             for(std::string s : contracts){
@@ -106,9 +99,6 @@ void CreateContract::compileSourceCode(){
 void CreateContract::fillingComboBoxSelectContract(){
     ui->comboBoxSelectContract->clear();
     if(!byteCodeContracts.empty()){
-        // for(std::pair<std::string, std::string> contr : byteCodeContracts){
-        //     ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
-        // }
         for(std::pair<std::string, Contract> contr : byteCodeContracts){
             ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
         }
@@ -123,7 +113,6 @@ void CreateContract::deployContract(){
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
     if(!typeCode && byteCodeContracts.count(key)){
-        // bytecode = byteCodeContracts[key];
         bytecode = byteCodeContracts[key].code;
     } else {
         bytecode = ui->textEditCode->toPlainText().toUtf8().constData();
@@ -132,7 +121,6 @@ void CreateContract::deployContract(){
     LOCK2(cs_main, pwalletMain->cs_wallet);
     if (pwalletMain->IsLocked()){
         QMessageBox::critical(NULL, QObject::tr("Error"), tr("Please enter the wallet passphrase with walletpassphrase first."));
-
         return;
     }
     
@@ -151,7 +139,6 @@ void CreateContract::deployContract(){
         return;
     }
 
-
-    CContractInfo info(false, wtx.nTimeReceived, wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), std::string());
+    CContractInfo info(false, wtx.nTimeReceived, wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), byteCodeContracts[key].abi);
     pwalletMain->addContractInfo(info);
 }
