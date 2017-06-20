@@ -244,6 +244,7 @@ OP_NOP10 = CScriptOp(0xb9)
 
 OP_CREATE = CScriptOp(0xc1)
 OP_CALL = CScriptOp(0xc2)
+OP_SPEND = CScriptOp(0xc3)
 
 # template matching params
 OP_SMALLINTEGER = CScriptOp(0xfa)
