@@ -27,20 +27,30 @@ struct ContractMethod{
     bool operator!=(ContractMethod& cm);
 };
 
+class ParserAbi{
+
+public:
+
+    void parseAbiJSON(const std::string jsonStr);
+
+    std::map<std::string, ContractMethod> getContractMethods() { return contractMethods; }
+
+private:
+
+    std::map<std::string, ContractMethod> contractMethods;
+};
+
 class AnalyzerERC20{
 
 public:
 
-    AnalyzerERC20() { ERC20Methods = parseAbiJSON(ERC20); };
+    AnalyzerERC20() { parser.parseAbiJSON(ERC20); ERC20Methods = parser.getContractMethods(); };
 
     bool isERC20(const std::string& contractAbi);
 
 private:
 
-    std::map<std::string, ContractMethod> parseAbiJSON(const std::string jsonStr);
-
-    std::map<std::string, ContractMethod> contractMethods;
-
     std::map<std::string, ContractMethod> ERC20Methods;
 
+    ParserAbi parser;
 };
