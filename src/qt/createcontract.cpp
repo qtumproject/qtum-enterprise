@@ -157,6 +157,9 @@ void CreateContract::createParameterFields(std::string abiStr){
         scrollArea->setWidgetResizable(true);
 
         ui->horizontalLayout->addWidget(scrollArea);
+
+
+        parser.createInputData("", Parameters());
     }
 }
 

@@ -1,4 +1,9 @@
 #include <univalue.h>
+#include "libdevcore/Common.h"
+#include "libdevcore/FixedHash.h"
+#include <regex>
+
+using Parameters = std::vector<std::pair<std::string, std::string>>;
 
 extern std::string ERC20;
 
@@ -33,9 +38,13 @@ public:
 
     void parseAbiJSON(const std::string jsonStr);
 
+    void createInputData(const std::string& methodName, const Parameters& params);
+
     std::map<std::string, ContractMethod> getContractMethods() { return contractMethods; }
 
 private:
+
+    std::string strDecTostrHex(const std::string& str);
 
     std::map<std::string, ContractMethod> contractMethods;
 };
