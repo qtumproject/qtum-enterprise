@@ -2,6 +2,7 @@
 #include "libdevcore/Common.h"
 #include "libdevcore/FixedHash.h"
 #include <regex>
+#include "utilstrencodings.h"
 
 using Parameters = std::vector<std::pair<std::string, std::string>>;
 
@@ -44,7 +45,11 @@ public:
 
 private:
 
-    std::string strDecTostrHex(const std::string& str);
+    std::string strDecToStrHex(const std::string& str);
+
+    std::string stringToStrHex(const std::string& str);
+
+    std::string creatingDataFromElementaryTypes(const std::string& type, const std::string& data);
 
     std::map<std::string, ContractMethod> contractMethods;
 };
