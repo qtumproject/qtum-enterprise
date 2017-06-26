@@ -146,6 +146,11 @@ void CreateContract::createParameterFields(std::string abiStr){
             QLabel *label = new QLabel(QString::fromStdString(construct->second.inputs[i].name + " (" + construct->second.inputs[i].type + ")"), scrollArea);
             QLineEdit *textEdit = new QLineEdit(scrollArea);
 
+            connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(updateTextEditsParams()));
+            QPalette palette;
+            palette.setColor(QPalette::Base,Qt::red);
+            textEdit->setPalette(palette);
+
             textEdits.push_back(textEdit);
 
             vLayout->addWidget(label);
@@ -157,9 +162,6 @@ void CreateContract::createParameterFields(std::string abiStr){
         scrollArea->setWidgetResizable(true);
 
         ui->horizontalLayout->addWidget(scrollArea);
-
-
-        parser.createInputData("", Parameters());
     }
 }
 
@@ -171,17 +173,23 @@ void CreateContract::deleteParameters(){
     textEdits.clear();
 }
 
-void CreateContract::parseConstructorParameters(){
-    if(!textEdits.empty()){
-        if(ui->comboBoxSelectContract->count()){
-            std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
-            ParserAbi parser;
-            parser.parseAbiJSON(byteCodeContracts[key].abi);
-            std::map<std::string, ContractMethod> contract = parser.getContractMethods();
-            auto construct = contract.find("");
-
+void CreateContract::updateTextEditsParams(){
+    if(ui->comboBoxSelectContract->count()){
+        std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
+        ParserAbi parser;
+        parser.parseAbiJSON(byteCodeContracts[key].abi);
+        std::map<std::string, ContractMethod> contract = parser.getContractMethods();
+        auto construct = contract.find("");
+        if(construct != contract.end()){
             for(size_t i = 0; i < construct->second.inputs.size(); i++){
-                
+                QPalette palette;
+                if(parser.checkData(textEdits[i]->text().toStdString(), construct->second.inputs[i].type)){
+                    palette.setColor(QPalette::Base,Qt::white);
+                    textEdits[i]->setPalette(palette);
+                } else {
+                    palette.setColor(QPalette::Base,Qt::red);
+                    textEdits[i]->setPalette(palette);
+                }
             }
         }
     }

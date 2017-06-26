@@ -6,9 +6,58 @@ std::regex uintRegex("(uint[0-9]{0,3})");
 std::regex intRegex("(int[0-9]{0,3})");
 std::regex bytesNRegex("(bytes[0-9]{1,3})");
 std::regex bytesRegex("(bytes)");
-// std::regex masRegex("^([a-zA-Z]\\w+\\[\\])$");
 std::regex masRegex("^([a-zA-Z]\\w+\\[[0-9+]{0,}\\])$");
-std::regex masNumElementRegex("\\[([1-9]+)\\]$");
+std::regex masMasRegex("\\b([a-zA-Z]{1,}.{0,}\\[[1-9]{1,}[0-9]{0,}\\]\\[\\])$");
+std::regex masNumElementRegex("\\[([1-9]+)\\]");
+
+std::regex uintR("^[0-9]{1,}$");
+std::regex intR("^\\-{0,1}[0-9]{1,}$");
+std::regex bytesNR("^.{1,}$");
+std::regex addressR("^[a-fA-F0-9]{40,40}$");
+std::regex boolR("^true$|^false$");
+std::regex stringAndBytesR("^.{1,}$");
+
+bool ContractMethod::equalContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2){
+    if(cmps1.size() == cmps2.size()){
+        for(size_t i = 0; i < cmps1.size(); i++){
+            if(cmps1[i] != cmps2[i])
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool ContractMethod::operator!=(ContractMethod& cm){
+    if(cm.constant == constant && cm.constant == constant && equalContractMethodParams(cm.inputs, inputs) &&
+       cm.name == name && equalContractMethodParams(cm.outputs, outputs) && cm.payable == payable && cm.type == type){
+            return false;
+    }
+    return true;
+}
+
+bool AnalyzerERC20::isERC20(const std::string& contractAbi){
+    parser.parseAbiJSON(contractAbi); 
+    std::map<std::string, ContractMethod> contractMethods = parser.getContractMethods();
+
+    for(std::pair<std::string, ContractMethod> cm : ERC20Methods){
+        if((contractMethods.count(cm.first) && (contractMethods[cm.first] != cm.second)) || !contractMethods.count(cm.first))
+            return false;
+    }
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////// // parse abi json
+std::string ParserAbi::strDecToStrHex(const std::string& str){
+    dev::u256 number(str);
+    dev::h256 temp(number);
+    return temp.hex();
+}
+
+std::string ParserAbi::stringToStrHex(const std::string& str){
+    std::vector<unsigned char> bytes(str.begin(), str.end());
+    return HexStr(bytes.begin(), bytes.end());
+}
 
 void ParserAbi::parseAbiJSON(const std::string jsonStr){
     contractMethods.clear();
@@ -64,50 +113,15 @@ void ParserAbi::parseAbiJSON(const std::string jsonStr){
     }
 }
 
-bool AnalyzerERC20::isERC20(const std::string& contractAbi){
-    parser.parseAbiJSON(contractAbi); 
-    std::map<std::string, ContractMethod> contractMethods = parser.getContractMethods();
-
-    for(std::pair<std::string, ContractMethod> cm : ERC20Methods){
-        if((contractMethods.count(cm.first) && (contractMethods[cm.first] != cm.second)) || !contractMethods.count(cm.first))
-            return false;
+////////////////////////////////////////////////////////////////////////////// // encode data
+std::pair<size_t, size_t> ParserAbi::updateOffset(size_t offset, size_t size){
+    size_t multiplier = 3; // str(offset) + str(len) + str(text)
+    if(size > 32){
+        size_t fullLines = size / 32;
+        multiplier += fullLines;
     }
-    return true;
-}
-
-bool ContractMethod::equalContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2){
-    if(cmps1.size() == cmps2.size()){
-        for(size_t i = 0; i < cmps1.size(); i++){
-            if(cmps1[i] != cmps2[i])
-                return false;
-        }
-        return true;
-    }
-    return false;
-}
-
-bool ContractMethod::operator!=(ContractMethod& cm){
-    if(cm.constant == constant && cm.constant == constant && equalContractMethodParams(cm.inputs, inputs) &&
-       cm.name == name && equalContractMethodParams(cm.outputs, outputs) && cm.payable == payable && cm.type == type){
-            return false;
-    }
-    return true;
-}
-
-
-
-
-
-
-std::string ParserAbi::strDecToStrHex(const std::string& str){
-    dev::u256 number(str);
-    dev::h256 temp(number);
-    return temp.hex();
-}
-
-std::string ParserAbi::stringToStrHex(const std::string& str){
-    std::vector<unsigned char> bytes(str.begin(), str.end());
-    return HexStr(bytes.begin(), bytes.end());
+    offset += 32 * multiplier;
+    return std::make_pair(offset, multiplier);
 }
 
 std::string ParserAbi::creatingDataFromElementaryTypes(const std::string& type, const std::string& data){
@@ -137,91 +151,226 @@ std::string ParserAbi::creatingDataFromElementaryTypes(const std::string& type, 
     }
 }
 
-void ParserAbi::createInputData(const std::string& methodName, const Parameters& params){
+DataAndStack ParserAbi::creatingDataFromStringAndBytes(size_t& offset, const std::string& data){
+    std::vector<std::string> result;
+    std::vector<std::string> stack;
 
-    Parameters deleteP = {{"uint8","123456789"},{"uint16","987654321"},{"uint32","13"},
-                          {"int8","-123456789"},{"int32","987654321"},{"int256","-13"},
-                          {"address","ffffffffffffffffffffffffffffffffffffffff"},{"address","aaaaaaffffffffffffffffffffffffffffffffff"},{"address","aaaaaaaaaaaaaaaaaaffffffffffffffffffffff"},
-                          {"bool","true"},{"bool","fasle"},{"bool","0"},
-                          {"string","a"},{"string","abcdefgklmnoprst"},{"string","abcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprst"},
-                          {"bytes","1234567890"},{"bytes","Hello, world!"},{"bytes","abcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprstabcdefgklmnoprst"},
-                          {"bytes1","1"},{"bytes13","Hello, world!"},{"bytes32","abcdefgklmnoprstabcdefgklmnoprst"},
-                          {"uint8[]","13"},{"bytes[5]","Hello, world!"},{"ds43ds5534a5354das[]","abcdefgklmnoprstabcdefgklmnoprst"}, {"ds43ds5534a5354das[][]","abcdefgklmnoprstabcdefgklmnoprst"}};
+    size_t sizeString = data.size();
+    size_t multiplier = updateOffset(offset, sizeString).second;
 
+    if(offset){
+        std::stringstream ss;
+        ss << std::hex << offset;
+        result.push_back(std::string(64 - ss.str().size(), '0') + ss.str());
+    }
+
+    std::stringstream sss;
+    sss << std::hex << data.size();
+    stack.push_back(std::string(64 - sss.str().size(), '0') + sss.str());
+
+    for(size_t i = 0; i < multiplier - 2; i++){
+        std::string s;
+        if(sizeString >= 32){
+            s = stringToStrHex(std::string(data.begin() + (32 * i), data.begin() + (32 * i) + 32));
+            stack.push_back(s);
+            sizeString -= 32;
+        } else {
+            s = stringToStrHex(std::string(data.begin() + (32 * i), data.begin() + (32 * i) + sizeString));
+            stack.push_back(s + std::string(64 - s.size(), '0'));
+        }
+    }
+
+    offset = updateOffset(offset, sizeString).first;
+    return std::make_pair(result, stack);
+}
+
+DataAndStack ParserAbi::creatingDataFromArray(size_t& offset, const std::string& data, std::string& type){
+    std::vector<std::string> result;
+    std::vector<std::string> stack;
+
+    if(offset){
+        std::stringstream ss;
+        ss << std::hex << offset;
+        result.push_back(std::string(64 - ss.str().size(), '0') + ss.str());
+    }
     
+    std::string tempType;
+    std::smatch m;
+    std::regex typeRegex("([a-zA-Z]\\w+)");
+    if(std::regex_search (type, m, typeRegex)){
+        tempType = m[0].str();
+    }
+
+    std::regex regex("(\\w+)");
+    size_t numElem = 0;
+    std::smatch r;
+    std::vector<std::string> tempResult;
+    if(std::regex_search(type, r, masNumElementRegex)){
+        numElem = std::stoi(r[1].str()); 
+        std::sregex_token_iterator it(begin(data), end(data), regex), last;
+        for (size_t i = 0; i < numElem; i++){
+            if(it != last){
+                tempResult.push_back(creatingDataFromElementaryTypes(tempType, it->str()));
+                ++it;
+            }
+        }
+    } else {
+        for (std::sregex_token_iterator it(begin(data), end(data), regex), last; it != last; ++it){
+            tempResult.push_back(creatingDataFromElementaryTypes(tempType, it->str()));
+            numElem++;
+        }
+        std::stringstream sss;
+        sss << std::hex << numElem;
+        stack.push_back(std::string(64 - sss.str().size(), '0') + sss.str());
+    }
+
+    stack.insert(stack.end(), tempResult.begin(), tempResult.end());
+    offset = updateOffset(offset, data.size()).first;
+    return std::make_pair(result, stack);
+}
+
+DataAndStack ParserAbi::creatingDataFromArrayToArray(size_t& offset, const std::string& data, std::string& type){
+    std::regex regex("\\[.[^\\[\\]]{0,}\\]");
+
+    std::string tempType;
+    std::smatch m;
+    std::regex typeRegex("([a-zA-Z]\\w+)");
+    if(std::regex_search (type, m, typeRegex)){
+        tempType = m[0].str();
+    }
+
+    size_t numElem = 0;
+    std::smatch r;
+    std::vector<std::string> tempResult;
+    std::vector<std::string> tempStack;
+    if(std::regex_search(type, r, masNumElementRegex)){
+        numElem = std::stoi(r[1].str()); 
+        std::sregex_token_iterator it(begin(data), end(data), regex), last;
+        for (size_t i = 0; i < numElem; i++){
+            if(it != last){
+                std::string inputData(it->str());
+                inputData.erase(inputData.begin());
+                inputData.erase(inputData.end() - 1);
+
+                DataAndStack res = creatingDataFromArray(offset, inputData, tempType);
+                tempResult.insert(tempResult.end(), res.first.begin(), res.first.end());
+                tempStack.insert(tempStack.end(), res.second.begin(), res.second.end());
+                ++it;
+            }
+        }
+    }
+    return std::make_pair(tempResult, tempStack);
+}
+
+std::string ParserAbi::createInputData(const std::string& methodName, const Parameters& params){    
     
     std::vector<std::string> result;
     std::vector<std::string> stack;
 
-    // size_t offset = 32 * params.size();
-    // for(auto p : params){
-    size_t offset = 32 * deleteP.size();
-    for(auto p : deleteP){
+    size_t offset = params.size() > 1 ? 32 * params.size() : 0;
+    for(auto p : params){
         std::string type = p.first;
 
         if(std::regex_match(type, uintRegex) || std::regex_match(type, intRegex) || 
            std::regex_match(type, bytesNRegex) || type == "address" || type == "bool"){
-
             result.push_back(creatingDataFromElementaryTypes(type, p.second));
-            
         } else if(type == "string" || std::regex_match(type, bytesRegex)){
-
-            // update offset
-            size_t multiplier = 3; // str(offset) + str(len) + str(text)
-            size_t sizeString = p.second.size();
-            if(sizeString > 32){
-                size_t fullLines = sizeString / 32;
-                multiplier += fullLines;
-            }
-            offset += 32 * multiplier;
-
-            std::stringstream ss;
-            ss << std::hex << offset;
-            result.push_back(std::string(64 - ss.str().size(), '0') + ss.str());
-
-            std::stringstream sss;
-            sss << std::hex << p.second.size();
-            stack.push_back(std::string(64 - sss.str().size(), '0') + sss.str());
-
-            for(size_t i = 0; i < multiplier - 2; i++){
-                std::string s;
-                if(sizeString >= 32){
-                    s = stringToStrHex(std::string(p.second.begin() + (32 * i), p.second.begin() + (32 * i) + 32));
-                    stack.push_back(s);
-                    sizeString -= 32;
-                } else {
-                    s = stringToStrHex(std::string(p.second.begin() + (32 * i), p.second.begin() + (32 * i) + sizeString));
-                    stack.push_back(s + std::string(64 - s.size(), '0'));
-                }
-            }
+            DataAndStack data = creatingDataFromStringAndBytes(offset, p.second);
+            result.insert(result.end(), data.first.begin(), data.first.end());
+            stack.insert(stack.end(), data.second.begin(), data.second.end());
         } else if(std::regex_match(type, masRegex)){
+            DataAndStack data = creatingDataFromArray(offset, p.second, type);
+            result.insert(result.end(), data.first.begin(), data.first.end());
+            stack.insert(stack.end(), data.second.begin(), data.second.end());
+        } else if(std::regex_match(type, masMasRegex)){
+            DataAndStack data = creatingDataFromArrayToArray(offset, p.second, type);
+            result.insert(result.end(), data.first.begin(), data.first.end());
+            stack.insert(stack.end(), data.second.begin(), data.second.end());
+        } else {
+            result.push_back(creatingDataFromElementaryTypes(type, p.second));
+        }
+    }
 
-            std::string tempType;
-            std::smatch m;
-            std::regex typeRegex("([a-zA-Z]\\w+)");
-            if(std::regex_search (type, m, typeRegex)){
-                tempType = m[0].str();
-            }
+    result.insert(result.end(), stack.begin(), stack.end());
 
-            std::regex regex("(\\w+)");
-            size_t numElem;
-            std::smatch r;
-            if(std::regex_search(type, r, masNumElementRegex)){
+    std::string res = "";
+    for(std::string& s : result)
+        res += s;
 
-                numElem = std::stoi(r[1].str());
-                
-                std::sregex_token_iterator it(begin(p.second), end(p.second), regex), last;
-                for (size_t i = 0; i < numElem; i++){
-                    if(it != last){
-                        result.push_back(creatingDataFromElementaryTypes(tempType, it->str()));
-                        ++it;
-                    }
-                }
-            } else {
-                for (std::sregex_token_iterator it(begin(p.second), end(p.second), regex), last; it != last; ++it)
-                    result.push_back(creatingDataFromElementaryTypes(tempType, it->str()));
+    return res;
+}
+
+////////////////////////////////////////////////////////////////////////////// // check data
+bool ParserAbi::checkData(std::string data, std::string type){
+    if(std::regex_match(type, uintRegex) || std::regex_match(type, intRegex) || 
+       std::regex_match(type, bytesNRegex) || type == "address" || type == "bool"){
+        return checkElementaryTypes(data, type);
+    } else if(std::regex_match(type, masRegex)){
+        return checkArray(data, type);
+    } else if(std::regex_match(type, masMasRegex)){
+        return checkArrayToArray(data, type);
+    }
+    return checkElementaryTypes(data, type);
+}
+
+bool ParserAbi::checkElementaryTypes(std::string data, std::string& type){
+    if(std::regex_match(type, uintRegex)){
+        return std::regex_match(data, uintR);
+    } else if(std::regex_match(type, intRegex)){
+        return std::regex_match(data, intR);
+    } else if(std::regex_match(type, bytesNRegex)){
+        return std::regex_match(data, bytesNR);
+    } else if(type == "address"){
+        return std::regex_match(data, addressR);
+    } else if(type == "bool"){
+        return std::regex_match(data, boolR);
+    } else if(type == "string" || std::regex_match(type, bytesRegex)){
+        return std::regex_match(data, stringAndBytesR);
+    }
+    return std::regex_match(data, addressR);
+}
+
+bool ParserAbi::checkArray(std::string& data, std::string& type){
+    bool result = false;
+    std::string tempType;
+    std::smatch m;
+    std::regex typeRegex("([a-zA-Z]\\w+)");
+    if(std::regex_search (type, m, typeRegex)){
+        tempType = m[0].str();
+    }
+
+    std::regex regex("(\\w+)");
+    for (std::sregex_token_iterator it(begin(data), end(data), regex), last; it != last; ++it){
+        result = checkElementaryTypes(it->str(), tempType);
+    }
+    return result;
+}
+
+bool ParserAbi::checkArrayToArray(std::string& data, std::string& type){
+    bool result = false;
+    std::regex regex("\\[.[^\\[\\]]{0,}\\]");
+
+    std::string tempType;
+    std::smatch m;
+    std::regex typeRegex("([a-zA-Z]\\w+)");
+    if(std::regex_search (type, m, typeRegex)){
+        tempType = m[0].str();
+    }
+
+    std::smatch r;
+    size_t numElem = 0;
+    if(std::regex_search(type, r, masNumElementRegex)){
+        numElem = std::stoi(r[1].str()); 
+        std::sregex_token_iterator it(begin(data), end(data), regex), last;
+        for (size_t i = 0; i < numElem; i++){
+            if(it != last){
+                std::string inputData(it->str());
+                inputData.erase(inputData.begin());
+                inputData.erase(inputData.end() - 1);
+                result = checkArray(inputData, tempType);
+                ++it;
             }
         }
     }
-    // std::map<string, string> data;
+    return result;
 }

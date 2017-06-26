@@ -14,6 +14,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QScrollArea>
+#include <QPalette>
 
 #include "libsolidity/interface/CompilerStack.h"
 #include "libdevcore/JSON.h"
@@ -72,12 +73,12 @@ private Q_SLOTS:
     void fillingComboBoxSelectContract();
     void deployContract();
 
+    void updateTextEditsParams();
+
 private:
     QString createDeployInfo(CWalletTx& wtx);
     void createParameterFields(std::string abiStr);
     void deleteParameters();
-
-    void parseConstructorParameters();
 
     std::map<std::string, Contract> byteCodeContracts;
 

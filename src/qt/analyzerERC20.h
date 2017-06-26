@@ -5,6 +5,7 @@
 #include "utilstrencodings.h"
 
 using Parameters = std::vector<std::pair<std::string, std::string>>;
+using DataAndStack = std::pair<std::vector<std::string>, std::vector<std::string>>;
 
 extern std::string ERC20;
 
@@ -39,7 +40,9 @@ public:
 
     void parseAbiJSON(const std::string jsonStr);
 
-    void createInputData(const std::string& methodName, const Parameters& params);
+    std::string createInputData(const std::string& methodName, const Parameters& params);
+
+    bool checkData(std::string data, std::string type);
 
     std::map<std::string, ContractMethod> getContractMethods() { return contractMethods; }
 
@@ -49,8 +52,22 @@ private:
 
     std::string stringToStrHex(const std::string& str);
 
+    std::pair<size_t, size_t> updateOffset(size_t offset, size_t size);
+
     std::string creatingDataFromElementaryTypes(const std::string& type, const std::string& data);
 
+    DataAndStack creatingDataFromStringAndBytes(size_t& offset, const std::string& data);
+
+    DataAndStack creatingDataFromArray(size_t& offset, const std::string& data, std::string& type);
+
+    DataAndStack creatingDataFromArrayToArray(size_t& offset, const std::string& data, std::string& type);
+
+    bool checkElementaryTypes(std::string data, std::string& type);
+
+    bool checkArray(std::string& data, std::string& type);
+    
+    bool checkArrayToArray(std::string& data, std::string& type);
+    
     std::map<std::string, ContractMethod> contractMethods;
 };
 
