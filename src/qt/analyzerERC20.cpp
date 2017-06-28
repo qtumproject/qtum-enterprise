@@ -115,13 +115,14 @@ void ParserAbi::parseAbiJSON(const std::string jsonStr){
 
 ////////////////////////////////////////////////////////////////////////////// // encode data
 std::pair<size_t, size_t> ParserAbi::updateOffset(size_t offset, size_t size){
-    size_t multiplier = 3; // str(offset) + str(len) + str(text)
+    size_t tempOffset = offset;
+    size_t multiplier = 2; // str(len) + str(text)
     if(size > 32){
         size_t fullLines = size / 32;
         multiplier += fullLines;
     }
-    offset += 32 * multiplier;
-    return std::make_pair(offset, multiplier);
+    tempOffset += 32 * multiplier;
+    return std::make_pair(tempOffset, multiplier);
 }
 
 std::string ParserAbi::creatingDataFromElementaryTypes(const std::string& type, const std::string& data){
@@ -155,8 +156,8 @@ DataAndStack ParserAbi::creatingDataFromStringAndBytes(size_t& offset, const std
     std::vector<std::string> result;
     std::vector<std::string> stack;
 
-    size_t sizeString = data.size();
-    size_t multiplier = updateOffset(offset, sizeString).second;
+    size_t sizeString = stringToStrHex(data).size() / 2;
+    std::pair<size_t, size_t> offsetAndMultiplier = updateOffset(offset, sizeString);
 
     if(offset){
         std::stringstream ss;
@@ -165,10 +166,10 @@ DataAndStack ParserAbi::creatingDataFromStringAndBytes(size_t& offset, const std
     }
 
     std::stringstream sss;
-    sss << std::hex << data.size();
+    sss << std::hex << sizeString;
     stack.push_back(std::string(64 - sss.str().size(), '0') + sss.str());
 
-    for(size_t i = 0; i < multiplier - 2; i++){
+    for(size_t i = 0; i < offsetAndMultiplier.second - 1; i++){
         std::string s;
         if(sizeString >= 32){
             s = stringToStrHex(std::string(data.begin() + (32 * i), data.begin() + (32 * i) + 32));
@@ -180,7 +181,7 @@ DataAndStack ParserAbi::creatingDataFromStringAndBytes(size_t& offset, const std
         }
     }
 
-    offset = updateOffset(offset, sizeString).first;
+    offset = offsetAndMultiplier.first;
     return std::make_pair(result, stack);
 }
 
@@ -225,7 +226,7 @@ DataAndStack ParserAbi::creatingDataFromArray(size_t& offset, const std::string&
     }
 
     stack.insert(stack.end(), tempResult.begin(), tempResult.end());
-    offset = updateOffset(offset, data.size()).first;
+    offset = updateOffset(offset, stringToStrHex(data).size() / 2).first;
     return std::make_pair(result, stack);
 }
 

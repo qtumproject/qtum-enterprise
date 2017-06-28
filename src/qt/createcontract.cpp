@@ -1,6 +1,9 @@
 #include "createcontract.h"
 #include "ui_createcontract.h"
 
+QColor colorBackgroundTextEditIncorrect = Qt::red;
+QColor colorBackgroundTextEditCorrect = Qt::white;
+
 CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), 
     walletModel(_walletModel), ui(new Ui::CreateContract){
     ui->setupUi(this);
@@ -17,6 +20,7 @@ CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWi
     connect(ui->textEditByteCode, SIGNAL(textChanged()), this, SLOT(enableComboBoxAndButtonDeploy()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateCreateContractWidget()));
     connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(updateParams()));
+    connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(enableComboBoxAndButtonDeploy()));
 }
 
 CreateContract::~CreateContract(){
@@ -50,7 +54,11 @@ void CreateContract::enableComboBoxAndButtonDeploy(){
     }
 
     if(ui->comboBoxSelectContract->count() != 0){
-        ui->pushButtonDeploy->setEnabled(true);
+        if(checkTextEditsParams()){
+            ui->pushButtonDeploy->setEnabled(true);
+        } else {
+            ui->pushButtonDeploy->setEnabled(false);
+        }
         ui->comboBoxSelectContract->setEnabled(true);
     } else {
         ui->pushButtonDeploy->setEnabled(false);
@@ -68,7 +76,12 @@ void CreateContract::compileSourceCode(){
 
         bool optimize = false;
         unsigned runs = 0;
-        bool successful = compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
+        bool successful = false;
+        try{            
+            successful = compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
+        }catch(...){
+            successful = false;
+        }
 
         if(successful){
             std::vector<std::string> contracts = compiler.contractNames();
@@ -100,7 +113,7 @@ void CreateContract::deployContract(){
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
     if(ui->tabWidget->currentIndex() == 0 && byteCodeContracts.count(key)){
-        bytecode = byteCodeContracts[key].code;
+        bytecode = byteCodeContracts[key].code + parseParams();
     } else {
         bytecode = ui->textEditByteCode->toPlainText().toUtf8().constData();
     }
@@ -147,8 +160,10 @@ void CreateContract::createParameterFields(std::string abiStr){
             QLineEdit *textEdit = new QLineEdit(scrollArea);
 
             connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(updateTextEditsParams()));
+            connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(enableComboBoxAndButtonDeploy()));
+            
             QPalette palette;
-            palette.setColor(QPalette::Base,Qt::red);
+            palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
             textEdit->setPalette(palette);
 
             textEdits.push_back(textEdit);
@@ -160,7 +175,6 @@ void CreateContract::createParameterFields(std::string abiStr){
         scrollWidget->setLayout(vLayout);
         scrollArea->setWidget(scrollWidget);
         scrollArea->setWidgetResizable(true);
-
         ui->horizontalLayout->addWidget(scrollArea);
     }
 }
@@ -184,13 +198,44 @@ void CreateContract::updateTextEditsParams(){
             for(size_t i = 0; i < construct->second.inputs.size(); i++){
                 QPalette palette;
                 if(parser.checkData(textEdits[i]->text().toStdString(), construct->second.inputs[i].type)){
-                    palette.setColor(QPalette::Base,Qt::white);
+                    palette.setColor(QPalette::Base, colorBackgroundTextEditCorrect);
                     textEdits[i]->setPalette(palette);
                 } else {
-                    palette.setColor(QPalette::Base,Qt::red);
+                    palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
                     textEdits[i]->setPalette(palette);
                 }
             }
         }
     }
+}
+
+bool CreateContract::checkTextEditsParams(){
+    QPalette paletteTemp;
+    paletteTemp.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
+    for(QLineEdit* te : textEdits){
+        QPalette palette = te->palette();
+        if(paletteTemp == palette){
+            return false;
+        }
+    }
+    return true;
+}
+
+std::string CreateContract::parseParams(){
+    std::string result = "";
+    if(ui->comboBoxSelectContract->count()){
+        Parameters params;
+        std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
+        ParserAbi parser;
+        parser.parseAbiJSON(byteCodeContracts[key].abi);
+        std::map<std::string, ContractMethod> contract = parser.getContractMethods();
+        auto construct = contract.find("");
+        if(construct != contract.end()){
+            for(size_t i = 0; i < construct->second.inputs.size(); i++){
+                params.push_back(std::make_pair(construct->second.inputs[i].type, textEdits[i]->text().toStdString()));
+            }
+            result = parser.createInputData("", params);
+        }
+    }
+    return result;
 }
