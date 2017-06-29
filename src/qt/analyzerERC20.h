@@ -14,6 +14,12 @@ struct ContractMethodParams{
     std::string name = "";
     std::string type = "";
 
+    bool equalSignature(ContractMethodParams& cmp){
+        if(cmp.indexed == indexed && cmp.type == type)
+            return true;
+        return false;
+    }
+    
     bool operator!=(ContractMethodParams& cmp){
         if(cmp.indexed == indexed && cmp.name == name && cmp.type == type)
             return false;
@@ -30,9 +36,13 @@ struct ContractMethod{
     bool payable = false;
     std::string type = "";
 
+    bool equalSignatureContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2);
+    bool equalSignatureContractMethod(ContractMethod& cm);
     bool equalContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2);
     bool operator!=(ContractMethod& cm);
 };
+
+extern ContractMethod NullContractMethod;
 
 class ParserAbi{
 
@@ -44,13 +54,17 @@ public:
 
     bool checkData(std::string data, std::string type);
 
-    std::map<std::string, ContractMethod> getContractMethods() { return contractMethods; }
+    std::vector<ContractMethod> getContractMethods() { return contractMethods; }
+
+    ContractMethod getConstructor(const std::vector<ContractMethod>& methods);
 
 private:
 
     std::string strDecToStrHex(const std::string& str);
 
     std::string stringToStrHex(const std::string& str);
+
+    std::string changeTypeToType256(const std::string& type);
 
     std::pair<size_t, size_t> updateOffset(size_t offset, size_t size);
 
@@ -68,7 +82,7 @@ private:
     
     bool checkArrayToArray(std::string& data, std::string& type);
     
-    std::map<std::string, ContractMethod> contractMethods;
+    std::vector<ContractMethod> contractMethods;
 };
 
 class AnalyzerERC20{
@@ -81,7 +95,7 @@ public:
 
 private:
 
-    std::map<std::string, ContractMethod> ERC20Methods;
+    std::vector<ContractMethod> ERC20Methods;
 
     ParserAbi parser;
 };

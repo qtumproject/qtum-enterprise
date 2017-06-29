@@ -112,7 +112,7 @@ void CreateContract::deployContract(){
 
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
-    if(ui->tabWidget->currentIndex() == 0 && byteCodeContracts.count(key)){
+    if(ui->tabWidget->currentIndex() == 0 && byteCodeContracts.count(key)){        
         bytecode = byteCodeContracts[key].code + parseParams();
     } else {
         bytecode = ui->textEditByteCode->toPlainText().toUtf8().constData();
@@ -144,10 +144,10 @@ void CreateContract::deployContract(){
 void CreateContract::createParameterFields(std::string abiStr){
     ParserAbi parser;
     parser.parseAbiJSON(abiStr);
-    std::map<std::string, ContractMethod> contract = parser.getContractMethods();
-    auto construct = contract.find("");
+    std::vector<ContractMethod> contract = parser.getContractMethods();
+    auto construct = parser.getConstructor(contract);
 
-    if(construct != contract.end()){
+    if(construct != NullContractMethod){
         scrollArea = new QScrollArea(this);
         scrollArea->setMaximumSize(250, 1000);
 
@@ -155,8 +155,8 @@ void CreateContract::createParameterFields(std::string abiStr){
         QVBoxLayout *vLayout = new QVBoxLayout(scrollArea);
         vLayout->addStretch();
 
-        for(size_t i = 0; i < construct->second.inputs.size(); i++){
-            QLabel *label = new QLabel(QString::fromStdString(construct->second.inputs[i].name + " (" + construct->second.inputs[i].type + ")"), scrollArea);
+        for(size_t i = 0; i < construct.inputs.size(); i++){
+            QLabel *label = new QLabel(QString::fromStdString(construct.inputs[i].name + " (" + construct.inputs[i].type + ")"), scrollArea);
             QLineEdit *textEdit = new QLineEdit(scrollArea);
 
             connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(updateTextEditsParams()));
@@ -192,12 +192,12 @@ void CreateContract::updateTextEditsParams(){
         std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
         ParserAbi parser;
         parser.parseAbiJSON(byteCodeContracts[key].abi);
-        std::map<std::string, ContractMethod> contract = parser.getContractMethods();
-        auto construct = contract.find("");
-        if(construct != contract.end()){
-            for(size_t i = 0; i < construct->second.inputs.size(); i++){
+        std::vector<ContractMethod> contract = parser.getContractMethods();
+        auto construct = parser.getConstructor(contract);
+        if(construct != NullContractMethod){
+            for(size_t i = 0; i < construct.inputs.size(); i++){
                 QPalette palette;
-                if(parser.checkData(textEdits[i]->text().toStdString(), construct->second.inputs[i].type)){
+                if(parser.checkData(textEdits[i]->text().toStdString(), construct.inputs[i].type)){
                     palette.setColor(QPalette::Base, colorBackgroundTextEditCorrect);
                     textEdits[i]->setPalette(palette);
                 } else {
@@ -228,11 +228,11 @@ std::string CreateContract::parseParams(){
         std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
         ParserAbi parser;
         parser.parseAbiJSON(byteCodeContracts[key].abi);
-        std::map<std::string, ContractMethod> contract = parser.getContractMethods();
-        auto construct = contract.find("");
-        if(construct != contract.end()){
-            for(size_t i = 0; i < construct->second.inputs.size(); i++){
-                params.push_back(std::make_pair(construct->second.inputs[i].type, textEdits[i]->text().toStdString()));
+        std::vector<ContractMethod> contract = parser.getContractMethods();
+        auto construct = parser.getConstructor(contract);
+        if(construct != NullContractMethod){
+            for(size_t i = 0; i < construct.inputs.size(); i++){
+                params.push_back(std::make_pair(construct.inputs[i].type, textEdits[i]->text().toStdString()));
             }
             result = parser.createInputData("", params);
         }

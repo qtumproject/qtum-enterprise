@@ -1,6 +1,8 @@
 #include <analyzerERC20.h>
 
 std::string ERC20 = "[{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"name\":\"totalSupply\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"balance\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"remaining\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_owner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_spender\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"}]";
+ContractMethod NullContractMethod;
+
 
 std::regex uintRegex("(uint[0-9]{0,3})");
 std::regex intRegex("(int[0-9]{0,3})");
@@ -16,6 +18,25 @@ std::regex bytesNR("^.{1,}$");
 std::regex addressR("^[a-fA-F0-9]{40,40}$");
 std::regex boolR("^true$|^false$");
 std::regex stringAndBytesR("^.{1,}$");
+
+bool ContractMethod::equalSignatureContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2){
+    if(cmps1.size() == cmps2.size()){
+        for(size_t i = 0; i < cmps1.size(); i++){
+            if(!cmps1[i].equalSignature(cmps2[i]))
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool ContractMethod::equalSignatureContractMethod(ContractMethod& cm){
+    if(cm.constant == constant && cm.constant == constant && equalSignatureContractMethodParams(cm.inputs, inputs) &&
+       cm.name == name && equalSignatureContractMethodParams(cm.outputs, outputs) && cm.payable == payable && cm.type == type){
+            return true;
+    }
+    return false;
+}
 
 bool ContractMethod::equalContractMethodParams(std::vector<ContractMethodParams>& cmps1, std::vector<ContractMethodParams>& cmps2){
     if(cmps1.size() == cmps2.size()){
@@ -37,14 +58,18 @@ bool ContractMethod::operator!=(ContractMethod& cm){
 }
 
 bool AnalyzerERC20::isERC20(const std::string& contractAbi){
-    parser.parseAbiJSON(contractAbi); 
-    std::map<std::string, ContractMethod> contractMethods = parser.getContractMethods();
+    size_t count = 0;
+    parser.parseAbiJSON(contractAbi);
+    std::vector<ContractMethod> contractMethods = parser.getContractMethods();
 
-    for(std::pair<std::string, ContractMethod> cm : ERC20Methods){
-        if((contractMethods.count(cm.first) && (contractMethods[cm.first] != cm.second)) || !contractMethods.count(cm.first))
-            return false;
+    for(ContractMethod& erc : ERC20Methods){
+        for(ContractMethod& cm : contractMethods){
+            if(cm.equalSignatureContractMethod(erc)){
+                count++;
+            }
+        }
     }
-    return true;
+    return ERC20Methods.size() == count;
 }
 
 ////////////////////////////////////////////////////////////////////////////// // parse abi json
@@ -57,6 +82,14 @@ std::string ParserAbi::strDecToStrHex(const std::string& str){
 std::string ParserAbi::stringToStrHex(const std::string& str){
     std::vector<unsigned char> bytes(str.begin(), str.end());
     return HexStr(bytes.begin(), bytes.end());
+}
+
+std::string ParserAbi::changeTypeToType256(const std::string& type){
+    std::string result = type;
+    if(type == "uint" || type == "int"){
+        result += "256";
+    }
+    return result;
 }
 
 void ParserAbi::parseAbiJSON(const std::string jsonStr){
@@ -84,10 +117,10 @@ void ParserAbi::parseAbiJSON(const std::string jsonStr){
                         if(inputs[j].size() > 2){
                             params.indexed = inputs[j][0].get_bool();
                             params.name = inputs[j][1].get_str();
-                            params.type = inputs[j][2].get_str();
+                            params.type = changeTypeToType256(inputs[j][2].get_str());
                         } else {
                             params.name = inputs[j][0].get_str();
-                            params.type = inputs[j][1].get_str();
+                            params.type = changeTypeToType256(inputs[j][1].get_str());
                         }
                         method.inputs.push_back(params);
                     }
@@ -99,7 +132,7 @@ void ParserAbi::parseAbiJSON(const std::string jsonStr){
                     for(size_t j = 0; j < outputs.size(); j++){
                         ContractMethodParams params;
                         params.name = outputs[j][0].get_str();
-                        params.type = outputs[j][1].get_str();
+                        params.type = changeTypeToType256(outputs[j][1].get_str());
                         method.outputs.push_back(params);
                     }
                 } else if(keysObj[k] == "payable") {
@@ -108,7 +141,7 @@ void ParserAbi::parseAbiJSON(const std::string jsonStr){
                     method.type = obj[k].get_str();
                 }
             }
-            contractMethods[method.name] = method;
+            contractMethods.push_back(method);
         }
     }
 }
@@ -371,6 +404,16 @@ bool ParserAbi::checkArrayToArray(std::string& data, std::string& type){
                 result = checkArray(inputData, tempType);
                 ++it;
             }
+        }
+    }
+    return result;
+}
+
+ContractMethod ParserAbi::getConstructor(const std::vector<ContractMethod>& methods){
+    ContractMethod result;
+    for(ContractMethod cm : methods){
+        if(cm.type == "constructor"){
+            result = cm;
         }
     }
     return result;
