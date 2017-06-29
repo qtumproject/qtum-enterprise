@@ -10,6 +10,11 @@ CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWi
 
     scrollArea = NULL;
 
+    ui->spinBoxGasLimit->setMaximum(INT32_MAX);
+    ui->spinBoxGasLimit->setValue(DEFAULT_GAS_LIMIT);
+    ui->doubleSpinBoxGasPrice->setMaximum(INT64_MAX);
+    ui->doubleSpinBoxGasPrice->setValue(0.00001);
+
     ui->pushButtonDeploy->setEnabled(false);
     ui->comboBoxSelectContract->setEnabled(false);
 
@@ -108,8 +113,8 @@ void CreateContract::fillingComboBoxSelectContract(){
 
 void CreateContract::deployContract(){
     std::string error;
-    uint64_t nGasLimit = DEFAULT_GAS_LIMIT;
-    CAmount nGasPrice = DEFAULT_GAS_PRICE;
+    uint64_t nGasLimit = ui->spinBoxGasLimit->value();
+    CAmount nGasPrice = ui->doubleSpinBoxGasPrice->value() * COIN;
 
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
