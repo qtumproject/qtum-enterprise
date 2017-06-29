@@ -58,11 +58,12 @@ private Q_SLOTS:
 
 private:
     QString createDeployInfo(CWalletTx& wtx);
-    void createParameterFields(std::string abiStr);
+    void createParameterFields();
     void deleteParameters();
     bool checkTextEditsParams();
     std::string parseParams();
 
+    std::vector<ContractMethod> currentContractMethods;
     std::map<std::string, Contract> byteCodeContracts;
     QScrollArea *scrollArea;
     std::vector<QLineEdit*> textEdits;

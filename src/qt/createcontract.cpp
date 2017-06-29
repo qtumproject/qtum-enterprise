@@ -14,9 +14,7 @@ CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWi
     ui->comboBoxSelectContract->setEnabled(false);
 
     connect(ui->pushButtonDeploy, SIGNAL(clicked()), this, SLOT(deployContract()));
-    connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(compileSourceCode()));
-    connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(fillingComboBoxSelectContract()));
-    connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(enableComboBoxAndButtonDeploy()));
+    connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(updateCreateContractWidget()));
     connect(ui->textEditByteCode, SIGNAL(textChanged()), this, SLOT(enableComboBoxAndButtonDeploy()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateCreateContractWidget()));
     connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(updateParams()));
@@ -40,7 +38,10 @@ void CreateContract::updateParams(){
     deleteParameters();
     if(ui->comboBoxSelectContract->count()){
         std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
-        createParameterFields(byteCodeContracts[key].abi);
+        ParserAbi parser;
+        parser.parseAbiJSON(byteCodeContracts[key].abi);
+        currentContractMethods = parser.getContractMethods();
+        createParameterFields();
     }
 }
 
@@ -141,11 +142,8 @@ void CreateContract::deployContract(){
     pwalletMain->addContractInfo(info);
 }
 
-void CreateContract::createParameterFields(std::string abiStr){
-    ParserAbi parser;
-    parser.parseAbiJSON(abiStr);
-    std::vector<ContractMethod> contract = parser.getContractMethods();
-    auto construct = parser.getConstructor(contract);
+void CreateContract::createParameterFields(){
+    auto construct = ParserAbi::getConstructor(currentContractMethods);
 
     if(construct != NullContractMethod){
         scrollArea = new QScrollArea(this);
@@ -189,11 +187,8 @@ void CreateContract::deleteParameters(){
 
 void CreateContract::updateTextEditsParams(){
     if(ui->comboBoxSelectContract->count()){
-        std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
         ParserAbi parser;
-        parser.parseAbiJSON(byteCodeContracts[key].abi);
-        std::vector<ContractMethod> contract = parser.getContractMethods();
-        auto construct = parser.getConstructor(contract);
+        auto construct = parser.getConstructor(currentContractMethods);
         if(construct != NullContractMethod){
             for(size_t i = 0; i < construct.inputs.size(); i++){
                 QPalette palette;
@@ -225,11 +220,8 @@ std::string CreateContract::parseParams(){
     std::string result = "";
     if(ui->comboBoxSelectContract->count()){
         Parameters params;
-        std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
         ParserAbi parser;
-        parser.parseAbiJSON(byteCodeContracts[key].abi);
-        std::vector<ContractMethod> contract = parser.getContractMethods();
-        auto construct = parser.getConstructor(contract);
+        auto construct = parser.getConstructor(currentContractMethods);
         if(construct != NullContractMethod){
             for(size_t i = 0; i < construct.inputs.size(); i++){
                 params.push_back(std::make_pair(construct.inputs[i].type, textEdits[i]->text().toStdString()));

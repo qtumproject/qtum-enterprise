@@ -56,7 +56,7 @@ public:
 
     std::vector<ContractMethod> getContractMethods() { return contractMethods; }
 
-    ContractMethod getConstructor(const std::vector<ContractMethod>& methods);
+    static ContractMethod getConstructor(const std::vector<ContractMethod>& methods);
 
 private:
 
