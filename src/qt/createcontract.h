@@ -47,6 +47,8 @@ public:
     explicit CreateContract(WalletModel* _walletModel, QWidget* parent = 0);
     ~CreateContract();
 
+    void setWalletModel(WalletModel *walletModel);
+
 private Q_SLOTS:
     void updateParams();
     void updateCreateContractWidget();

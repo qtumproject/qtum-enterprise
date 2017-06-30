@@ -14,6 +14,9 @@
 #include <vector>
 
 #include <QObject>
+#include <QStandardItemModel>
+#include <QMessageBox>
+#include "validation.h"
 
 class AddressTableModel;
 class OptionsModel;
@@ -215,6 +218,15 @@ public:
 
     int getDefaultConfirmTarget() const;
 
+    //////////////////////////////////////////// // qtum
+    void loadContracts();
+    void addContractToContractModel(QStringList data);
+    void addTokenToTokenModel(QStringList data);
+    QStringList createDataForTokensAndContractsModel(CContractInfo& data);
+    QStandardItemModel* getContractModel() { return contractModel; }
+    QStandardItemModel* getTokenModel() { return tokenModel; }
+    ////////////////////////////////////////////
+
 private:
     CWallet *wallet;
     bool fHaveWatchOnly;
@@ -241,6 +253,11 @@ private:
     int cachedNumBlocks;
 
     QTimer *pollTimer;
+
+    //////////////////////////////////////////// // qtum
+    QStandardItemModel *contractModel;
+    QStandardItemModel *tokenModel;
+    ////////////////////////////////////////////
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();

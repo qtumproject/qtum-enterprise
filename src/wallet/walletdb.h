@@ -36,13 +36,14 @@ class CContractInfo{
 public:
     
     CContractInfo() { SetNull(); }
-    CContractInfo(bool stat, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);
+    CContractInfo(bool stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);
 
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(status);
+        READWRITE(token);
         READWRITE(nTime);
         READWRITE(hashTX);
         READWRITE(nVout);
@@ -53,6 +54,7 @@ public:
     void SetNull()
     {
         status = false;
+        token = false;
         nTime = 0;
         hashTX = uint256();
         nVout = 0;
@@ -60,11 +62,24 @@ public:
         abiContract.clear();
     }
 
+    bool getStatus() { return status; }
+    uint32_t getTime() { return nTime; }
+    uint256 getHashTx() { return hashTX; }
+    bool isToken() { return token; }
     std::vector<unsigned char> getAddressContract() const { return addressContract; }
+
+    bool operator!=(CContractInfo ci){
+        if(ci.status == status && ci.token == token && ci.nTime == nTime && ci.nVout == nVout &&
+           ci.abiContract == abiContract && ci.addressContract == addressContract){
+            return false;
+        }
+        return true;
+    }
 
 private:
 
     bool status;
+    bool token;
     uint32_t nTime;
     uint256 hashTX;
     int64_t nVout;

@@ -141,6 +141,7 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     usedSendingAddressesPage->setModel(_walletModel->getAddressTableModel());
 
 ////////////////////////////////////////////////////////////////////// // qtum
+    createContract->setWalletModel(_walletModel);
     contractsInfo->setWalletModel(_walletModel);
 //////////////////////////////////////////////////////////////////////
 

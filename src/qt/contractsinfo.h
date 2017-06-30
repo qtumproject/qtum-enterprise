@@ -24,7 +24,6 @@ public Q_SLOTS:
 void test();
 
 private:
-    QStandardItemModel *model;
     WalletModel *walletModel;
     TransactionTableModel *txTableModel;
     Ui::ContractsInfo *ui;

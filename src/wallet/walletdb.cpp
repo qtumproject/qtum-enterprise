@@ -980,8 +980,9 @@ bool CWalletDB::EraseContractInfo(const CContractInfo contractInfo){
     return Erase(std::make_pair(std::string("contractInfo"), contractInfo.getAddressContract()));
 }
 
-CContractInfo::CContractInfo(bool stat, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi){
+CContractInfo::CContractInfo(bool stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi){
     status = stat;
+    token = tok;
     nTime = time;
     hashTX = hash;
     nVout = vout;

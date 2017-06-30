@@ -49,6 +49,14 @@ WalletModel::WalletModel(const PlatformStyle *platformStyle, CWallet *_wallet, O
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fForceCheckBalanceChanged = false;
 
+    //////////////////////////////////////////// // qtum
+    contractModel = new QStandardItemModel(0, 3, this);
+    tokenModel = new QStandardItemModel(0, 3, this);
+    contractModel->setHorizontalHeaderLabels(QStringList()<<tr("status")<<tr("time")<<tr("hash transaction")<<tr("address"));
+    tokenModel->setHorizontalHeaderLabels(QStringList()<<tr("status")<<tr("time")<<tr("hash transaction")<<tr("address"));
+    loadContracts();
+    ////////////////////////////////////////////
+
     addressTableModel = new AddressTableModel(wallet, this);
     transactionTableModel = new TransactionTableModel(platformStyle, wallet, this);
     recentRequestsTableModel = new RecentRequestsTableModel(wallet, this);
@@ -728,3 +736,60 @@ int WalletModel::getDefaultConfirmTarget() const
 {
     return nTxConfirmTarget;
 }
+
+/////////////////////////////////////////////////////////////// // qtum
+void WalletModel::addContractToContractModel(QStringList data) {
+    QList<QStandardItem*> list;
+    for(QString& s : data){
+        list.append(new QStandardItem(s));
+    }
+    if(!data.empty())
+        contractModel->insertRow(0,list);
+}
+
+void WalletModel::addTokenToTokenModel(QStringList data) {
+    QList<QStandardItem*> list;
+    for(QString& s : data){
+        list.append(new QStandardItem(s));
+    }
+    if(!data.empty())
+        tokenModel->insertRow(0,list);
+}
+
+QStringList WalletModel::createDataForTokensAndContractsModel(CContractInfo& data){
+    QStringList result;
+    if(data != CContractInfo()){
+        QString status = QString::fromStdString(data.getStatus() ? "Ok" : "No");
+        QString time = QString::fromStdString(std::to_string(data.getTime()));
+        QString hash = QString::fromStdString(data.getHashTx().GetHex());
+        QString address = QString::fromStdString(dev::Address(data.getAddressContract()).hex());
+        result <<  status << time << hash << address;
+    }
+    return result;
+}
+
+void WalletModel::loadContracts(){
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+    if (pwalletMain->IsLocked()){
+        QMessageBox::critical(NULL, QObject::tr("Error"), tr("Please enter the wallet passphrase with walletpassphrase first."));
+        return;
+    }
+
+    std::vector<QStringList> dataContracts;
+    std::vector<QStringList> dataTokens;
+    for(std::pair<std::vector<unsigned char>, CContractInfo> d : pwalletMain->mapContractInfo){
+        QStringList data = createDataForTokensAndContractsModel(d.second);
+        if(!d.second.isToken() && !data.empty()){
+            dataContracts.push_back(data);
+        } else if(d.second.isToken() && !data.empty()){
+            dataTokens.push_back(data);
+        }
+    }
+
+    for(QStringList& s : dataContracts)
+        addContractToContractModel(s);
+
+    for(QStringList& s : dataTokens)
+        addTokenToTokenModel(s);
+}
+///////////////////////////////////////////////////////////////

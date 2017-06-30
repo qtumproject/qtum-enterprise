@@ -1,7 +1,7 @@
 #include "createcontract.h"
 #include "ui_createcontract.h"
 
-QColor colorBackgroundTextEditIncorrect = Qt::red;
+QColor colorBackgroundTextEditIncorrect = QColor(253,229,231);
 QColor colorBackgroundTextEditCorrect = Qt::white;
 
 CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), 
@@ -28,6 +28,10 @@ CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWi
 
 CreateContract::~CreateContract(){
     delete ui;
+}
+
+void CreateContract::setWalletModel(WalletModel *model){
+    this->walletModel = model;
 }
 
 void CreateContract::updateCreateContractWidget() {
@@ -116,10 +120,13 @@ void CreateContract::deployContract(){
     uint64_t nGasLimit = ui->spinBoxGasLimit->value();
     CAmount nGasPrice = ui->doubleSpinBoxGasPrice->value() * COIN;
 
+    bool token = false;
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
     if(ui->tabWidget->currentIndex() == 0 && byteCodeContracts.count(key)){        
         bytecode = byteCodeContracts[key].code + parseParams();
+        AnalyzerERC20 erc;
+        token = erc.isERC20(byteCodeContracts[key].abi);
     } else {
         bytecode = ui->textEditByteCode->toPlainText().toUtf8().constData();
     }
@@ -143,8 +150,17 @@ void CreateContract::deployContract(){
         QMessageBox::critical(NULL, QObject::tr("Error"), tr("The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of the wallet and coins were spent in the copy but not marked as spent here."));
         return;
     }
-    CContractInfo info(false, wtx.nTimeReceived, wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), byteCodeContracts[key].abi);
+    CContractInfo info(false, token, wtx.nTimeReceived, wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), byteCodeContracts[key].abi);
     pwalletMain->addContractInfo(info);
+
+    if(walletModel){
+        QStringList data = walletModel->createDataForTokensAndContractsModel(info);
+        if(!info.isToken() && !data.empty()){
+            walletModel->addContractToContractModel(data);
+        } else if(info.isToken() && !data.empty()){
+            walletModel->addTokenToTokenModel(data);
+        }
+    }
 }
 
 void CreateContract::createParameterFields(){
