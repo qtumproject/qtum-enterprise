@@ -225,6 +225,7 @@ public:
     QStringList createDataForTokensAndContractsModel(CContractInfo& data);
     QStandardItemModel* getContractModel() { return contractModel; }
     QStandardItemModel* getTokenModel() { return tokenModel; }
+    std::deque<CContractInfo> sortContractsByTime(std::map<std::vector<unsigned char>, CContractInfo>& map);
     ////////////////////////////////////////////
 
 private:

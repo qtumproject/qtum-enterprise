@@ -180,7 +180,6 @@ public:
 
     //////////////////////////////////////////////// // qtum
     bool WriteContractInfo(const CContractInfo contractInfo);
-
     bool EraseContractInfo(const CContractInfo contractInfo);
     ////////////////////////////////////////////////
 

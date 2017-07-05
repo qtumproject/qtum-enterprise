@@ -58,6 +58,10 @@ private Q_SLOTS:
     void deployContract();
     void updateTextEditsParams();
 
+Q_SIGNALS:
+
+    void clickedDeploy();
+
 private:
     QString createDeployInfo(CWalletTx& wtx);
     void createParameterFields();

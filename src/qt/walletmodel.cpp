@@ -777,11 +777,12 @@ void WalletModel::loadContracts(){
 
     std::vector<QStringList> dataContracts;
     std::vector<QStringList> dataTokens;
-    for(std::pair<std::vector<unsigned char>, CContractInfo> d : pwalletMain->mapContractInfo){
-        QStringList data = createDataForTokensAndContractsModel(d.second);
-        if(!d.second.isToken() && !data.empty()){
+    std::deque<CContractInfo> contractsInfo = sortContractsByTime(pwalletMain->mapContractInfo);
+    for(CContractInfo& d : contractsInfo){
+        QStringList data = createDataForTokensAndContractsModel(d);
+        if(!d.isToken() && !data.empty()){
             dataContracts.push_back(data);
-        } else if(d.second.isToken() && !data.empty()){
+        } else if(d.isToken() && !data.empty()){
             dataTokens.push_back(data);
         }
     }
@@ -791,5 +792,20 @@ void WalletModel::loadContracts(){
 
     for(QStringList& s : dataTokens)
         addTokenToTokenModel(s);
+}
+
+std::deque<CContractInfo> WalletModel::sortContractsByTime(std::map<std::vector<unsigned char>, CContractInfo>& map){
+    std::deque<CContractInfo> result;
+    result.push_back(CContractInfo{false, false, UINT32_MAX, uint256(), 0, std::vector<unsigned char>(), std::string()});
+    for(std::pair<std::vector<unsigned char>, CContractInfo> m : map){
+        for(size_t i = 0; i < result.size(); i++){
+            if(m.second.getTime() < result[i].getTime()){
+                result.insert(result.begin() + i, m.second);
+                break;
+            }
+        }
+    }
+    result.erase(result.end() - 1);
+    return result;
 }
 ///////////////////////////////////////////////////////////////

@@ -150,7 +150,7 @@ void CreateContract::deployContract(){
         QMessageBox::critical(NULL, QObject::tr("Error"), tr("The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of the wallet and coins were spent in the copy but not marked as spent here."));
         return;
     }
-    CContractInfo info(false, token, wtx.nTimeReceived, wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), byteCodeContracts[key].abi);
+    CContractInfo info(false, token, GetAdjustedTime(), wtx.GetHash(), 0, ParseHex(createQtumAddress(wtx)), byteCodeContracts[key].abi);
     pwalletMain->addContractInfo(info);
 
     if(walletModel){
@@ -161,6 +161,7 @@ void CreateContract::deployContract(){
             walletModel->addTokenToTokenModel(data);
         }
     }
+    Q_EMIT clickedDeploy();
 }
 
 void CreateContract::createParameterFields(){
