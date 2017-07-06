@@ -10,7 +10,6 @@
 #include "guiutil.h"
 #include "paymentserver.h"
 #include "recentrequeststablemodel.h"
-#include "transactiontablemodel.h"
 
 #include "base58.h"
 #include "keystore.h"
@@ -759,7 +758,7 @@ void WalletModel::addTokenToTokenModel(QStringList data) {
 QStringList WalletModel::createDataForTokensAndContractsModel(CContractInfo& data){
     QStringList result;
     if(data != CContractInfo()){
-        QString status = QString::fromStdString(data.getStatus() ? "Ok" : "No");
+        QString status = QString::fromStdString(data.getStatus());
         QString time = QString::fromStdString(std::to_string(data.getTime()));
         QString hash = QString::fromStdString(data.getHashTx().GetHex());
         QString address = QString::fromStdString(dev::Address(data.getAddressContract()).hex());
@@ -785,6 +784,10 @@ void WalletModel::loadContracts(){
         } else if(d.isToken() && !data.empty()){
             dataTokens.push_back(data);
         }
+
+        if(d.getStatus() == "Confirming"){
+            confirmContracts.push_back(d);
+        }
     }
 
     for(QStringList& s : dataContracts)
@@ -796,7 +799,7 @@ void WalletModel::loadContracts(){
 
 std::deque<CContractInfo> WalletModel::sortContractsByTime(std::map<std::vector<unsigned char>, CContractInfo>& map){
     std::deque<CContractInfo> result;
-    result.push_back(CContractInfo{false, false, UINT32_MAX, uint256(), 0, std::vector<unsigned char>(), std::string()});
+    result.push_back(CContractInfo{CContractInfo::DeployStatus::CONFIRMING, false, UINT32_MAX, uint256(), 0, std::vector<unsigned char>(), std::string()});
     for(std::pair<std::vector<unsigned char>, CContractInfo> m : map){
         for(size_t i = 0; i < result.size(); i++){
             if(m.second.getTime() < result[i].getTime()){
@@ -807,5 +810,14 @@ std::deque<CContractInfo> WalletModel::sortContractsByTime(std::map<std::vector<
     }
     result.erase(result.end() - 1);
     return result;
+}
+
+void WalletModel::eraseConfirmContract(const std::vector<unsigned char>& address) {
+    for(size_t i = 0; i < confirmContracts.size(); i++){
+        if(address == confirmContracts[i].getAddressContract()){
+            confirmContracts.erase(confirmContracts.begin() + i);
+            return;
+        }
+    }
 }
 ///////////////////////////////////////////////////////////////

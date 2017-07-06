@@ -17,12 +17,13 @@
 #include <QStandardItemModel>
 #include <QMessageBox>
 #include "validation.h"
+#include "transactiontablemodel.h"
+
 
 class AddressTableModel;
 class OptionsModel;
 class PlatformStyle;
 class RecentRequestsTableModel;
-class TransactionTableModel;
 class WalletModelTransaction;
 
 class CCoinControl;
@@ -226,6 +227,10 @@ public:
     QStandardItemModel* getContractModel() { return contractModel; }
     QStandardItemModel* getTokenModel() { return tokenModel; }
     std::deque<CContractInfo> sortContractsByTime(std::map<std::vector<unsigned char>, CContractInfo>& map);
+
+    void addConfirmContract(CContractInfo info) { confirmContracts.push_back(info); }
+    std::vector<CContractInfo> getConfirmContracts() { return confirmContracts; }
+    void eraseConfirmContract(const std::vector<unsigned char>& address);
     ////////////////////////////////////////////
 
 private:
@@ -258,6 +263,8 @@ private:
     //////////////////////////////////////////// // qtum
     QStandardItemModel *contractModel;
     QStandardItemModel *tokenModel;
+
+    std::vector<CContractInfo> confirmContracts;
     ////////////////////////////////////////////
 
     void subscribeToCoreSignals();

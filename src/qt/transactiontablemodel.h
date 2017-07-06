@@ -10,6 +10,9 @@
 #include <QAbstractTableModel>
 #include <QStringList>
 
+#include "uint256.h"
+#include "transactionrecord.h"
+
 class PlatformStyle;
 class TransactionRecord;
 class TransactionTablePriv;
@@ -80,6 +83,10 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
     bool processingQueuedTransactions() { return fProcessingQueuedTransactions; }
+
+    ///////////////////////////////////////////////// // qtum
+    TransactionStatus getStatusTx(uint256& hashTx);
+    /////////////////////////////////////////////////
 
 private:
     CWallet* wallet;

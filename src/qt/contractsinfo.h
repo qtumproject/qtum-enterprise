@@ -21,9 +21,14 @@ public:
 
 public Q_SLOTS:
 
-void test();
+    void updateInfo();
 
 private:
+
+    void updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status);
+    void updateContractsToDBWallet(CContractInfo& info);
+    void updateConfirmContracts(CContractInfo& info);
+
     WalletModel *walletModel;
     TransactionTableModel *txTableModel;
     Ui::ContractsInfo *ui;

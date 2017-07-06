@@ -789,3 +789,15 @@ void TransactionTableModel::unsubscribeFromCoreSignals()
     wallet->NotifyTransactionChanged.disconnect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));
     wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
 }
+
+/////////////////////////////////////////////// // qtum
+TransactionStatus TransactionTableModel::getStatusTx(uint256& hashTx){
+    TransactionStatus result;
+    for(TransactionRecord tr : priv->cachedWallet){
+        if(tr.hash == hashTx){
+            result = tr.status;
+        }
+    }
+    return result;
+}
+///////////////////////////////////////////////

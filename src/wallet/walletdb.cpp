@@ -975,12 +975,12 @@ bool CWalletDB::WriteContractInfo(const CContractInfo contractInfo){
     return Write(std::make_pair(std::string("contractInfo"), contractInfo.getAddressContract()), contractInfo);
 }
 
-bool CWalletDB::EraseContractInfo(const CContractInfo contractInfo){
+bool CWalletDB::EraseContractInfo(const std::vector<unsigned char>& address){
     nWalletDBUpdateCounter++;
-    return Erase(std::make_pair(std::string("contractInfo"), contractInfo.getAddressContract()));
+    return Erase(std::make_pair(std::string("contractInfo"), address));
 }
 
-CContractInfo::CContractInfo(bool stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi){
+CContractInfo::CContractInfo(DeployStatus stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi){
     status = stat;
     token = tok;
     nTime = time;
@@ -988,5 +988,24 @@ CContractInfo::CContractInfo(bool stat, bool tok, uint32_t time, uint256 hash, i
     nVout = vout;
     addressContract = addrContract;
     abiContract = abi;
+}
+
+std::string CContractInfo::getStatus() {
+    std::string result;
+    switch(status){
+        case CONFIRMING:{
+            result = "Confirming";
+            break;
+        }
+        case CREATED:{
+            result = "Created";
+            break;
+        }
+        case NOT_CREATED:{
+            result = "Not created";
+            break;
+        }
+    }
+    return result;
 }
 /////////////////////////////////////////////////////

@@ -34,15 +34,24 @@ class uint256;
 class CContractInfo{
 
 public:
+
+    enum DeployStatus { CONFIRMING = 0, CREATED, NOT_CREATED };
     
     CContractInfo() { SetNull(); }
-    CContractInfo(bool stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);
+    CContractInfo(DeployStatus stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);
 
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(status);
+        uint32_t stat;
+        if (ser_action.ForRead()) {
+            READWRITE(stat);
+            status = static_cast<DeployStatus>(stat);
+        } else {
+            stat = static_cast<uint32_t>(status);
+            READWRITE(stat);
+        }
         READWRITE(token);
         READWRITE(nTime);
         READWRITE(hashTX);
@@ -53,7 +62,7 @@ public:
 
     void SetNull()
     {
-        status = false;
+        status = CONFIRMING;
         token = false;
         nTime = 0;
         hashTX = uint256();
@@ -62,7 +71,8 @@ public:
         abiContract.clear();
     }
 
-    bool getStatus() { return status; }
+    void setStatus(DeployStatus stat){ status = stat; }
+    std::string getStatus();
     uint32_t getTime() { return nTime; }
     uint256 getHashTx() { return hashTX; }
     bool isToken() { return token; }
@@ -78,7 +88,7 @@ public:
 
 private:
 
-    bool status;
+    DeployStatus status;
     bool token;
     uint32_t nTime;
     uint256 hashTX;
@@ -180,7 +190,7 @@ public:
 
     //////////////////////////////////////////////// // qtum
     bool WriteContractInfo(const CContractInfo contractInfo);
-    bool EraseContractInfo(const CContractInfo contractInfo);
+    bool EraseContractInfo(const std::vector<unsigned char>& address);
     ////////////////////////////////////////////////
 
     bool WriteName(const std::string& strAddress, const std::string& strName);

@@ -712,6 +712,13 @@ public:
         mapContractInfo[info.getAddressContract()] = info;
         return CWalletDB(strWalletFile).WriteContractInfo(info);
     }
+
+    bool eraseContractInfo(const std::vector<unsigned char>& address){
+        if(mapContractInfo.count(address)){
+            mapContractInfo.erase(address);
+        }
+        return CWalletDB(strWalletFile).EraseContractInfo(address);
+    }
 /////////////////////////////////////////////////////////////////////////////////////////
 
     const CWalletTx* GetWalletTx(const uint256& hash) const;
