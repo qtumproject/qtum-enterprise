@@ -13,7 +13,7 @@ struct ContractMethodParams{
     bool indexed = false;
     std::string name = "";
     std::string type = "";
-
+    
     bool equalSignature(ContractMethodParams& cmp){
         if(cmp.indexed == indexed && cmp.type == type)
             return true;

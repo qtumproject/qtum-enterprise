@@ -1,6 +1,7 @@
 #include "contractsinfo.h"
 #include "ui_contractsinfo.h"
 #include "transactionrecord.h"
+#include <analyzerERC20.h>
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
     QWidget(parent), walletModel(_walletModel), ui(new Ui::ContractsInfo){
@@ -93,5 +94,57 @@ void ContractsInfo::setWalletModel(WalletModel *model){
 
         connect(ui->tableViewContractsInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
         connect(ui->tableViewTokensInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
+    }
+}
+
+
+
+
+
+std::vector<std::string> ContractsInfo::createListMethods(CContractInfo& contractInfo){
+    std::vector<std::string> result;
+    ParserAbi parser;
+    parser.parseAbiJSON(contractInfo.getAbi());
+    std::vector<ContractMethod> methods = parser.getContractMethods();
+    for(ContractMethod& cm : methods){
+        if(cm.type == "function" && !cm.constant)
+            result.push_back(cm.name);
+    }
+    return result;
+}
+
+void ContractsInfo::test(QModelIndex index){
+    
+    // Get the address
+    int row = index.row();
+    QStandardItem* item1 = walletModel->getTokenModel()->item(row, 3);
+    QString address = item1->data(Qt::DisplayRole).toString();
+    std::string stdAddres = address.toUtf8().constData();
+
+    // Get the contract
+    auto contract = pwalletMain->mapContractInfo.find(ParseHex(stdAddres));
+    CContractInfo contractInfo = contract->second;
+
+    if(contractInfo.getStatus() == "Created"){
+
+        ParserAbi parser;
+        parser.parseAbiJSON(contractInfo.getAbi());
+        std::vector<ContractMethod> methods = parser.getContractMethods();
+
+
+        // Get the contract methods
+        std::vector<std::string> listMethods(createListMethods(contractInfo));
+
+        // Create dialog window
+        CallDialog* dialog = new CallDialog;
+        dialog->setContractAddress(QString("0x") + address);
+        dialog->setDataToComboBox(listMethods);
+        // dialog->createWriteToContract(methods[13].inputs);
+
+        if (dialog->exec() == QDialog::Accepted) {
+
+        }
+        
+        delete dialog;
     }
 }

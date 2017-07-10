@@ -77,6 +77,7 @@ public:
     uint256 getHashTx() { return hashTX; }
     bool isToken() { return token; }
     std::vector<unsigned char> getAddressContract() const { return addressContract; }
+    std::string getAbi() { return abiContract; }
 
     bool operator!=(CContractInfo ci){
         if(ci.status == status && ci.token == token && ci.nTime == nTime && ci.nVout == nVout &&

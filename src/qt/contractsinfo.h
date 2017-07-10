@@ -5,6 +5,8 @@
 #include <QStandardItemModel>
 #include <walletmodel.h>
 
+#include "calldialog.h"
+
 namespace Ui {
 class ContractsInfo;
 }
@@ -22,13 +24,15 @@ public:
 public Q_SLOTS:
 
     void updateInfo();
-    void test(QModelIndex index){}
+    void test(QModelIndex index);
 
 private:
 
     void updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status);
     void updateContractsToDBWallet(CContractInfo& info);
     void updateConfirmContracts(CContractInfo& info);
+
+    std::vector<std::string> createListMethods(CContractInfo& contractInfo);
 
     WalletModel *walletModel;
     TransactionTableModel *txTableModel;
