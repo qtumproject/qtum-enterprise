@@ -71,7 +71,8 @@ void ContractsInfo::setWalletModel(WalletModel *model){
 
         // contracts
         ui->tableViewContractsInfo->setModel(model->getContractModel());
-        ui->tableViewContractsInfo->setEditTriggers(QAbstractItemView::DoubleClicked);
+        ui->tableViewContractsInfo->setAlternatingRowColors(true);
+        ui->tableViewContractsInfo->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->tableViewContractsInfo->setSelectionBehavior(QAbstractItemView::SelectRows);
         ui->tableViewContractsInfo->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
         ui->tableViewContractsInfo->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
@@ -81,12 +82,16 @@ void ContractsInfo::setWalletModel(WalletModel *model){
 
         // tokens
         ui->tableViewTokensInfo->setModel(model->getTokenModel());
-        ui->tableViewTokensInfo->setEditTriggers(QAbstractItemView::DoubleClicked);
+        ui->tableViewTokensInfo->setAlternatingRowColors(true);
+        ui->tableViewTokensInfo->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->tableViewTokensInfo->setSelectionBehavior(QAbstractItemView::SelectRows);
         ui->tableViewTokensInfo->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
         ui->tableViewTokensInfo->horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
         ui->tableViewTokensInfo->horizontalHeader()->setSectionResizeMode(2,QHeaderView::ResizeToContents);
         ui->tableViewTokensInfo->horizontalHeader()->setSectionResizeMode(3,QHeaderView::Stretch);
         ui->tableViewTokensInfo->verticalHeader()->setVisible(false);
+
+        connect(ui->tableViewContractsInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
+        connect(ui->tableViewTokensInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
     }
 }

@@ -22,6 +22,7 @@ public:
 public Q_SLOTS:
 
     void updateInfo();
+    void test(QModelIndex index){}
 
 private:
 

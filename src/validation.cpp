@@ -1919,13 +1919,18 @@ std::string createQtumAddress(const CWalletTx& wtx){
     std::vector<unsigned char> SHA256TxVout(32);
     std::vector<unsigned char> contractAddress(20);
     std::vector<unsigned char> txIdAndVout(wtx.GetHash().begin(), wtx.GetHash().end());
-    unsigned char nOut=0;
+    uint32_t nOut=0;
     for(const CTxOut& txout : wtx.tx->vout){
         if(txout.scriptPubKey.HasOpCreate()){
-            txIdAndVout.push_back(nOut);
+            std::vector<unsigned char> voutNumberChrs;
+            if (voutNumberChrs.size() < sizeof(nOut))voutNumberChrs.resize(sizeof(nOut));
+                std::memcpy(voutNumberChrs.data(), &nOut, sizeof(nOut));
+            txIdAndVout.insert(txIdAndVout.end(),voutNumberChrs.begin(),voutNumberChrs.end());
+            break;
         }
     	nOut++;
     }
+
     CSHA256().Write(txIdAndVout.data(), txIdAndVout.size()).Finalize(SHA256TxVout.data());
     CRIPEMD160().Write(SHA256TxVout.data(), SHA256TxVout.size()).Finalize(contractAddress.data());
     return HexStr(contractAddress);
