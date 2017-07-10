@@ -23,21 +23,28 @@ CBlock generateBlock(){
 
 dev::Address createQtumAddress(dev::h256 hashTx, uint32_t voutNumber){
     uint256 hashTXid(h256Touint(hashTx));
-	std::vector<unsigned char> txIdAndVout(hashTXid.begin(), hashTXid.end());
-	txIdAndVout.push_back(voutNumber);
-	std::vector<unsigned char> SHA256TxVout(32);
+    std::vector<unsigned char> txIdAndVout(hashTXid.begin(), hashTXid.end());
+    std::vector<unsigned char> voutNumberChrs;
+    if (voutNumberChrs.size() < sizeof(voutNumber))voutNumberChrs.resize(sizeof(voutNumber));
+    std::memcpy(voutNumberChrs.data(), &voutNumber, sizeof(voutNumber));
+    txIdAndVout.insert(txIdAndVout.end(),voutNumberChrs.begin(),voutNumberChrs.end());
+
+    std::vector<unsigned char> SHA256TxVout(32);
     CSHA256().Write(txIdAndVout.data(), txIdAndVout.size()).Finalize(SHA256TxVout.data());
-	std::vector<unsigned char> hashTxIdAndVout(20);
+
+    std::vector<unsigned char> hashTxIdAndVout(20);
     CRIPEMD160().Write(SHA256TxVout.data(), SHA256TxVout.size()).Finalize(hashTxIdAndVout.data());
-	return dev::Address(hashTxIdAndVout);
+
+    return dev::Address(hashTxIdAndVout);
 }
+
 
 QtumTransaction createQtumTransaction(valtype data, dev::u256 value, dev::u256 gasLimit, dev::u256 gasPrice, dev::h256 hashTransaction, dev::Address recipient, int32_t nvout){
     QtumTransaction txEth;
     if(recipient == dev::Address()){
-        txEth = QtumTransaction(value, gasLimit, (gasLimit * gasPrice), data, dev::u256(0));
+        txEth = QtumTransaction(value, gasPrice, gasLimit, data, dev::u256(0));
     } else {
-        txEth = QtumTransaction(value, gasLimit, (gasLimit * gasPrice), recipient, data, dev::u256(0));
+        txEth = QtumTransaction(value, gasPrice, gasLimit, recipient, data, dev::u256(0));
     }
     txEth.forceSender(dev::Address("0101010101010101010101010101010101010101"));
     txEth.setHashWith(hashTransaction);
