@@ -16,6 +16,7 @@ CallDialog::CallDialog(WalletModel* _walletModel, QWidget *parent) :
 
     connect(ui->pushButtonSend, SIGNAL(clicked()), SLOT(callFunction()));
     connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateActive()));
+    connect(ui->senderLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(validateSender()));
 }
 
 CallDialog::~CallDialog()
@@ -42,6 +43,24 @@ void CallDialog::setDataToScrollArea(std::vector<std::pair<std::string, std::str
 void CallDialog::setContractAddress(QString address){
     contractAddress = dev::Address(address.toStdString());
     ui->labelContractAddress->setText(address);
+}
+
+void CallDialog::validateSender()
+{
+    CBitcoinAddress senderAddress;
+    QPalette palette;
+    senderAddress.SetString(ui->senderLineEdit->text().toStdString());
+    senderAddrValid = senderAddress.IsValid();
+    if (!senderAddrValid)
+    {
+        palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
+        ui->senderLineEdit->setPalette(palette); 
+    }
+    else
+    {
+        palette.setColor(QPalette::Base, colorBackgroundTextEditCorrect);
+        ui->senderLineEdit->setPalette(palette);
+    }
 }
 
 void CallDialog::setParameters()
@@ -84,8 +103,8 @@ void CallDialog::createWriteToContract(std::vector<ContractMethod>& methods){
 
 void CallDialog::callFunction(){
     std::string error;
-    uint64_t nGasLimit = 2e6;
-    CAmount nGasPrice = 1;
+    uint64_t nGasLimit = ui->spinBoxGasLimit->value();
+    CAmount nGasPrice = ui->doubleSpinBoxGasPrice->value() * COIN;
 
     auto method = contractMethods[selectedMethod]; 
     std::string sig(method.name + "(");
@@ -112,6 +131,44 @@ void CallDialog::callFunction(){
     
     // Create TX_CREATE transaction
     CCoinControl coinControl;
+
+    if(senderAddrValid){
+
+        UniValue results(UniValue::VARR);
+        std::vector<COutput> vecOutputs;
+
+        coinControl.fAllowOtherInputs=true;
+
+        assert(pwalletMain != NULL);
+        pwalletMain->AvailableCoins(vecOutputs, false, NULL, true);
+
+        BOOST_FOREACH(const COutput& out, vecOutputs) {
+
+            CTxDestination address;
+            const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+            bool fValidAddress = ExtractDestination(scriptPubKey, address);
+
+            CBitcoinAddress senderAddress;
+            senderAddress.SetString(ui->senderLineEdit->text().toStdString());
+
+            CBitcoinAddress destAdress(address);
+            //use this weird !( == ) to avoid compilation errors on Ubuntu 14.04
+            if (!fValidAddress || !(senderAddress == destAdress))
+                continue;
+
+            coinControl.Select(COutPoint(out.tx->GetHash(),out.i));
+
+            break;
+
+        }
+
+        if(!coinControl.HasSelected()){
+            QPalette palette;
+            palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
+            ui->senderLineEdit->setPalette(palette); 
+        }
+    }
+
     CReserveKey reservekey(pwalletMain);
     CWalletTx wtx(createTransactionOpCall(reservekey, coinControl, result, nGasLimit, nGasPrice, contractAddress, error));
     if(!error.empty()){

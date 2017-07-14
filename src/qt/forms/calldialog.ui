@@ -209,7 +209,34 @@
         </spacer>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="doubleSpinBoxSend">
+        <widget class="QLabel" name="label_gasLimit">
+         <property name="text">
+          <string>Gas limit:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBoxGasLimit">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="maximum">
+          <double>999999999</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_gasPrice">
+         <property name="text">
+          <string>Gas price:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxGasPrice">
          <property name="minimumSize">
           <size>
            <width>50</width>
@@ -227,6 +254,23 @@
          </property>
          <property name="value">
           <double>0.000001000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelSender">
+         <property name="text">
+          <string>Sender:</string>
+         </property>
+        </widget>
+       </item>
+        <item>
+        <widget class="QLineEdit" name="senderLineEdit">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>40</height>
+          </size>
          </property>
         </widget>
        </item>

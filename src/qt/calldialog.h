@@ -33,12 +33,14 @@ public:
 public Q_SLOTS:
 
     void callFunction();
+    void validateSender();
     void updateActive();
     void updateTextEditsParams();
 
 private:
     Ui::CallDialog *ui;
 
+    bool senderAddrValid;
     dev::Address contractAddress;
     std::string contractABI;
     std::vector<QLineEdit*> textEdits;

@@ -163,12 +163,8 @@ std::string ParserAbi::creatingDataFromElementaryTypes(const std::string& type, 
     if(std::regex_match(type, uintRegex)){
         return strDecToStrHex(data);
     } else if(std::regex_match(type, intRegex)){
-        std::string dataInt = data[0] == '-' ? std::string(data.begin() + 1, data.end()) : data;
+        std::string dataInt = data;
         std::string temp = strDecToStrHex(dataInt);
-        if(data[0] == '-'){
-            temp[0] = 'f';
-            temp[1] = 'f';
-        }
         return temp;
     } else if(std::regex_match(type, bytesNRegex)){
         std::string dataHex = stringToStrHex(data);
@@ -301,7 +297,7 @@ std::string ParserAbi::createInputData(const std::string& methodName, const Para
     std::vector<std::string> result;
     std::vector<std::string> stack;
 
-    size_t offset = params.size() > 1 ? 32 * params.size() : 0;
+    size_t offset = 32 * params.size();
     for(auto p : params){
         std::string type = p.first;
 
