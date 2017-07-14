@@ -24,15 +24,17 @@ public:
 public Q_SLOTS:
 
     void updateInfo();
-    void test(QModelIndex index);
+    void contractSelected(QModelIndex index);
+    void tokenSelected(QModelIndex index);
 
 private:
 
     void updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status);
     void updateContractsToDBWallet(CContractInfo& info);
     void updateConfirmContracts(CContractInfo& info);
-
-    std::vector<std::string> createListMethods(CContractInfo& contractInfo);
+    void showContractInterface(QString address);
+    
+    std::vector<ContractMethod> createListMethods(CContractInfo contractInfo);
 
     WalletModel *walletModel;
     TransactionTableModel *txTableModel;

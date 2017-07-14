@@ -62,7 +62,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     sendCoinsPage = new SendCoinsDialog(platformStyle);
 
 ////////////////////////////////////////////////////// // qtum
-    createContract = new CreateContract(walletModel, this);
+    createContract = new CreateContractPage(walletModel, this);
     contractsInfo = new ContractsInfo(walletModel, this);
 //////////////////////////////////////////////////////
 

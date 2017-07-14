@@ -2,6 +2,7 @@
 #include "ui_contractsinfo.h"
 #include "transactionrecord.h"
 #include <analyzerERC20.h>
+#include <libethcore/ABI.h>
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
     QWidget(parent), walletModel(_walletModel), ui(new Ui::ContractsInfo){
@@ -92,8 +93,8 @@ void ContractsInfo::setWalletModel(WalletModel *model){
         ui->tableViewTokensInfo->horizontalHeader()->setSectionResizeMode(3,QHeaderView::Stretch);
         ui->tableViewTokensInfo->verticalHeader()->setVisible(false);
 
-        connect(ui->tableViewContractsInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
-        connect(ui->tableViewTokensInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(test(QModelIndex)));
+        connect(ui->tableViewContractsInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(contractSelected(QModelIndex)));
+        connect(ui->tableViewTokensInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(tokenSelected(QModelIndex)));
     }
 }
 
@@ -101,24 +102,19 @@ void ContractsInfo::setWalletModel(WalletModel *model){
 
 
 
-std::vector<std::string> ContractsInfo::createListMethods(CContractInfo& contractInfo){
-    std::vector<std::string> result;
+std::vector<ContractMethod> ContractsInfo::createListMethods(CContractInfo contractInfo){
+    std::vector<ContractMethod> result;
     ParserAbi parser;
     parser.parseAbiJSON(contractInfo.getAbi());
     std::vector<ContractMethod> methods = parser.getContractMethods();
-    for(ContractMethod& cm : methods){
+    for(ContractMethod cm : methods){
         if(cm.type == "function" && !cm.constant)
-            result.push_back(cm.name);
+            result.push_back(cm);
     }
     return result;
 }
 
-void ContractsInfo::test(QModelIndex index){
-    
-    // Get the address
-    int row = index.row();
-    QStandardItem* item1 = walletModel->getTokenModel()->item(row, 3);
-    QString address = item1->data(Qt::DisplayRole).toString();
+void ContractsInfo::showContractInterface(QString address){
     std::string stdAddres = address.toUtf8().constData();
 
     // Get the contract
@@ -130,21 +126,82 @@ void ContractsInfo::test(QModelIndex index){
         ParserAbi parser;
         parser.parseAbiJSON(contractInfo.getAbi());
         std::vector<ContractMethod> methods = parser.getContractMethods();
+        
+        std::vector<std::pair<std::string, std::string>> staticCalls; 
+        for (auto e : methods)
+        {
+            if (!e.constant) continue;
+            if (!e.inputs.empty()) continue;
+            if (e.outputs.empty()) continue;
+            std::string sig(e.name+"()");
+            dev::FixedHash<4> hash(dev::keccak256(sig));
+            auto signature = hash.asBytes();
 
+            dev::u256 gasPrice = 1;
+            dev::u256 gasLimit(10000000); // MAX_MONEY
+            dev::Address senderAddress("f1b0747fe29c1fe5d4ff1e63cefdbdeaae1329d6");
+            
+            CBlock block;
+            CMutableTransaction tx;
+            tx.vout.push_back(CTxOut(0, CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG));
+            block.vtx.push_back(MakeTransactionRef(CTransaction(tx)));
+        
+            QtumTransaction callTransaction(0, gasPrice, gasLimit, dev::Address(stdAddres), signature, dev::u256(0));
+            callTransaction.forceSender(senderAddress);
+
+            ByteCodeExec exec(block, std::vector<QtumTransaction>(1, callTransaction));
+            exec.performByteCode(dev::eth::Permanence::Reverted);
+            std::vector<ResultExecute> execResults = exec.getResult();
+            auto out(execResults[0].execRes.output);
+
+            if (e.outputs[0].type == "address") {
+                staticCalls.push_back(std::make_pair(e.name, "0x" + dev::Address(dev::eth::abiOut<dev::u160>(out)).hex()));
+            } else if (e.outputs[0].type == "string"){
+                staticCalls.push_back(std::make_pair(e.name, dev::eth::abiOut<std::string>(out)));
+            } else {
+                std::stringstream ss;
+                if (e.outputs[0].type.substr(0,3) == "int"){
+                    ss << dev::u2s(dev::eth::abiOut<dev::u256>(out));
+                } else {
+                    ss << dev::eth::abiOut<dev::u256>(out);
+                }
+                staticCalls.push_back(std::make_pair(e.name, ss.str()));
+            }
+        }
 
         // Get the contract methods
-        std::vector<std::string> listMethods(createListMethods(contractInfo));
+        // std::vector<std::string> listMethods();
 
         // Create dialog window
-        CallDialog* dialog = new CallDialog;
+        CallDialog* dialog = new CallDialog(walletModel);
         dialog->setContractAddress(QString("0x") + address);
-        dialog->setDataToComboBox(listMethods);
-        // dialog->createWriteToContract(methods[13].inputs);
-
-        if (dialog->exec() == QDialog::Accepted) {
-
+        dialog->setDataToScrollArea(staticCalls);
+        auto tmp(createListMethods(contractInfo));
+        if (!tmp.empty())
+        {
+            dialog->createWriteToContract(tmp);
         }
+        dialog->exec();
+        
         
         delete dialog;
     }
+}
+
+void ContractsInfo::tokenSelected(QModelIndex index){
+        
+    // Get the address
+    int row = index.row();
+    QStandardItem* item1 = walletModel->getTokenModel()->item(row, 3);
+    QString address = item1->data(Qt::DisplayRole).toString();
+    showContractInterface(address);
+}
+
+void ContractsInfo::contractSelected(QModelIndex index){
+    
+    // Get the address
+    int row = index.row();
+    QStandardItem* item1 = walletModel->getContractModel()->item(row, 3);
+    QString address = item1->data(Qt::DisplayRole).toString();
+    showContractInterface(address);
 }

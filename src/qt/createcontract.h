@@ -36,24 +36,23 @@ struct Contract{
 };
 
 namespace Ui {
-    class CreateContract;
+    class CreateContractPage;
 }
 
-class CreateContract : public QWidget
+class CreateContractPage : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit CreateContract(WalletModel* _walletModel, QWidget* parent = 0);
-    ~CreateContract();
+    explicit CreateContractPage(WalletModel* _walletModel, QWidget* parent = 0);
+    ~CreateContractPage();
 
     void setWalletModel(WalletModel *walletModel);
 
 private Q_SLOTS:
     void updateParams();
     void updateCreateContractWidget();
-    void enableComboBoxAndButtonDeploy();
-    void compileSourceCode();
+    bool compileSourceCode();
     void fillingComboBoxSelectContract();
     void deployContract();
     void updateTextEditsParams();
@@ -66,7 +65,6 @@ private:
     QString createDeployInfo(CWalletTx& wtx);
     void createParameterFields();
     void deleteParameters();
-    bool checkTextEditsParams();
     std::string parseParams();
 
     std::vector<ContractMethod> currentContractMethods;
@@ -74,7 +72,7 @@ private:
     QScrollArea *scrollArea;
     std::vector<QLineEdit*> textEdits;
     WalletModel* walletModel;
-    Ui::CreateContract *ui;
+    Ui::CreateContractPage *ui;
 };
 
 #endif // BITCOIN_QT_CREATECONTRACT_H

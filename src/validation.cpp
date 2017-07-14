@@ -1971,6 +1971,41 @@ CWalletTx createTransactionOpCreate(CReserveKey& reservekey, const CCoinControl&
     return wtx;
 }
 
+CWalletTx createTransactionOpCall(CReserveKey& reservekey, const CCoinControl& coinControl, const std::string& bytecode, 
+    const uint64_t nGasLimit, const CAmount nGasPrice, dev::Address addr, std::string& strError, bool fHasSender){
+    CWalletTx wtx;
+
+    wtx.nTimeSmart = GetAdjustedTime();
+
+    CAmount nGasFee=nGasPrice*nGasLimit;
+
+    CAmount curBalance = pwalletMain->GetBalance();
+
+    // Check amount
+	if (nGasFee <= 0 || nGasFee > curBalance){
+        strError = "Invalid amount or insufficient funds";
+        return CWalletTx();
+    }
+
+	// Build OP_EXEC script
+    CScript scriptPubKey = CScript() << ParseHex("01") << CScriptNum(nGasLimit) << CScriptNum(nGasPrice) << ParseHex(bytecode) << addr.asBytes() <<OP_CALL;
+
+    // Create and send the transaction
+    CAmount nFeeRequired;
+    // std::string strError;
+    std::vector<CRecipient> vecSend;
+    int nChangePosRet = -1;
+    CRecipient recipient = {scriptPubKey, 0, false};
+    vecSend.push_back(recipient);
+
+    if (!pwalletMain->CreateTransaction(vecSend, wtx, reservekey, nFeeRequired, nChangePosRet, strError, &coinControl, true, nGasFee, fHasSender)) {
+        if (nFeeRequired > pwalletMain->GetBalance())
+            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
+        return CWalletTx();
+    }
+    return wtx;
+}
+
 bool CheckRefund(const CBlock& block, const std::vector<CTxOut>& vouts){
     size_t offset = block.IsProofOfStake() ? 1 : 0;
     for(size_t i = 0; i < vouts.size(); i++){

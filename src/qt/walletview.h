@@ -21,7 +21,7 @@ class WalletModel;
 class AddressBookPage;
 
 ///////////////////////////////// // qtum
-class CreateContract;
+class CreateContractPage;
 class ContractsInfo;
 /////////////////////////////////
 
@@ -71,7 +71,7 @@ private:
     AddressBookPage *usedReceivingAddressesPage;
 
 ///////////////////////////////////////////////// // qtum
-    CreateContract *createContract;
+    CreateContractPage *createContract;
     ContractsInfo *contractsInfo;
 /////////////////////////////////////////////////
 

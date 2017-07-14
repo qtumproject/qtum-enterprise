@@ -4,14 +4,14 @@
 QColor colorBackgroundTextEditIncorrect = QColor(253,229,231);
 QColor colorBackgroundTextEditCorrect = Qt::white;
 
-CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), 
-    walletModel(_walletModel), ui(new Ui::CreateContract){
+CreateContractPage::CreateContractPage(WalletModel* _walletModel, QWidget *parent) : QWidget(parent), 
+    walletModel(_walletModel), ui(new Ui::CreateContractPage){
     ui->setupUi(this);
 
     scrollArea = NULL;
 
     ui->spinBoxGasLimit->setMaximum(INT32_MAX);
-    ui->spinBoxGasLimit->setValue(DEFAULT_GAS_LIMIT);
+    ui->spinBoxGasLimit->setValue(DEFAULT_GAS_LIMIT * 5);
     ui->doubleSpinBoxGasPrice->setMaximum(INT64_MAX);
     ui->doubleSpinBoxGasPrice->setValue(0.00001);
 
@@ -20,102 +20,82 @@ CreateContract::CreateContract(WalletModel* _walletModel, QWidget *parent) : QWi
 
     connect(ui->pushButtonDeploy, SIGNAL(clicked()), this, SLOT(deployContract()));
     connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(updateCreateContractWidget()));
-    connect(ui->textEditByteCode, SIGNAL(textChanged()), this, SLOT(enableComboBoxAndButtonDeploy()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateCreateContractWidget()));
     connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(updateParams()));
-    connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(enableComboBoxAndButtonDeploy()));
+    // connect(ui->textEditByteCode, SIGNAL(textChanged()), this, SLOT(enableComboBoxAndButtonDeploy()));
+    // connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateCreateContractWidget()));
+    // connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(enableComboBoxAndButtonDeploy()));
 }
 
-CreateContract::~CreateContract(){
+CreateContractPage::~CreateContractPage(){
     delete ui;
 }
 
-void CreateContract::setWalletModel(WalletModel *model){
+void CreateContractPage::setWalletModel(WalletModel *model){
     this->walletModel = model;
 }
+void CreateContractPage::updateCreateContractWidget() {
+    static QString strCache;
+    if (strCache == ui->textEditCode->toPlainText()) return;
+    strCache = ui->textEditCode->toPlainText();
 
-void CreateContract::updateCreateContractWidget() {
     deleteParameters();
-    ui->pushButtonDeploy->setEnabled(false);
-    ui->comboBoxSelectContract->setEnabled(false);
-    compileSourceCode();
-    fillingComboBoxSelectContract();
-    enableComboBoxAndButtonDeploy();
+    if (compileSourceCode())
+    {
+        fillingComboBoxSelectContract();
+        ui->comboBoxSelectContract->setEnabled(true);
+        ui->pushButtonDeploy->setEnabled(true);
+        updateParams();
+    }
 }
-
-void CreateContract::updateParams(){
-    deleteParameters();
-    if(ui->comboBoxSelectContract->count()){
+void CreateContractPage::updateParams(){
         std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
         ParserAbi parser;
         parser.parseAbiJSON(byteCodeContracts[key].abi);
         currentContractMethods = parser.getContractMethods();
+
+        if(scrollArea != NULL){
+            delete scrollArea;
+            scrollArea = NULL;
+        }
+        textEdits.clear();
         createParameterFields();
+        ui->textEditByteCode->setText(QString::fromStdString(byteCodeContracts[key].code));
+}
+
+bool CreateContractPage::compileSourceCode(){
+    std::string sCode = ui->textEditCode->toPlainText().toUtf8().constData();
+
+    dev::solidity::CompilerStack compiler;
+    compiler.addSource("", sCode);
+
+    bool optimize = false;
+    unsigned runs = 0;
+    std::vector<std::string> contracts;
+    try{            
+        compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
+        contracts = compiler.contractNames();
+    } catch(...) {
+        return false;
+    }
+    
+    for(std::string s : contracts){
+        Contract contr;
+        std::string key(s.begin() + 1, s.end());
+        contr.code = compiler.object(s).toHex();
+        contr.abi = dev::jsonCompactPrint(compiler.contractABI(s));
+        byteCodeContracts[key] = contr;
+    }
+
+    return !byteCodeContracts.empty();
+}
+
+void CreateContractPage::fillingComboBoxSelectContract(){
+    for(std::pair<std::string, Contract> contr : byteCodeContracts){
+        ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
     }
 }
 
-void CreateContract::enableComboBoxAndButtonDeploy(){
-    if(ui->tabWidget->currentIndex() == 1 && ui->textEditByteCode->toPlainText().count()){
-        ui->pushButtonDeploy->setEnabled(true);
-        return;
-    } else if(ui->tabWidget->currentIndex() == 1 && !ui->textEditByteCode->toPlainText().count()){
-        ui->pushButtonDeploy->setEnabled(false);
-        return;
-    }
-
-    if(ui->comboBoxSelectContract->count() != 0){
-        if(checkTextEditsParams()){
-            ui->pushButtonDeploy->setEnabled(true);
-        } else {
-            ui->pushButtonDeploy->setEnabled(false);
-        }
-        ui->comboBoxSelectContract->setEnabled(true);
-    } else {
-        ui->pushButtonDeploy->setEnabled(false);
-        ui->comboBoxSelectContract->setEnabled(false);
-    }
-}
-
-void CreateContract::compileSourceCode(){
-    byteCodeContracts.clear();
-    if(ui->tabWidget->currentIndex() == 0){
-        std::string sCode = ui->textEditCode->toPlainText().toUtf8().constData();
-
-        dev::solidity::CompilerStack compiler;
-        compiler.addSource("", sCode);
-
-        bool optimize = false;
-        unsigned runs = 0;
-        bool successful = false;
-        try{            
-            successful = compiler.compile(optimize, runs, std::map<std::string, dev::h160>());
-        }catch(...){
-            successful = false;
-        }
-
-        if(successful){
-            std::vector<std::string> contracts = compiler.contractNames();
-            for(std::string s : contracts){
-                Contract contr;
-                std::string key(s.begin() + 1, s.end());
-                contr.code = compiler.object(s).toHex();
-                contr.abi = dev::jsonCompactPrint(compiler.contractABI(s));
-                byteCodeContracts[key] = contr;
-            }
-        }
-    }
-}
-
-void CreateContract::fillingComboBoxSelectContract(){
-    ui->comboBoxSelectContract->clear();
-    if(!byteCodeContracts.empty()){
-        for(std::pair<std::string, Contract> contr : byteCodeContracts){
-            ui->comboBoxSelectContract->addItem(QString::fromStdString(contr.first));
-        }
-    }
-}
-
-void CreateContract::deployContract(){
+void CreateContractPage::deployContract(){
     std::string error;
     uint64_t nGasLimit = ui->spinBoxGasLimit->value();
     CAmount nGasPrice = ui->doubleSpinBoxGasPrice->value() * COIN;
@@ -123,12 +103,10 @@ void CreateContract::deployContract(){
     bool token = false;
     std::string bytecode;
     std::string key = ui->comboBoxSelectContract->currentText().toUtf8().constData();
-    if(ui->tabWidget->currentIndex() == 0 && byteCodeContracts.count(key)){        
+    if(byteCodeContracts.count(key)){        
         bytecode = byteCodeContracts[key].code + parseParams();
         AnalyzerERC20 erc;
         token = erc.isERC20(byteCodeContracts[key].abi);
-    } else {
-        bytecode = ui->textEditByteCode->toPlainText().toUtf8().constData();
     }
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
@@ -165,7 +143,7 @@ void CreateContract::deployContract(){
     Q_EMIT clickedDeploy();
 }
 
-void CreateContract::createParameterFields(){
+void CreateContractPage::createParameterFields(){
     auto construct = ParserAbi::getConstructor(currentContractMethods);
 
     if(construct != NullContractMethod){
@@ -187,6 +165,7 @@ void CreateContract::createParameterFields(){
             palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
             textEdit->setPalette(palette);
 
+
             textEdits.push_back(textEdit);
 
             vLayout->addWidget(label);
@@ -200,15 +179,15 @@ void CreateContract::createParameterFields(){
     }
 }
 
-void CreateContract::deleteParameters(){
-    if(scrollArea != NULL){
-        delete scrollArea;
-        scrollArea = NULL;
-    }
-    textEdits.clear();
+void CreateContractPage::deleteParameters(){
+    byteCodeContracts.clear();
+    ui->textEditByteCode->clear();
+    ui->pushButtonDeploy->setEnabled(false);
+    ui->comboBoxSelectContract->setEnabled(false);
+    ui->comboBoxSelectContract->clear();
 }
 
-void CreateContract::updateTextEditsParams(){
+void CreateContractPage::updateTextEditsParams(){
     if(ui->comboBoxSelectContract->count()){
         ParserAbi parser;
         auto construct = parser.getConstructor(currentContractMethods);
@@ -227,19 +206,7 @@ void CreateContract::updateTextEditsParams(){
     }
 }
 
-bool CreateContract::checkTextEditsParams(){
-    QPalette paletteTemp;
-    paletteTemp.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
-    for(QLineEdit* te : textEdits){
-        QPalette palette = te->palette();
-        if(paletteTemp == palette){
-            return false;
-        }
-    }
-    return true;
-}
-
-std::string CreateContract::parseParams(){
+std::string CreateContractPage::parseParams(){
     std::string result = "";
     if(ui->comboBoxSelectContract->count()){
         Parameters params;

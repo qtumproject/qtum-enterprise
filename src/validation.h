@@ -625,6 +625,9 @@ std::string createQtumAddress(const CWalletTx& wtx);
 CWalletTx createTransactionOpCreate(CReserveKey& reservekey, const CCoinControl& coinControl, const std::string& bytecode, 
     const uint64_t nGasLimit, const CAmount nGasPrice, std::string& strError, bool fHasSender = false);
 
+CWalletTx createTransactionOpCall(CReserveKey& reservekey, const CCoinControl& coinControl, const std::string& bytecode, 
+    const uint64_t nGasLimit, const CAmount nGasPrice, dev::Address address, std::string& strError, bool fHasSender = false);
+
 void EnforceContractVoutLimit(ByteCodeExecResult& bcer, ByteCodeExecResult& bcerOut, const dev::h256& oldHashQtumRoot,
     const dev::h256& oldHashStateRoot, const std::vector<QtumTransaction>& transactions);
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CreateContract</class>
- <widget class="QWidget" name="CreateContract">
+ <class>CreateContractPage</class>
+ <widget class="QWidget" name="CreateContractPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CreateContract</string>
+   <string>CreateContractPage</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -99,7 +99,11 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QTextEdit" name="textEditByteCode"/>
+          <widget class="QTextEdit" name="textEditByteCode">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
