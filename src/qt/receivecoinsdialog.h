@@ -65,6 +65,9 @@ private:
     virtual void resizeEvent(QResizeEvent *event);
 
 private Q_SLOTS:
+    void on_UpdateCliced();
+    void on_CopyCliced();
+    void on_tableCliced(QModelIndex index);
     void on_receiveButton_clicked();
     void on_showRequestButton_clicked();
     void on_removeRequestButton_clicked();

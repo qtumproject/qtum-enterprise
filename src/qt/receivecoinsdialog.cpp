@@ -58,6 +58,9 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
 
     // context menu signals
     connect(ui->recentRequestsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
+    connect(ui->recentRequestsView,SIGNAL(clicked(QModelIndex)),this,SLOT(on_tableCliced(QModelIndex)));
+    connect(ui->Generate,SIGNAL(clicked(bool)),SLOT(on_UpdateCliced()));
+    connect(ui->Copy,SIGNAL(clicked(bool)),this,SLOT(on_CopyCliced()));
     connect(copyURIAction, SIGNAL(triggered()), this, SLOT(copyURI()));
     connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
     connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
@@ -128,6 +131,50 @@ void ReceiveCoinsDialog::updateDisplayUnit()
     }
 }
 
+void ReceiveCoinsDialog::on_tableCliced(QModelIndex index){
+    const RecentRequestsTableModel *submodel = model->getRecentRequestsTableModel();
+    ui->Adress->setText(submodel->entry(index.row()).recipient.address);
+    ui->lblQRCode->setVisible(true);
+    ui->lblQRCode->setPixmap(ReceiveRequestDialog::generateQr(submodel->entry(index.row()).recipient));
+}
+void ReceiveCoinsDialog::on_CopyCliced(){
+    GUIUtil::setClipboard(ui->Adress->text());
+}
+void ReceiveCoinsDialog::on_UpdateCliced(){
+    if(!model || !model->getOptionsModel() || !model->getAddressTableModel() || !model->getRecentRequestsTableModel())
+        return;
+
+    QString address;
+    QString label = ui->reqLabel->text();
+    if(ui->reuseAddress->isChecked())
+    {
+        /* Choose existing receiving address */
+        AddressBookPage dlg(platformStyle, AddressBookPage::ForSelection, AddressBookPage::ReceivingTab, this);
+        dlg.setModel(model->getAddressTableModel());
+        if(dlg.exec())
+        {
+            address = dlg.getReturnValue();
+            if(label.isEmpty()) /* If no label provided, use the previously used label */
+            {
+                label = model->getAddressTableModel()->labelForAddress(address);
+            }
+        } else {
+            return;
+        }
+    } else {
+        /* Generate new receiving address */
+        address = model->getAddressTableModel()->addRow(AddressTableModel::Receive, label, "");
+    }
+    SendCoinsRecipient info(address, label,
+        ui->reqAmount->value(), ui->reqMessage->text());
+    clear();
+
+    /* Store request for later reference */
+    model->getRecentRequestsTableModel()->addNewRequest(info);
+    ui->Adress->setText(address);
+    ui->lblQRCode->setVisible(true);
+    ui->lblQRCode->setPixmap(ReceiveRequestDialog::generateQr(info));
+}
 void ReceiveCoinsDialog::on_receiveButton_clicked()
 {
     if(!model || !model->getOptionsModel() || !model->getAddressTableModel() || !model->getRecentRequestsTableModel())
@@ -173,6 +220,9 @@ void ReceiveCoinsDialog::on_recentRequestsView_doubleClicked(const QModelIndex &
     ReceiveRequestDialog *dialog = new ReceiveRequestDialog(this);
     dialog->setModel(model->getOptionsModel());
     dialog->setInfo(submodel->entry(index.row()).recipient);
+    ui->Adress->setText(submodel->entry(index.row()).recipient.address);
+    ui->lblQRCode->setVisible(true);
+       ui->lblQRCode->setPixmap(ReceiveRequestDialog::generateQr(submodel->entry(index.row()).recipient));
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 }

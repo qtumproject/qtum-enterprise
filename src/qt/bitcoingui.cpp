@@ -23,6 +23,7 @@
 #include "utilitydialog.h"
 #include "validation.h"
 #include "rpc/server.h"
+#include <QToolButton>
 
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
@@ -120,6 +121,7 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     showHelpMessageAction(0),
     createContractAction(0), // qtum
     contractsInfoAction(0), // qtum
+    ContractAction(0),     // qtum
     trayIcon(0),
     trayIconMenu(0),
     notificator(0),
@@ -131,8 +133,16 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     platformStyle(_platformStyle)
 {
     GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
-
+    this->setLayout(new QHBoxLayout());
     QString windowTitle = tr(PACKAGE_NAME) + " - ";
+
+    QFrame *mainFrame=new QFrame(this);
+    QVBoxLayout *Walletbox= new QVBoxLayout(mainFrame);
+    mainFrame->setObjectName("mainFrame");
+    walletHeader=new WalletHeader(platformStyle,this);
+    Walletbox->addWidget(walletHeader);
+    setCentralWidget(mainFrame);
+
 #ifdef ENABLE_WALLET
     enableWallet = WalletModel::isWalletEnabled();
 #endif // ENABLE_WALLET
@@ -164,14 +174,18 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     {
         /** Create wallet frame and make it the central widget */
         walletFrame = new WalletFrame(_platformStyle, this);
-        setCentralWidget(walletFrame);
+        walletFrame->setObjectName("walletFrame");
+        Walletbox->addWidget(walletFrame);
+        //setCentralWidget(walletFrame);
     } else
 #endif // ENABLE_WALLET
     {
         /* When compiled without wallet or -disablewallet is provided,
          * the central widget is the rpc console.
          */
-        setCentralWidget(rpcConsole);
+        Walletbox->addWidget(rpcConsole);
+
+       // setCentralWidget(rpcConsole);
     }
 
     // Accept D&D of URIs
@@ -332,18 +346,26 @@ void BitcoinGUI::createActions()
     tabGroup->addAction(historyAction);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// // qtum
+    ContractAction = new QAction(platformStyle->SingleColorIcon(":/icons/editpaste"), tr("&Smart contract"), this);
+    ContractAction->setStatusTip(tr("Smart contract"));
+    ContractAction->setToolTip(ContractAction->statusTip());
+    ContractAction->setCheckable(true);
+    ContractAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+
     createContractAction = new QAction(platformStyle->SingleColorIcon(":/icons/add"), tr("&Create contract"), this);
-    createContractAction->setStatusTip(tr("Create contract"));
+    createContractAction->setObjectName("createContractAction");
+    createContractAction->setStatusTip(tr("Create"));
     createContractAction->setToolTip(createContractAction->statusTip());
     createContractAction->setCheckable(true);
     createContractAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
     tabGroup->addAction(createContractAction);
 
     contractsInfoAction = new QAction(platformStyle->SingleColorIcon(":/icons/eye"), tr("&Contracts info"), this);
-    contractsInfoAction->setStatusTip(tr("Contracts info"));
+    contractsInfoAction->setObjectName("contractsInfoAction");
+    contractsInfoAction->setStatusTip(tr("info"));
     contractsInfoAction->setToolTip(contractsInfoAction->statusTip());
     contractsInfoAction->setCheckable(true);
-    contractsInfoAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+   // contractsInfoAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(contractsInfoAction);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -363,6 +385,7 @@ void BitcoinGUI::createActions()
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// // qtum
+    connect(ContractAction, SIGNAL(triggered()), this, SLOT(on_ContractAction_cliced()));
     connect(createContractAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(createContractAction, SIGNAL(triggered()), this, SLOT(gotoCreateContractPage()));
     connect(contractsInfoAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -503,17 +526,22 @@ void BitcoinGUI::createToolBars()
 {
     if(walletFrame)
     {
-        QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
+        QToolBar *toolbar = new QToolBar(tr("Tabs toolbar"),this);
+        static_cast<QHBoxLayout*>(walletFrame->layout())->insertWidget(0,toolbar);
+        toolbar->setOrientation(Qt::Vertical);
         toolbar->setMovable(false);
         toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
-        toolbar->addAction(historyAction);
 ////////////////////////////////////////////////////////////////// // qtum
+        toolbar->addAction(ContractAction);
         toolbar->addAction(createContractAction);
         toolbar->addAction(contractsInfoAction);
+        createContractAction->setVisible(false);
+        contractsInfoAction->setVisible(false);
 //////////////////////////////////////////////////////////////////
+        toolbar->addAction(historyAction);
         overviewAction->setChecked(true);
     }
 }
@@ -587,6 +615,7 @@ bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModel)
     if(!walletFrame)
         return false;
     setWalletActionsEnabled(true);
+    walletHeader->setWalletModel(walletModel);
     return walletFrame->addWallet(name, walletModel);
 }
 
@@ -624,6 +653,7 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
 
 /////////////////////////////////////////////////////////////// // qtum
+    ContractAction->setEnabled(enabled);
     createContractAction->setEnabled(enabled);
     contractsInfoAction->setEnabled(enabled);
 ///////////////////////////////////////////////////////////////
@@ -750,6 +780,12 @@ void BitcoinGUI::gotoContractsInfoPage()
     if (walletFrame) walletFrame->gotoContractsInfoPage();
 }
 /////////////////////////////////////////////////////////
+
+void BitcoinGUI::on_ContractAction_cliced()
+{
+    createContractAction->setVisible(!createContractAction->isVisible());
+    contractsInfoAction->setVisible(!contractsInfoAction->isVisible());
+}
 
 void BitcoinGUI::gotoOverviewPage()
 {

@@ -492,10 +492,10 @@ void SendCoinsDialog::setBalance(const CAmount& balance, const CAmount& unconfir
     Q_UNUSED(watchImmatureBalance);
     Q_UNUSED(watchStake);
 
-    if(model && model->getOptionsModel())
-    {
-        ui->labelBalance->setText(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), balance));
-    }
+//    if(model && model->getOptionsModel())
+//    {
+//        ui->labelBalance->setText(BitcoinUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), balance));
+//    }
 }
 
 void SendCoinsDialog::updateDisplayUnit()

@@ -197,7 +197,43 @@ void ReceiveRequestDialog::update()
     }
 #endif
 }
+QPixmap ReceiveRequestDialog::generateQr(const SendCoinsRecipient &info){
 
+#ifdef USE_QRCODE
+    QString uri = GUIUtil::formatBitcoinURI(info);
+    if(!uri.isEmpty())
+    {
+        // limit URI length
+        if (!(uri.length() > MAX_URI_LENGTH)){
+            QRcode *code = QRcode_encodeString(uri.toUtf8().constData(), 0, QR_ECLEVEL_L, QR_MODE_8, 1);
+            if (!code)
+            {
+                return QPixmap(QSize(1,1));
+            }
+            QImage qrImage = QImage(code->width + 8, code->width + 8, QImage::Format_RGB32);
+            qrImage.fill(0xffffff);
+            unsigned char *p = code->data;
+            for (int y = 0; y < code->width; y++)
+            {
+                for (int x = 0; x < code->width; x++)
+                {
+                    qrImage.setPixel(x + 4, y + 4, ((*p & 1) ? 0x0 : 0xffffff));
+                    p++;
+                }
+            }
+            QRcode_free(code);
+
+            QImage qrAddrImage = QImage(QR_IMAGE_SIZE, QR_IMAGE_SIZE, QImage::Format_RGB32);
+            qrAddrImage.fill(0xffffff);
+            QPainter painter(&qrAddrImage);
+            painter.drawImage(0, 0, qrImage.scaled(QR_IMAGE_SIZE, QR_IMAGE_SIZE));
+            painter.end();
+            return QPixmap::fromImage(qrAddrImage);
+        }
+    }
+#endif
+    return QPixmap(QSize(1,1));
+}
 void ReceiveRequestDialog::on_btnCopyURI_clicked()
 {
     GUIUtil::setClipboard(GUIUtil::formatBitcoinURI(info));

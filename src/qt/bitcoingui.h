@@ -17,7 +17,7 @@
 #include <QMenu>
 #include <QPoint>
 #include <QSystemTrayIcon>
-
+#include "walletheader.h"
 class ClientModel;
 class NetworkStyle;
 class Notificator;
@@ -82,6 +82,10 @@ private:
     ClientModel *clientModel;
     WalletFrame *walletFrame;
 
+    WalletHeader *walletHeader;
+
+    QWidget *BalanseBar;
+
     UnitDisplayStatusBarControl *unitDisplayControl;
     QLabel *labelWalletEncryptionIcon;
     QLabel *labelWalletHDStatusIcon;
@@ -119,6 +123,7 @@ private:
 
 /////////////////////////////////////////// // qtum
     QAction *createContractAction;
+    QAction *ContractAction;
     QAction *contractsInfoAction;
 ///////////////////////////////////////////
 
@@ -161,6 +166,7 @@ private:
     void updateNetworkState();
 
     void updateHeadersSyncProgressLabel();
+
 
 Q_SIGNALS:
     /** Signal raised when a URI was entered or dragged to the GUI */
@@ -209,6 +215,8 @@ private Q_SLOTS:
     void gotoCreateContractPage();
     void gotoContractsInfoPage();
 /////////////////////////////////////////////
+
+    void on_ContractAction_cliced();
 
     /** Switch to overview (home) page */
     void gotoOverviewPage();

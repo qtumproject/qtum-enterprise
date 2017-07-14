@@ -1,4 +1,4 @@
-<!DOCTYPE RCC><RCC version="1.0">
+<RCC>
     <qresource prefix="/translations">
         <file alias="af">locale/bitcoin_af.qm</file>
         <file alias="af_ZA">locale/bitcoin_af_ZA.qm</file>

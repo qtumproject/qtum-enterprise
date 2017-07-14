@@ -30,6 +30,7 @@ bool BitcoinUnits::valid(int unit)
     case BTC:
     case mBTC:
     case uBTC:
+    case CNY:
         return true;
     default:
         return false;
@@ -40,6 +41,7 @@ QString BitcoinUnits::name(int unit)
 {
     switch(unit)
     {
+    case CNY: return QString("¥");
     case BTC: return QString("QTUM");
     case mBTC: return QString("mQTUM");
     case uBTC: return QString::fromUtf8("μQTUM");
@@ -51,6 +53,7 @@ QString BitcoinUnits::description(int unit)
 {
     switch(unit)
     {
+    case CNY: return QString("CNY");
     case BTC: return QString("Qtums");
     case mBTC: return QString("Milli-Qtums (1 / 1" THIN_SP_UTF8 "000)");
     case uBTC: return QString("Micro-Qtums (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
@@ -64,7 +67,7 @@ qint64 BitcoinUnits::factor(int unit)
     {
     case BTC:  return 100000000;
     case mBTC: return 100000;
-    case uBTC: return 100;
+    case CNY:case uBTC: return 100;
     default:   return 100000000;
     }
 }
@@ -72,10 +75,10 @@ qint64 BitcoinUnits::factor(int unit)
 int BitcoinUnits::decimals(int unit)
 {
     switch(unit)
-    {
+    { 
     case BTC: return 8;
     case mBTC: return 5;
-    case uBTC: return 2;
+    case CNY: case uBTC: return 2;
     default: return 0;
     }
 }
@@ -121,7 +124,10 @@ QString BitcoinUnits::format(int unit, const CAmount& nIn, bool fPlus, Separator
 
 QString BitcoinUnits::formatWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)
 {
-    return format(unit, amount, plussign, separators) + QString(" ") + name(unit);
+    if(CNY!=unit)
+        return format(unit, amount, plussign, separators) + QString(" ") + name(unit);
+    else
+        return name(unit)+QString(" ")+format(unit, amount, plussign, separators);
 }
 
 QString BitcoinUnits::formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)

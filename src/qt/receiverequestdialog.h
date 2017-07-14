@@ -55,6 +55,7 @@ public:
 
     void setModel(OptionsModel *model);
     void setInfo(const SendCoinsRecipient &info);
+    static QPixmap generateQr(const SendCoinsRecipient &info);
 
 private Q_SLOTS:
     void on_btnCopyURI_clicked();

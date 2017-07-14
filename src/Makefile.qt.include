@@ -114,7 +114,8 @@ QT_FORMS_UI = \
   qt/forms/transactiondescdialog.ui \
   qt/forms/createcontract.ui \
   qt/forms/contractsinfo.ui \
-  qt/forms/calldialog.ui
+  qt/forms/calldialog.ui \
+  qt/forms/walletheader.ui
 
 QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
@@ -164,7 +165,8 @@ QT_MOC_CPP = \
   qt/moc_walletview.cpp \ 
   qt/moc_createcontract.cpp \
   qt/moc_contractsinfo.cpp \
-  qt/moc_calldialog.cpp
+  qt/moc_calldialog.cpp \
+  qt/moc_walletheader.cpp
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -243,7 +245,8 @@ BITCOIN_QT_H = \
   qt/contractsinfo.h \
   qt/calldialog.h \
   libsolidity/interface/CompilerStack.h \
-  qt/analyzerERC20.h
+  qt/analyzerERC20.h \
+  qt/walletheader.h 
 
 RES_ICONS = \
   qt/res/icons/add.png \
@@ -362,7 +365,8 @@ BITCOIN_QT_WALLET_CPP = \
   qt/createcontract.cpp \
   qt/contractsinfo.cpp \
   qt/calldialog.cpp \
-  qt/analyzerERC20.cpp
+  qt/analyzerERC20.cpp \
+  qt/walletheader.cpp
 
 BITCOIN_QT_CPP = $(BITCOIN_QT_BASE_CPP)
 if TARGET_WINDOWS

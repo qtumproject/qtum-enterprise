@@ -1,0 +1,53 @@
+QToolBar{
+	margin:0px;
+}
+QToolButton{
+    min-width: 140px;
+    border:1px solid #999;
+    text-align:center;
+}
+QToolButton:pressed{
+    background-color:#777;
+}
+QToolButton:hover{
+    background-color:#bbb;
+}
+QToolButton:checked{
+    background: #ccc;
+}
+QToolBar #contractsInfoAction, QToolBar #createContractAction{
+    border:1px solid #f99;
+}
+#addressBookButton,#pasteButton,#deleteButton{
+    min-width: 0px;
+    border:none;
+}
+QFrame{
+    margin:0px;
+}
+#SendCoins,#SendCoinsDialog{
+	border: 1px solid #eee;
+}
+#logTransactionsFrame{
+	margin-left:10px;
+}
+QFrame[frameShape="4"]{
+    border-radius: 0px;
+    border-top:  2px dashed #777;
+    background: transparent;
+}
+QFrame[frameShape="5"]
+{
+    margin-top:22px;
+    margin-bottom:22px;
+    border-radius: 0px;
+    border-left:  1px solid #fff;
+    background: transparent;
+} 
+#CreateContract #frame{
+	border:none;
+}
+#CreateContract #frame_4{
+	margin-top:5px;
+	margin-bottom:5px;
+}

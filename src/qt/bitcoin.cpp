@@ -7,7 +7,7 @@
 #endif
 
 #include "bitcoingui.h"
-
+#include <QFile>
 #include "chainparams.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
@@ -373,6 +373,9 @@ void BitcoinApplication::createOptionsModel(bool resetSettings)
 void BitcoinApplication::createWindow(const NetworkStyle *networkStyle)
 {
     window = new BitcoinGUI(platformStyle, networkStyle, 0);
+    QFile file(":/style/Style");
+    file.open(QFile::ReadOnly);
+    window->setStyleSheet(QLatin1String(file.readAll()));
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));
