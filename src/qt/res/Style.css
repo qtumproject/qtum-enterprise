@@ -3,6 +3,7 @@ QToolBar{
 }
 QToolButton{
     min-width: 140px;
+	min-height: 40px;
     border:1px solid #999;
     text-align:center;
 }
@@ -15,11 +16,9 @@ QToolButton:hover{
 QToolButton:checked{
     background: #ccc;
 }
-QToolBar #contractsInfoAction, QToolBar #createContractAction{
-    border:1px solid #f99;
-}
 #addressBookButton,#pasteButton,#deleteButton{
     min-width: 0px;
+	min-height: 0px;
     border:none;
 }
 QFrame{

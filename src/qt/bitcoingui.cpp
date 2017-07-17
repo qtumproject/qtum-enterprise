@@ -351,6 +351,7 @@ void BitcoinGUI::createActions()
     ContractAction->setToolTip(ContractAction->statusTip());
     ContractAction->setCheckable(true);
     ContractAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    tabGroup->addAction(ContractAction);
 
     createContractAction = new QAction(platformStyle->SingleColorIcon(":/icons/add"), tr("&Create contract"), this);
     createContractAction->setObjectName("createContractAction");
@@ -783,6 +784,7 @@ void BitcoinGUI::gotoContractsInfoPage()
 
 void BitcoinGUI::on_ContractAction_cliced()
 {
+    ContractAction->setChecked(true);
     createContractAction->setVisible(!createContractAction->isVisible());
     contractsInfoAction->setVisible(!contractsInfoAction->isVisible());
 }
@@ -790,24 +792,32 @@ void BitcoinGUI::on_ContractAction_cliced()
 void BitcoinGUI::gotoOverviewPage()
 {
     overviewAction->setChecked(true);
+    createContractAction->setVisible(false);
+    contractsInfoAction->setVisible(false);
     if (walletFrame) walletFrame->gotoOverviewPage();
 }
 
 void BitcoinGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
+    createContractAction->setVisible(false);
+    contractsInfoAction->setVisible(false);
     if (walletFrame) walletFrame->gotoHistoryPage();
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
 {
     receiveCoinsAction->setChecked(true);
+    createContractAction->setVisible(false);
+    contractsInfoAction->setVisible(false);
     if (walletFrame) walletFrame->gotoReceiveCoinsPage();
 }
 
 void BitcoinGUI::gotoSendCoinsPage(QString addr)
 {
     sendCoinsAction->setChecked(true);
+    createContractAction->setVisible(false);
+    contractsInfoAction->setVisible(false);
     if (walletFrame) walletFrame->gotoSendCoinsPage(addr);
 }
 
