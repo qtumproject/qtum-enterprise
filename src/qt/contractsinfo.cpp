@@ -1,8 +1,6 @@
 #include "contractsinfo.h"
 #include "ui_contractsinfo.h"
-#include "transactionrecord.h"
-#include <analyzerERC20.h>
-#include <libethcore/ABI.h>
+
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
     QWidget(parent), walletModel(_walletModel), ui(new Ui::ContractsInfo){
@@ -114,10 +112,9 @@ std::vector<ContractMethod> ContractsInfo::createListMethods(CContractInfo contr
     return result;
 }
 
+
 void ContractsInfo::showContractInterface(QString address){
     std::string stdAddres = address.toUtf8().constData();
-
-    // Get the contract
     auto contract = pwalletMain->mapContractInfo.find(ParseHex(stdAddres));
     CContractInfo contractInfo = contract->second;
 
@@ -127,50 +124,20 @@ void ContractsInfo::showContractInterface(QString address){
         parser.parseAbiJSON(contractInfo.getAbi());
         std::vector<ContractMethod> methods = parser.getContractMethods();
         
-        std::vector<std::pair<std::string, std::string>> staticCalls; 
-        for (auto e : methods)
+        std::vector<std::pair<ContractMethod, std::string>> staticCalls;
+
+        for (auto& e : methods)
         {
             if (!e.constant) continue;
-            if (!e.inputs.empty()) continue;
             if (e.outputs.empty()) continue;
-            std::string sig(e.name+"()");
-            dev::FixedHash<4> hash(dev::keccak256(sig));
-            auto signature = hash.asBytes();
-
-            dev::u256 gasPrice = 1;
-            dev::u256 gasLimit(10000000); // MAX_MONEY
-            dev::Address senderAddress("f1b0747fe29c1fe5d4ff1e63cefdbdeaae1329d6");
-            
-            CBlock block;
-            CMutableTransaction tx;
-            tx.vout.push_back(CTxOut(0, CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG));
-            block.vtx.push_back(MakeTransactionRef(CTransaction(tx)));
-        
-            QtumTransaction callTransaction(0, gasPrice, gasLimit, dev::Address(stdAddres), signature, dev::u256(0));
-            callTransaction.forceSender(senderAddress);
-
-            ByteCodeExec exec(block, std::vector<QtumTransaction>(1, callTransaction));
-            exec.performByteCode(dev::eth::Permanence::Reverted);
-            std::vector<ResultExecute> execResults = exec.getResult();
-            auto out(execResults[0].execRes.output);
-
-            if (e.outputs[0].type == "address") {
-                staticCalls.push_back(std::make_pair(e.name, "0x" + dev::Address(dev::eth::abiOut<dev::u160>(out)).hex()));
-            } else if (e.outputs[0].type == "string"){
-                staticCalls.push_back(std::make_pair(e.name, dev::eth::abiOut<std::string>(out)));
-            } else {
-                std::stringstream ss;
-                if (e.outputs[0].type.substr(0,3) == "int"){
-                    ss << dev::u2s(dev::eth::abiOut<dev::u256>(out));
-                } else {
-                    ss << dev::eth::abiOut<dev::u256>(out);
-                }
-                staticCalls.push_back(std::make_pair(e.name, ss.str()));
-            }
+            staticCalls.push_back({e, std::string()});
         }
 
-        // Get the contract methods
-        // std::vector<std::string> listMethods();
+        for(auto& e : staticCalls)
+        {
+            auto res =  PerformStaticCall(e.first, stdAddres);
+            e.second = ParseExecutionResult(e.first.outputs[0], res);
+        }
 
         // Create dialog window
         CallDialog* dialog = new CallDialog(walletModel);

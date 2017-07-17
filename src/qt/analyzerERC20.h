@@ -1,8 +1,15 @@
+#ifndef ANALYZER_ERC20_H
+#define ANALYZER_ERC20_H
+
 #include <univalue.h>
 #include "libdevcore/Common.h"
 #include "libdevcore/FixedHash.h"
 #include <regex>
 #include "utilstrencodings.h"
+#include <libethcore/ABI.h>
+#include "base58.h"
+#include <walletmodel.h>
+#include "transactionrecord.h"
 
 using Parameters = std::vector<std::pair<std::string, std::string>>;
 using DataAndStack = std::pair<std::vector<std::string>, std::vector<std::string>>;
@@ -99,3 +106,11 @@ private:
 
     ParserAbi parser;
 };
+
+std::string ParseExecutionResult(ContractMethodParams output, dev::bytes res);
+
+dev::bytes PerformStaticCall(ContractMethod& cm, std::string contractAddress,
+                                            std::vector<std::string> arguments = std::vector<std::string>());
+    
+
+#endif //ANALYZER_ERC20_H

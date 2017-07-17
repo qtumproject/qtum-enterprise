@@ -29,13 +29,42 @@ void CallDialog::setContractABI(std::string abi)
     contractABI = abi;
 }
 
-void CallDialog::setDataToScrollArea(std::vector<std::pair<std::string, std::string>> data){
+void CallDialog::textChangedOnReadContract(){
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
+    QLabel * label = mapEditLabel[lineEdit];
+
+    auto res =  PerformStaticCall(mapEditMethod[lineEdit], contractAddress.hex(), {lineEdit->text().toStdString()});
+    label->setText(QString::fromStdString(ParseExecutionResult(mapEditMethod[lineEdit].outputs[0], res)));
+}
+
+void CallDialog::setDataToScrollArea(std::vector<std::pair<ContractMethod, std::string>>& data){
     QVBoxLayout *gBoxLayout = new QVBoxLayout(this);
     ui->scrollAreaReadOfContract->setLayout(gBoxLayout);
     for(auto e: data)
     {
-        QLabel* test = new QLabel(QString::fromStdString("<b>" + e.first + " :</b>\n" + e.second));
+        if (!e.first.inputs.empty())
+        {
+            QHBoxLayout * hBoxLayout = new QHBoxLayout(this);
+            QLabel* name = new QLabel(QString::fromStdString("<b>" + e.first.name + " : </b>"), this);   
+            QLineEdit *textEdit = new QLineEdit(this);
+            QLabel* value = new QLabel(this);   
+            mapEditLabel[textEdit] = value;
+            mapEditMethod[textEdit] = e.first;
+
+            textEdit->setMaximumWidth(180);
+
+            gBoxLayout->addWidget(name);  
+            hBoxLayout->addWidget(textEdit);  
+            hBoxLayout->addWidget(value);  
+
+            gBoxLayout->addLayout(hBoxLayout);
+
+            connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(textChangedOnReadContract()));
+            continue;
+        }
+        QLabel* test = new QLabel(QString::fromStdString("<b>" + e.first.name + " :</b>\n" + e.second));
         test->setWordWrap(true);
+        test->setTextInteractionFlags(Qt::TextSelectableByMouse);
         gBoxLayout->addWidget(test);    
     }
 }
@@ -66,11 +95,11 @@ void CallDialog::validateSender()
 void CallDialog::setParameters()
 {
     ContractMethod method(contractMethods[selectedMethod]);
+    QWidget *scrollWidget = new QWidget(this);
+    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    vLayout->addStretch();
     textEdits.clear();
     for(ContractMethodParams& cm : method.inputs){
-        QWidget *scrollWidget = new QWidget(this);
-        QVBoxLayout *vLayout = new QVBoxLayout(this);
-        vLayout->addStretch();
 
         QLabel *label = new QLabel(QString::fromStdString(cm.name + " (" + cm.type + ")"), this);
         QLineEdit *textEdit = new QLineEdit(this);
@@ -80,11 +109,12 @@ void CallDialog::setParameters()
         vLayout->addWidget(label);
         vLayout->addWidget(textEdit);
 
-        scrollWidget->setLayout(vLayout);
         ui->scrollAreaWriteToContract->setWidget(scrollWidget);
         ui->scrollAreaWriteToContract->setWidgetResizable(true);
         connect(textEdit, SIGNAL(textChanged(const QString &)), this, SLOT(updateTextEditsParams()));
     }
+
+    scrollWidget->setLayout(vLayout);
 }
 
 void CallDialog::updateActive(){
@@ -110,9 +140,9 @@ void CallDialog::callFunction(){
     std::string sig(method.name + "(");
     for (auto e: method.inputs)
     {
-        sig += e.type + ", ";
+        sig += e.type + ",";
     }
-    sig.replace(sig.length() - 2, 2, ")");
+    sig.replace(sig.length() - 1, 1, ")");
     dev::FixedHash<4> hash(dev::keccak256(sig));
 
     ParserAbi parser;
@@ -166,11 +196,12 @@ void CallDialog::callFunction(){
             QPalette palette;
             palette.setColor(QPalette::Base, colorBackgroundTextEditIncorrect);
             ui->senderLineEdit->setPalette(palette); 
+            return;
         }
     }
 
     CReserveKey reservekey(pwalletMain);
-    CWalletTx wtx(createTransactionOpCall(reservekey, coinControl, result, nGasLimit, nGasPrice, contractAddress, error));
+    CWalletTx wtx(createTransactionOpCall(reservekey, coinControl, result, nGasLimit, nGasPrice, contractAddress, error, true));
     if(!error.empty()){
         QMessageBox::critical(NULL, QObject::tr("Error"), QString::fromStdString(error));
         return;

@@ -3,6 +3,73 @@
 std::string ERC20 = "[{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"name\":\"totalSupply\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"balance\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"remaining\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_owner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_spender\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"}]";
 ContractMethod NullContractMethod;
 
+std::string ParseExecutionResult(ContractMethodParams output, 
+                                                dev::bytes res)
+{
+    if (output.type == "address") {
+        auto ethAddr(dev::Address(dev::eth::abiOut<dev::u160>(res)).asBytes());
+        CBitcoinAddress addr;
+        addr.Set(CKeyID(uint160(ethAddr)));
+        return addr.ToString();
+    } else if (output.type == "string"){
+        return dev::eth::abiOut<std::string>(res);
+    } else {
+        std::stringstream ss;
+        if (output.type.substr(0,3) == "int"){
+            ss << dev::u2s(dev::eth::abiOut<dev::u256>(res));
+        } else {
+            ss << dev::eth::abiOut<dev::u256>(res);
+        }
+        return ss.str();
+    }
+}
+
+dev::bytes PerformStaticCall(ContractMethod& cm,
+                                            std::string contractAddress,
+                                         std::vector<std::string> arguments)
+{
+    std::string sig;
+    if (cm.inputs.empty()) 
+    {
+        sig = cm.name+"()";
+    } else {
+        if (cm.inputs.size() != arguments.size()) return dev::bytes();
+        sig = cm.name + "(";
+        for (auto e: cm.inputs)
+        {
+            sig += e.type + ",";
+        }
+        sig.replace(sig.length() - 1, 1, ")");
+    }
+
+    dev::FixedHash<4> hash(dev::keccak256(sig));
+
+    ParserAbi parser;
+    Parameters params;
+    for(size_t i = 0; i < cm.inputs.size(); i++){
+        params.push_back(std::make_pair(cm.inputs[i].type, arguments[i]));
+    }
+    std::string result = hash.hex() + parser.createInputData("", params);
+    
+
+    dev::u256 gasPrice = 1;
+    dev::u256 gasLimit(10000000); // MAX_MONEY
+    dev::Address senderAddress("f1b0747fe29c1fe5d4ff1e63cefdbdeaae1329d6");
+    
+    CBlock block;
+    CMutableTransaction tx;
+    tx.vout.push_back(CTxOut(0, CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG));
+    block.vtx.push_back(MakeTransactionRef(CTransaction(tx)));
+
+
+    QtumTransaction callTransaction(0, gasPrice, gasLimit, dev::Address(contractAddress), ParseHex(result), dev::u256(0));
+    callTransaction.forceSender(senderAddress);
+
+    ByteCodeExec exec(block, std::vector<QtumTransaction>(1, callTransaction));
+    exec.performByteCode(dev::eth::Permanence::Reverted);
+    std::vector<ResultExecute> execResults = exec.getResult();
+    return execResults[0].execRes.output;
+}
 
 std::regex uintRegex("(uint[0-9]{0,3})");
 std::regex intRegex("(int[0-9]{0,3})");

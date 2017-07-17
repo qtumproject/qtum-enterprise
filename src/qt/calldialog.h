@@ -27,7 +27,7 @@ public:
     
     void setContractABI(std::string abi);
     void setContractAddress(QString address);
-    void setDataToScrollArea(std::vector<std::pair<std::string, std::string>>);
+    void setDataToScrollArea(std::vector<std::pair<ContractMethod, std::string>>& data);
     void createWriteToContract(std::vector<ContractMethod>& methods);
 
 public Q_SLOTS:
@@ -36,7 +36,7 @@ public Q_SLOTS:
     void validateSender();
     void updateActive();
     void updateTextEditsParams();
-
+    void textChangedOnReadContract();
 private:
     Ui::CallDialog *ui;
 
@@ -47,6 +47,8 @@ private:
     std::vector<ContractMethod> contractMethods;
     uint32_t selectedMethod;
     void setParameters();
+    std::map<QLineEdit*, QLabel*> mapEditLabel;
+    std::map<QLineEdit*, ContractMethod> mapEditMethod;
 
     WalletModel* walletModel;
 };

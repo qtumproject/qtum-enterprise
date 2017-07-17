@@ -4,6 +4,10 @@
 #include <QWidget>
 #include <QStandardItemModel>
 #include <walletmodel.h>
+#include "transactionrecord.h"
+#include <analyzerERC20.h>
+#include <libethcore/ABI.h>
+#include "base58.h"
 
 #include "calldialog.h"
 
@@ -28,7 +32,6 @@ public Q_SLOTS:
     void tokenSelected(QModelIndex index);
 
 private:
-
     void updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status);
     void updateContractsToDBWallet(CContractInfo& info);
     void updateConfirmContracts(CContractInfo& info);
