@@ -1,6 +1,7 @@
 #include "contractsinfo.h"
 #include "ui_contractsinfo.h"
-
+#include <QTextEdit>
+#include <QCheckBox>
 
 ContractsInfo::ContractsInfo(WalletModel* _walletModel, QWidget *parent) :
     QWidget(parent), walletModel(_walletModel), ui(new Ui::ContractsInfo){
@@ -19,6 +20,63 @@ void ContractsInfo::updateInfo(){
         updateContractsToDBWallet(data[i]);
         updateConfirmContracts(data[i]);
     }
+}
+
+void ContractsInfo::showWatchDialog(){
+    auto dialog = new QDialog(this);
+    QVBoxLayout * mainLayout = new QVBoxLayout(dialog);
+    QLineEdit * lEditAddress = new QLineEdit();
+
+    lEditAddress->setPlaceholderText(tr("Contract address"));
+    lEditAddress->setMinimumWidth(400);
+
+    mainLayout->addWidget(lEditAddress);
+
+    QTextEdit * lEditABI = new QTextEdit();
+
+    lEditABI->setPlaceholderText(tr("Contract ABI"));
+    lEditABI->setMinimumWidth(400);
+    lEditABI->setMinimumHeight(800);
+
+    mainLayout->addWidget(lEditABI);
+    
+    // QHBoxLayout * hBoxLayout = new QHBoxLayout(this);
+    // QLabel * lbIsContract = new QLabel();
+    // hBoxLayout->addWidget(lbIsContract);
+    QCheckBox * chbIsContract = new QCheckBox(tr("Is contract"), this);
+    mainLayout->addWidget(chbIsContract);
+
+    QPushButton * btnOk = new QPushButton(tr("OK"), dialog);
+    btnOk->setMinimumWidth(400);
+
+    mainLayout->addWidget(btnOk);
+
+    dialog->resize(410, 810);
+    dialog->setLayout(mainLayout);
+    btnOk->setAutoDefault(true);
+    connect(btnOk, SIGNAL(clicked()), dialog, SLOT(accept()));
+    if (dialog->exec() == QDialog::Accepted)
+    {
+        std::string abi = chbIsContract->isChecked() ? ERC20 :
+            lEditABI->toPlainText().toStdString();
+        std::string address = lEditAddress->text().toStdString();
+        if (!globalState->addressInUse(dev::Address(ParseHex(address)))) return;
+        AnalyzerERC20 erc;
+        CContractInfo info(CContractInfo::DeployStatus::WATCHED,  erc.isERC20(abi), GetAdjustedTime(), uint256(), 0, ParseHex(address), abi);
+        pwalletMain->addContractInfo(info);
+
+        if(walletModel){
+            QStringList data = walletModel->createDataForTokensAndContractsModel(info);
+            if(!info.isToken() && !data.empty()){
+                walletModel->addContractToContractModel(data);
+            } else if(info.isToken() && !data.empty()){
+                walletModel->addTokenToTokenModel(data);
+            }
+            walletModel->addConfirmContract(info);
+        }
+    }
+
+
 }
 
 void ContractsInfo::updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status){
@@ -93,6 +151,7 @@ void ContractsInfo::setWalletModel(WalletModel *model){
 
         connect(ui->tableViewContractsInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(contractSelected(QModelIndex)));
         connect(ui->tableViewTokensInfo, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(tokenSelected(QModelIndex)));
+        connect(ui->pushButtonWatch, SIGNAL(clicked()), this, SLOT(showWatchDialog()));
     }
 }
 
@@ -118,7 +177,8 @@ void ContractsInfo::showContractInterface(QString address){
     auto contract = pwalletMain->mapContractInfo.find(ParseHex(stdAddres));
     CContractInfo contractInfo = contract->second;
 
-    if(contractInfo.getStatus() == "Created"){
+    if(contractInfo.getStatus() == "Created" 
+        || contractInfo.getStatus() == "Watched"){
 
         ParserAbi parser;
         parser.parseAbiJSON(contractInfo.getAbi());

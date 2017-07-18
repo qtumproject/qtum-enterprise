@@ -1005,6 +1005,10 @@ std::string CContractInfo::getStatus() {
             result = "Not created";
             break;
         }
+        case WATCHED:{
+            result = "Watched";
+            break;
+        }
     }
     return result;
 }

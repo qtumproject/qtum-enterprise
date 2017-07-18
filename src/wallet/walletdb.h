@@ -35,7 +35,7 @@ class CContractInfo{
 
 public:
 
-    enum DeployStatus { CONFIRMING = 0, CREATED, NOT_CREATED };
+    enum DeployStatus { CONFIRMING = 0, CREATED, NOT_CREATED, WATCHED };
     
     CContractInfo() { SetNull(); }
     CContractInfo(DeployStatus stat, bool tok, uint32_t time, uint256 hash, int64_t vout, std::vector<unsigned char> addrContract, std::string abi);

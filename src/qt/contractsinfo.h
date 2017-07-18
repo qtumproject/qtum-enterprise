@@ -30,6 +30,7 @@ public Q_SLOTS:
     void updateInfo();
     void contractSelected(QModelIndex index);
     void tokenSelected(QModelIndex index);
+    void showWatchDialog();
 
 private:
     void updateContractModelAndTokenModel(CContractInfo& info, TransactionStatus::Status status);

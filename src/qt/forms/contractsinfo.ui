@@ -68,6 +68,19 @@
    <item>
     <widget class="QTableView" name="tableViewTokensInfo"/>
    </item>
+   <item> 
+    <widget class="QPushButton" name="pushButtonWatch">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>50</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Watch</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
