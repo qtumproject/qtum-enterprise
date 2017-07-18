@@ -59,8 +59,8 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     // context menu signals
     connect(ui->recentRequestsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
     connect(ui->recentRequestsView,SIGNAL(clicked(QModelIndex)),this,SLOT(on_tableClicked(QModelIndex)));
-    connect(ui->Generate,SIGNAL(clicked(bool)),SLOT(on_UpdateCliced()));
-    connect(ui->Copy,SIGNAL(clicked(bool)),this,SLOT(on_CopyCliced()));
+    connect(ui->Generate,SIGNAL(clicked(bool)),SLOT(on_Updateclicked()));
+    connect(ui->Copy,SIGNAL(clicked(bool)),this,SLOT(on_Copyclicked()));
     connect(copyURIAction, SIGNAL(triggered()), this, SLOT(copyURI()));
     connect(copyLabelAction, SIGNAL(triggered()), this, SLOT(copyLabel()));
     connect(copyMessageAction, SIGNAL(triggered()), this, SLOT(copyMessage()));
@@ -137,10 +137,10 @@ void ReceiveCoinsDialog::on_tableClicked(QModelIndex index){
     ui->lblQRCode->setVisible(true);
     ui->lblQRCode->setPixmap(ReceiveRequestDialog::generateQr(submodel->entry(index.row()).recipient));
 }
-void ReceiveCoinsDialog::on_CopyCliced(){
+void ReceiveCoinsDialog::on_Copyclicked(){
     GUIUtil::setClipboard(ui->Adress->text());
 }
-void ReceiveCoinsDialog::on_UpdateCliced(){
+void ReceiveCoinsDialog::on_Updateclicked(){
     if(!model || !model->getOptionsModel() || !model->getAddressTableModel() || !model->getRecentRequestsTableModel())
         return;
 

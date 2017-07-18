@@ -47,7 +47,7 @@ void WalletHeader::setBalance(const CAmount& balance, const CAmount& unconfirmed
     CAmount total = currentBalance+currentUnconfirmedBalance+currentImmatureBalance+currentStake;
 
     ui->labelAmout->setText(BitcoinUnits::formatWithUnit(unit, total, false, BitcoinUnits::separatorAlways));
-    ui->labelAmout_dolar->setText(BitcoinUnits::formatWithUnit(BitcoinUnits::CNY, currentBalance, false, BitcoinUnits::separatorAlways));
+    ui->labelAmout_dolar->setText(BitcoinUnits::formatWithUnit(BitcoinUnits::CNY, total, false, BitcoinUnits::separatorAlways));
 
 
 }

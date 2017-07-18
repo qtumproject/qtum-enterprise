@@ -386,7 +386,7 @@ void BitcoinGUI::createActions()
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// // qtum
-    connect(ContractAction, SIGNAL(triggered()), this, SLOT(on_ContractAction_cliced()));
+    connect(ContractAction, SIGNAL(triggered()), this, SLOT(on_ContractAction_clicked()));
     connect(createContractAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(createContractAction, SIGNAL(triggered()), this, SLOT(gotoCreateContractPage()));
     connect(contractsInfoAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -782,7 +782,7 @@ void BitcoinGUI::gotoContractsInfoPage()
 }
 /////////////////////////////////////////////////////////
 
-void BitcoinGUI::on_ContractAction_cliced()
+void BitcoinGUI::on_ContractAction_clicked()
 {
     ContractAction->setChecked(true);
     createContractAction->setVisible(!createContractAction->isVisible());

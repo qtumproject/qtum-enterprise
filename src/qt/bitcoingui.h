@@ -216,7 +216,7 @@ private Q_SLOTS:
     void gotoContractsInfoPage();
 /////////////////////////////////////////////
 
-    void on_ContractAction_cliced();
+    void on_ContractAction_clicked();
 
     /** Switch to overview (home) page */
     void gotoOverviewPage();
