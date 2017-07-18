@@ -141,7 +141,7 @@ void ContractsInfo::showContractInterface(QString address){
 
         // Create dialog window
         CallDialog* dialog = new CallDialog(walletModel);
-        dialog->setContractAddress(QString("0x") + address);
+        dialog->setContractAddress(address);
         dialog->setDataToScrollArea(staticCalls);
         auto tmp(createListMethods(contractInfo));
         if (!tmp.empty())

@@ -5,7 +5,7 @@
 #include <QLineEdit>
 
 #include <walletmodel.h>
-
+#include "receiverequestdialog.h"
 #include "validation.h"
 #include "consensus/validation.h"
 #include "net.h"

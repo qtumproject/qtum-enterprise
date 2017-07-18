@@ -17,18 +17,42 @@
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
+      <widget class="QRImageWidget" name="lblQRCode">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>300</width>
+         <height>320</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>QR Code</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QLabel" name="labelContract">
-           <property name="text">
-            <string>Contract:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QLabel" name="labelContractAddress">
+           <property name="textInteractionFlags">
+            <set>Qt::TextSelectableByMouse</set>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -226,6 +250,9 @@
          <property name="maximum">
           <double>999999999</double>
          </property>
+         <property name="value">
+          <double>2000000</double>
+         </property>
         </widget>
        </item>
        <item>
@@ -295,5 +322,12 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>QRImageWidget</class>
+   <extends>QLabel</extends>
+   <header>receiverequestdialog.h</header>
+  </customwidget>
+ </customwidgets>
  <connections/>
 </ui>

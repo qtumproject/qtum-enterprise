@@ -7,10 +7,8 @@ std::string ParseExecutionResult(ContractMethodParams output,
                                                 dev::bytes res)
 {
     if (output.type == "address") {
-        auto ethAddr(dev::Address(dev::eth::abiOut<dev::u160>(res)).asBytes());
-        CBitcoinAddress addr;
-        addr.Set(CKeyID(uint160(ethAddr)));
-        return addr.ToString();
+        auto ethAddr(dev::Address(dev::eth::abiOut<dev::u160>(res)));
+        return ethAddr.hex();
     } else if (output.type == "string"){
         return dev::eth::abiOut<std::string>(res);
     } else {
