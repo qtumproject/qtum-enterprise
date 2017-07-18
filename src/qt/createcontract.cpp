@@ -18,12 +18,6 @@ CreateContractPage::CreateContractPage(WalletModel* _walletModel, QWidget *paren
     ui->pushButtonDeploy->setEnabled(false);
     ui->comboBoxSelectContract->setEnabled(false);
 
-    ui->gasLimitHelp->setToolTip(tr("gasLimitHelp"));
-    ui->gasPriceHelp->setToolTip(tr("gasPriceHelp"));
-    ui->SenderAddressHelp->setToolTip(tr("SenderAddressHelp"));
-    ui->BroadcastHelp->setToolTip(tr("BroadcastHelp"));
-
-
     connect(ui->pushButtonDeploy, SIGNAL(clicked()), this, SLOT(deployContract()));
     connect(ui->textEditCode, SIGNAL(textChanged()), this, SLOT(updateCreateContractWidget()));
     connect(ui->comboBoxSelectContract, SIGNAL(currentIndexChanged(int)), this, SLOT(updateParams()));
@@ -181,7 +175,7 @@ void CreateContractPage::createParameterFields(){
         scrollWidget->setLayout(vLayout);
         scrollArea->setWidget(scrollWidget);
         scrollArea->setWidgetResizable(true);
-        //ui->horizontalLayout->addWidget(scrollArea);
+        ui->horizontalLayout->addWidget(scrollArea);
     }
 }
 

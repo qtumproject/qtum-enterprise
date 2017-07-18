@@ -58,7 +58,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
 
     // context menu signals
     connect(ui->recentRequestsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
-    connect(ui->recentRequestsView,SIGNAL(clicked(QModelIndex)),this,SLOT(on_tableCliced(QModelIndex)));
+    connect(ui->recentRequestsView,SIGNAL(clicked(QModelIndex)),this,SLOT(on_tableClicked(QModelIndex)));
     connect(ui->Generate,SIGNAL(clicked(bool)),SLOT(on_UpdateCliced()));
     connect(ui->Copy,SIGNAL(clicked(bool)),this,SLOT(on_CopyCliced()));
     connect(copyURIAction, SIGNAL(triggered()), this, SLOT(copyURI()));
@@ -131,7 +131,7 @@ void ReceiveCoinsDialog::updateDisplayUnit()
     }
 }
 
-void ReceiveCoinsDialog::on_tableCliced(QModelIndex index){
+void ReceiveCoinsDialog::on_tableClicked(QModelIndex index){
     const RecentRequestsTableModel *submodel = model->getRecentRequestsTableModel();
     ui->Adress->setText(submodel->entry(index.row()).recipient.address);
     ui->lblQRCode->setVisible(true);
