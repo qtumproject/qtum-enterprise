@@ -40,9 +40,6 @@ void ContractsInfo::showWatchDialog(){
 
     mainLayout->addWidget(lEditABI);
     
-    // QHBoxLayout * hBoxLayout = new QHBoxLayout(this);
-    // QLabel * lbIsContract = new QLabel();
-    // hBoxLayout->addWidget(lbIsContract);
     QCheckBox * chbIsContract = new QCheckBox(tr("Is contract"), this);
     mainLayout->addWidget(chbIsContract);
 
@@ -54,6 +51,10 @@ void ContractsInfo::showWatchDialog(){
     dialog->resize(410, 810);
     dialog->setLayout(mainLayout);
     btnOk->setAutoDefault(true);
+
+    connect(chbIsContract, &QCheckBox::clicked, dialog, 
+        [=](){ lEditABI->setEnabled(!chbIsContract->isChecked()); });
+
     connect(btnOk, SIGNAL(clicked()), dialog, SLOT(accept()));
     if (dialog->exec() == QDialog::Accepted)
     {

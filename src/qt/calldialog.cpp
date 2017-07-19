@@ -21,7 +21,6 @@ CallDialog::CallDialog(WalletModel* _walletModel, QWidget *parent) :
     walletModel = _walletModel;
 
 #ifndef USE_QRCODE
-    ui->btnSaveAs->setVisible(false);
     ui->lblQRCode->setVisible(false);
 #endif
 
@@ -105,15 +104,16 @@ void CallDialog::setContractAddress(QString address){
     }
     QRcode_free(code);
 
-    QImage qrAddrImage = QImage(QR_IMAGE_SIZE, QR_IMAGE_SIZE+20, QImage::Format_RGB32);
+
+    QImage qrAddrImage = QImage(QR_IMAGE_SIZE*2, QR_IMAGE_SIZE*2+20, QImage::Format_RGB32);
     qrAddrImage.fill(0xffffff);
     QPainter painter(&qrAddrImage);
-    painter.drawImage(0, 0, qrImage.scaled(QR_IMAGE_SIZE, QR_IMAGE_SIZE));
+    painter.drawImage(0, 0, qrImage.scaled(QR_IMAGE_SIZE*2, QR_IMAGE_SIZE*2));
     QFont font = GUIUtil::fixedPitchFont();
     font.setPixelSize(12);
     painter.setFont(font);
     QRect paddedRect = qrAddrImage.rect();
-    paddedRect.setHeight(QR_IMAGE_SIZE+12);
+    paddedRect.setHeight(QR_IMAGE_SIZE*2+12);
     painter.drawText(paddedRect, Qt::AlignBottom|Qt::AlignCenter, address);
     painter.end();
 

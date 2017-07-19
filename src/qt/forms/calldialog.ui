@@ -26,8 +26,8 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>300</width>
-         <height>320</height>
+         <width>400</width>
+         <height>400</height>
         </size>
        </property>
        <property name="toolTip">
