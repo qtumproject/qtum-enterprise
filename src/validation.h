@@ -63,7 +63,7 @@ struct ChainTxData;
 
 struct PrecomputedTransactionData;
 struct LockPoints;
-
+extern CAmount nReserveBalance;
 /** Default for DEFAULT_WHITELISTRELAY. */
 static const bool DEFAULT_WHITELISTRELAY = true;
 /** Default for DEFAULT_WHITELISTFORCERELAY. */
@@ -572,6 +572,8 @@ bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, C
 
 /** Remove invalidity status from a block and its descendants. */
 bool ResetBlockFailureFlags(CBlockIndex *pindex);
+
+bool GetMPoSOutputScripts(std::vector<CScript> &mposScroptList, int nHeight, const Consensus::Params& consensusParams);
 
 /** The currently-connected chain of blocks (protected by cs_main). */
 extern CChain chainActive;

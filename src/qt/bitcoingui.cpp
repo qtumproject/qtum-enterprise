@@ -1151,6 +1151,7 @@ void BitcoinGUI::toggleHidden()
 
 void BitcoinGUI::updateWeight()
 {
+#ifdef ENABLE_WALLET
     if(!pwalletMain)
         return;
 
@@ -1162,7 +1163,6 @@ void BitcoinGUI::updateWeight()
     if (!lockWallet)
         return;
 
-#ifdef ENABLE_WALLET
     if (pwalletMain)
     nWeight = pwalletMain->GetStakeWeight();
 #endif
@@ -1215,8 +1215,10 @@ void BitcoinGUI::updateStakingIcon()
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
         else if (!nWeight)
             labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
+#ifdef ENABLE_WALLET
         else if (pwalletMain && pwalletMain->IsLocked())
             labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
+#endif
         else
             labelStakingIcon->setToolTip(tr("Not staking"));
     }

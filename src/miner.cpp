@@ -998,6 +998,7 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
     return true;
 }
 
+#ifdef ENABLE_WALLET
 void ThreadStakeMiner(CWallet *pwallet)
 {
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
@@ -1132,3 +1133,4 @@ void StakeQtums(bool fStake, CWallet *pwallet)
         stakeThread->create_thread(boost::bind(&ThreadStakeMiner, pwallet));
     }
 }
+#endif

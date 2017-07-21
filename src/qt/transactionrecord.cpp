@@ -194,11 +194,13 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 sub.type = TransactionRecord::ContractSend;
 
                 CTxDestination address;
+#ifdef ENABLE_WALLET
                 // Use the same destination address as in the contract RPCs
                 if(ExtractDestination(pwalletMain->mapWallet[wtx.tx->vin[0].prevout.hash].tx->vout[wtx.tx->vin[0].prevout.n].scriptPubKey, address))
                 {
                     sub.address = toStringHash160(address);
                 }
+#endif
 
                 parts.append(sub);
             }
