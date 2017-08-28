@@ -2586,7 +2586,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction &tx = *(block.vtx[i]);
-
         nInputs += tx.vin.size();
 
         if (!tx.IsCoinBase())
@@ -2681,6 +2680,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             //validate VM version and other ETH params before execution
             //Reject anything unknown (could be changed later by DGP)
             //TODO evaluate if this should be relaxed for soft-fork purposes
+            CAmount nRequiredGas(0);
             for(QtumTransaction& qtx : resultConvertQtumTX.first){
                 VersionVM v = qtx.getVersion();
                 if(v.format!=0)
@@ -2706,6 +2706,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 //don't allow less than DGP set minimum gas price to prevent MPoS greedy mining/spammers
                 if(v.rootVM!=0 && (uint64_t)qtx.gasPrice() < minGasPrice)
                     return state.DoS(100, error("ConnectBlock(): Contract execution has lower gas price than allowed"), REJECT_INVALID, "bad-tx-low-gas-price");
+
+                nRequiredGas += CAmount(qtx.gas()*qtx.gasPrice());
+            }
+
+            if (nRequiredGas > view.GetValueIn(tx)-tx.GetValueOut())
+            {
+                return state.DoS(100, error("ConnectBlock(): Transaction gas cost not covered by fee'"), REJECT_INVALID, "bad-tx-too-little-fee");
             }
 
             if(!exec.performByteCode()){
