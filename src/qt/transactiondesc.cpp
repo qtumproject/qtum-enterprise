@@ -293,12 +293,13 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
         {
             COutPoint prevout = txin.prevout;
 
-            Coin prev;
-            if(pcoinsTip->GetCoin(prevout, prev))
+            CCoins prev;
+            if(pcoinsTip->GetCoins(prevout.hash, prev))
             {
+                if (prevout.n < prev.vout.size())
                 {
                     strHTML += "<li>";
-                    const CTxOut &vout = prev.out;
+                    const CTxOut &vout = prev.vout[prevout.n];
                     CTxDestination address;
                     if (ExtractDestination(vout.scriptPubKey, address))
                     {
