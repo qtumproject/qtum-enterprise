@@ -2495,7 +2495,7 @@ void CWallet::AvailableCoinsForStaking(vector<COutput>& vCoins) const
                         vCoins.push_back(COutput(pcoin, i, nDepth,
                                                  ((mine & ISMINE_SPENDABLE) != ISMINE_NO) ||
                                                  (mine & ISMINE_WATCH_SOLVABLE) != ISMINE_NO,
-                                                 (mine & (ISMINE_SPENDABLE | ISMINE_WATCH_SOLVABLE)) != ISMINE_NO));
+                                                 (mine & (ISMINE_SPENDABLE | ISMINE_WATCH_SOLVABLE)) != ISMINE_NO, true));
             }
         }
     }
@@ -2953,9 +2953,9 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
     int nChangePosRequest = nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
 	COutPoint senderInput;
-    if(hasSender && coin_control && coin_control->HasSelected()){
+    if(hasSender && coin_control.HasSelected()){
     	std::vector<COutPoint> vSenderInputs;
-    	coin_control->ListSelected(vSenderInputs);
+    	coin_control.ListSelected(vSenderInputs);
     	senderInput=vSenderInputs[0];
     }
     for (const auto& recipient : vecSend)
@@ -3016,6 +3016,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
     unsigned int nBytes;
     {
         std::set<CInputCoin> setCoins;
+        vector<CInputCoin> vCoins;
         LOCK2(cs_main, cs_wallet);
         {
             std::vector<COutput> vAvailableCoins;
@@ -3148,9 +3149,9 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 // Move sender input to position 0
                 vCoins.clear();
                 std::copy(setCoins.begin(), setCoins.end(), std::back_inserter(vCoins));
-                if(hasSender && coin_control && coin_control->HasSelected()){
-                for (std::vector<pair<const CWalletTx*,unsigned int>>::size_type i = 0 ; i != vCoins.size(); i++){
-                	if(COutPoint(vCoins[i].first->GetHash(),vCoins[i].second)==senderInput){
+                if(hasSender && coin_control.HasSelected()){
+                for (std::vector<CInputCoin>::size_type i = 0 ; i != vCoins.size(); i++){
+                	if(vCoins[i].outpoint==senderInput){
                 		if(i==0)break;
                 	    iter_swap(vCoins.begin(),vCoins.begin()+i);
                 	    break;
@@ -3174,7 +3175,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                                               nSequence));
 
                 // Fill in dummy signatures for fee calculation.
-                if (!DummySignTx(txNew, vCoins)) {
+                if (!DummySignTx(txNew, setCoins)) {
                     strFailReason = _("Signing transaction failed");
                     return false;
                 }
@@ -3188,12 +3189,8 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 }
 
                 nFeeNeeded = GetMinimumFee(nBytes, coin_control, ::mempool, ::feeEstimator, &feeCalc);
-                CAmount nFeeNeeded = GetMinimumFee(nBytes, currentConfirmationTarget, mempool)+nGasFee;
-                if (coin_control && nFeeNeeded > 0 && coin_control->nMinimumTotalFee > nFeeNeeded) {
-                    nFeeNeeded = coin_control->nMinimumTotalFee;
-                }
-                if (coin_control && coin_control->fOverrideFeeRate)
-                    nFeeNeeded = coin_control->nFeeRate.GetFee(nBytes);
+                if (coin_control.fOverrideFeeRate)
+                    nFeeNeeded = coin_control.m_feerate.get().GetFee(nBytes);
                 // If we made it here and we aren't even able to meet the relay fee on the next pass, give up
                 // because we must be at the maximum allowed fee.
                 if (nFeeNeeded < ::minRelayTxFee.GetFee(nBytes))
@@ -3272,7 +3269,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
         {
             CTransaction txNewConst(txNew);
             int nIn = 0;
-            for (const auto& coin : vCoins)
+            for (const auto& coin : setCoins)
             {
                 const CScript& scriptPubKey = coin.txout.scriptPubKey;
                 SignatureData sigdata;
@@ -3337,7 +3334,7 @@ uint64_t CWallet::GetStakeWeight() const
 
     vector<const CWalletTx*> vwtxPrev;
 
-    set<pair<const CWalletTx*,unsigned int> > setCoins;
+    set<pair<const CWalletTx*,unsigned int>> setCoins;
     CAmount nValueIn = 0;
 
     CAmount nTargetValue = nBalance - nReserveBalance;
@@ -3350,7 +3347,7 @@ uint64_t CWallet::GetStakeWeight() const
     uint64_t nWeight = 0;
 
     LOCK2(cs_main, cs_wallet);
-    for(PAIRTYPE(const CWalletTx*, unsigned int) pcoin : setCoins)
+    for(pair<const CWalletTx*,unsigned int> pcoin : setCoins)
     {
         if (pcoin.first->GetDepthInMainChain() >= COINBASE_MATURITY)
             nWeight += pcoin.first->tx->vout[pcoin.second].nValue;
@@ -3399,9 +3396,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
         //when it has more than 100 entries more than the actual setCoins.
         stakeCache.clear();
     }
-    if(GetBoolArg("-stakecache", DEFAULT_STAKE_CACHE)) {
+    if(gArgs.GetBoolArg("-stakecache", DEFAULT_STAKE_CACHE)) {
 
-        for(const PAIRTYPE(const CWalletTx *, unsigned int) &pcoin : setCoins)
+        for(const pair<const CWalletTx*,unsigned int> &pcoin : setCoins)
         {
             boost::this_thread::interruption_point();
             COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
@@ -3410,7 +3407,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     }
     int64_t nCredit = 0;
     CScript scriptPubKeyKernel;
-    for(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin : setCoins)
+    for(const pair<const CWalletTx*,unsigned int>& pcoin : setCoins)
     {
         bool fKernelFound = false;
         boost::this_thread::interruption_point();
@@ -3481,7 +3478,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     if (nCredit == 0 || nCredit > nBalance - nReserveBalance)
         return false;
 
-    for(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin : setCoins)
+    for(const pair<const CWalletTx*,unsigned int>& pcoin : setCoins)
     {
         // Attempt to add more inputs
         // Only add coins of the same key/address as kernel
