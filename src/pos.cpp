@@ -107,8 +107,8 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, CValidationState& state, const C
     // Kernel (input 0) must match the stake hash target (nBits)
     const CTxIn& txin = tx.vin[0];
 
-    CCoins coinsPrev;
-    if(!view.GetCoins(txin.prevout.hash, coinsPrev)){
+    Coin coinsPrev;
+    if(!view.GetCoin(txin.prevout, coinsPrev)){
         return state.DoS(100, error("CheckProofOfStake() : Stake prevout does not exist %s", txin.prevout.hash.ToString()));
     }
 
@@ -124,7 +124,7 @@ bool CheckProofOfStake(CBlockIndex* pindexPrev, CValidationState& state, const C
     if (!VerifySignature(coinsPrev, txin.prevout.hash, tx, 0, SCRIPT_VERIFY_NONE))
         return state.DoS(100, error("CheckProofOfStake() : VerifySignature failed on coinstake %s", tx.GetHash().ToString()));
 
-    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinsPrev.vout[txin.prevout.n].nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, fDebug))
+    if (!CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinsPrev.out.nValue, txin.prevout, nTimeBlock, hashProofOfStake, targetProofOfStake, fDebug))
         return state.DoS(1, error("CheckProofOfStake() : INFO: check kernel failed on coinstake %s, hashProof=%s", tx.GetHash().ToString(), hashProofOfStake.ToString())); // may occur during initial download or if behind on block chain sync
 
     return true;
@@ -149,8 +149,8 @@ bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTimeBloc
     auto it=cache.find(prevout);
     if(it == cache.end()) {
         //not found in cache (shouldn't happen during staking, only during verification which does not use cache)
-        CCoins coinsPrev;
-        if(!view.GetCoins(prevout.hash, coinsPrev)){
+        Coin coinsPrev;
+        if(!view.GetCoin(prevout, coinsPrev)){
             return false;
         }
 
@@ -161,11 +161,8 @@ bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTimeBloc
         if(!blockFrom) {
             return false;
         }
-        if(!coinsPrev.IsAvailable(prevout.n)){
-            return false;
-        }
 
-        return CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinsPrev.vout[prevout.n].nValue, prevout,
+        return CheckStakeKernelHash(pindexPrev, nBits, blockFrom->nTime, coinsPrev.out.nValue, prevout,
                                     nTimeBlock, hashProofOfStake, targetProofOfStake);
     }else{
         //found in cache
@@ -185,8 +182,8 @@ void CacheKernel(std::map<COutPoint, CStakeCache>& cache, const COutPoint& prevo
         return;
     }
 
-    CCoins coinsPrev;
-    if(!view.GetCoins(prevout.hash, coinsPrev)){
+    Coin coinsPrev;
+    if(!view.GetCoin(prevout, coinsPrev)){
         return;
     }
 
@@ -198,7 +195,7 @@ void CacheKernel(std::map<COutPoint, CStakeCache>& cache, const COutPoint& prevo
         return;
     }
 
-    CStakeCache c(blockFrom->nTime, coinsPrev.vout[prevout.n].nValue);
+    CStakeCache c(blockFrom->nTime, coinsPrev.out.nValue);
     cache.insert({prevout, c});
 }
 

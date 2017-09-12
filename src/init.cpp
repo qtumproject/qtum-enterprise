@@ -188,8 +188,8 @@ void Shutdown()
     StopRPC();
     StopHTTPServer();
 #ifdef ENABLE_WALLET
-    StakeQtums(false, pwalletMain);
     for (CWalletRef pwallet : vpwallets) {
+        StakeQtums(false, pwallet);
         pwallet->Flush(false);
     }
 #endif
@@ -936,6 +936,7 @@ bool AppInitParameterInteraction()
 
     // ********************************************************* Step 3: parameter-to-internal-flags
     if (gArgs.IsArgSet("-debug")) {
+        fDebug = true;
         // Special-case: if -debug=0/-nodebug is set, turn off debugging messages
         const std::vector<std::string> categories = gArgs.GetArgs("-debug");
 
@@ -1370,9 +1371,9 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 
 #ifdef ENABLE_WALLET
-    if (mapMultiArgs.count("-reservebalance")) // ppcoin: reserve balance amount
+    if (gArgs.IsArgSet("-reservebalance")) // ppcoin: reserve balance amount
     {
-        if (!ParseMoney(GetArg("-reservebalance", ""), nReserveBalance))
+        if (!ParseMoney(gArgs.GetArg("-reservebalance", ""), nReserveBalance))
         {
             InitError(_("Invalid amount for -reservebalance=<amount>"));
             return false;
@@ -1459,8 +1460,8 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                     return InitError(_("Incorrect or no genesis block found. Wrong datadir for network?"));
 
                 /////////////////////////////////////////////////////////// qtum
-                if((IsArgSet("-dgpstorage") && IsArgSet("-dgpevm")) || (!IsArgSet("-dgpstorage") && IsArgSet("-dgpevm")) ||
-                  (!IsArgSet("-dgpstorage") && !IsArgSet("-dgpevm"))){
+                if((gArgs.IsArgSet("-dgpstorage") && gArgs.IsArgSet("-dgpevm")) || (!gArgs.IsArgSet("-dgpstorage") && gArgs.IsArgSet("-dgpevm")) ||
+                  (!gArgs.IsArgSet("-dgpstorage") && !gArgs.IsArgSet("-dgpevm"))){
                     fGettingValuesDGP = true;
                 } else {
                     fGettingValuesDGP = false;
@@ -1487,15 +1488,9 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 globalState->db().commit();
                 globalState->dbUtxo().commit();
 
-                fRecordLogOpcodes = IsArgSet("-record-log-opcodes");
+                fRecordLogOpcodes = gArgs.IsArgSet("-record-log-opcodes");
                 fIsVMlogFile = boost::filesystem::exists(GetDataDir() / "vmExecLogs.json");
                 ///////////////////////////////////////////////////////////
-
-                // Initialize the block index (no-op if non-empty database was already loaded)
-                if (!InitBlockIndex(chainparams)) {
-                    strLoadError = _("Error initializing block database");
-                    break;
-                }
 
                 // Check for changed -txindex state
                 if (fTxIndex != gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
@@ -1503,12 +1498,12 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                     break;
                 }
                 // Check for changed -logevents state
-                if (fLogEvents != GetBoolArg("-logevents", DEFAULT_LOGEVENTS) && !fLogEvents) {
+                if (fLogEvents != gArgs.GetBoolArg("-logevents", DEFAULT_LOGEVENTS) && !fLogEvents) {
                     strLoadError = _("You need to rebuild the database using -reindex-chainstate to enable -logevents");
                     break;
                 }
 
-                if (!GetBoolArg("-logevents", DEFAULT_LOGEVENTS))
+                if (!gArgs.GetBoolArg("-logevents", DEFAULT_LOGEVENTS))
                 {
                     boost::filesystem::path stateDir = GetDataDir() / "stateQtum";
                     StorageResults storageRes(stateDir.string());
@@ -1765,10 +1760,14 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 #ifdef ENABLE_WALLET
     // Mine proof-of-stake blocks in the background
-    if (!GetBoolArg("-staking", DEFAULT_STAKE))
+    if (!gArgs.GetBoolArg("-staking", DEFAULT_STAKE)) {
         LogPrintf("Staking disabled\n");
-    else if (pwalletMain)
-        StakeQtums(true, pwalletMain);
+    }else{
+        for (CWalletRef pwallet : vpwallets) {
+            StakeQtums(true, pwallet);
+            pwallet->Flush(false);
+        }
+    }
 #endif
     for (const auto& net : gArgs.GetArgs("-whitelist")) {
         CSubNet subnet;

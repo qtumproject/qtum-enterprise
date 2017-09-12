@@ -344,44 +344,11 @@ static void LimitMempoolSize(CTxMemPool& pool, size_t limit, unsigned long age) 
     if (expired != 0) {
         LogPrint(BCLog::MEMPOOL, "Expired %i transactions from the memory pool\n", expired);
     }
-
-unsigned int GetP2SHSigOpCount(const CTransaction& tx, const CCoinsViewCache& inputs)
-{
-    if (tx.IsCoinBase())
-        return 0;
-
-    unsigned int nSigOps = 0;
-    for (unsigned int i = 0; i < tx.vin.size(); i++)
-    {
-        const CTxOut &prevout = inputs.GetOutputFor(tx.vin[i]);
-        if (prevout.scriptPubKey.IsPayToScriptHash())
-            nSigOps += prevout.scriptPubKey.GetSigOpCount(tx.vin[i].scriptSig);
-    }
-    return nSigOps;
+    std::vector<COutPoint> vNoSpendsRemaining;
+    pool.TrimToSize(limit, &vNoSpendsRemaining);
+    for (const COutPoint& removed : vNoSpendsRemaining)
+        pcoinsTip->Uncache(removed);
 }
-
-int64_t GetTransactionSigOpCost(const CTransaction& tx, const CCoinsViewCache& inputs, int flags)
-{
-    int64_t nSigOps = GetLegacySigOpCount(tx) * WITNESS_SCALE_FACTOR;
-
-    if (tx.IsCoinBase())
-        return nSigOps;
-
-    if (flags & SCRIPT_VERIFY_P2SH) {
-        nSigOps += GetP2SHSigOpCount(tx, inputs) * WITNESS_SCALE_FACTOR;
-    }
-
-    for (unsigned int i = 0; i < tx.vin.size(); i++)
-    {
-        const CTxOut &prevout = inputs.GetOutputFor(tx.vin[i]);
-        nSigOps += CountWitnessSigOps(tx.vin[i].scriptSig, prevout.scriptPubKey, &tx.vin[i].scriptWitness, flags);
-    }
-    return nSigOps;
-}
-
-
-
-
 
 bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fCheckDuplicateInputs)
 {
@@ -442,17 +409,6 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     }
 
     return true;
-}
-
-void LimitMempoolSize(CTxMemPool& pool, size_t limit, unsigned long age) {
-    int expired = pool.Expire(GetTime() - age);
-    if (expired != 0)
-        LogPrint("mempool", "Expired %i transactions from the memory pool\n", expired);
-
-    std::vector<COutPoint> vNoSpendsRemaining;
-    pool.TrimToSize(limit, &vNoSpendsRemaining);
-    for (const COutPoint& removed : vNoSpendsRemaining)
-        pcoinsTip->Uncache(removed);
 }
 
 /** Convert CValidationState to a human-readable message for logging */
@@ -1800,7 +1756,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
     globalState->setRoot(uintToh256(pindex->pprev->hashStateRoot)); // qtum
     globalState->setRootUTXO(uintToh256(pindex->pprev->hashUTXORoot)); // qtum
     
-    if(pfClean == NULL && fLogEvents){
+    if(fClean && fLogEvents){
         boost::filesystem::path stateDir = GetDataDir() / "stateQtum";
         StorageResults storageRes(stateDir.string());
         storageRes.deleteResults(block.vtx);
@@ -1932,7 +1888,7 @@ static int64_t nTimeTotal = 0;
 
 /////////////////////////////////////////////////////////////////////// qtum
 bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx){
-    CScript script = view.AccessCoins(tx.vin[0].prevout.hash)->vout[tx.vin[0].prevout.n].scriptPubKey;
+    CScript script = view.AccessCoin(tx.vin[0].prevout).out.scriptPubKey;
     if(!script.IsPayToPubkeyHash() && !script.IsPayToPubkey()){
         return false;
     }
@@ -2064,7 +2020,7 @@ valtype GetSenderAddress(const CTransaction& tx, const CCoinsViewCache* coinsVie
         }
     }
     if(!scriptFilled && coinsView){
-        script = coinsView->AccessCoins(tx.vin[0].prevout.hash)->vout[tx.vin[0].prevout.n].scriptPubKey;
+        script = coinsView->AccessCoin(tx.vin[0].prevout).out.scriptPubKey;
         scriptFilled = true;
     }
     if(!scriptFilled)
@@ -2574,14 +2530,14 @@ QtumTransaction QtumTxConverter::createEthTX(const EthTransactionParams& etp, ui
             bool fCacheResults = fJustCheck; /* Don't cache results if we're actually connecting blocks (still consult the cache, though) */
             // if (!CheckInputs(tx, state, view, fScriptChecks, flags, fCacheResults, txdata[i], nScriptCheckThreads ? &vChecks : NULL))
             //note that coinbase and coinstake can not contain any contract opcodes, this is checked in CheckBlock
-            if (!CheckInputs(tx, state, view, fScriptChecks, flags, fCacheResults, txdata[i], (hasOpSpend || tx.HasCreateOrCall()) ? NULL : (nScriptCheckThreads ? &vChecks : NULL)))//nScriptCheckThreads ? &vChecks : NULL))
+            if (!CheckInputs(tx, state, view, fScriptChecks, flags, fCacheResults, fCacheResults, txdata[i], (hasOpSpend || tx.HasCreateOrCall()) ? NULL : (nScriptCheckThreads ? &vChecks : NULL)))//nScriptCheckThreads ? &vChecks : NULL))
                 return error("ConnectBlock(): CheckInputs on %s failed with %s",
                     tx.GetHash().ToString(), FormatStateMessage(state));
             control.Add(vChecks);
 
             for(const CTxIn& j : tx.vin){
                 if(!j.scriptSig.HasOpSpend()){
-                    const CTxOut& prevout = view.GetOutputFor(j);
+                    const CTxOut& prevout = view.AccessCoin(j.prevout).out;
                     if((prevout.scriptPubKey.HasOpCreate() || prevout.scriptPubKey.HasOpCall())){
                         return state.DoS(100, error("ConnectBlock(): Contract spend without OP_SPEND in scriptSig"),
                                 REJECT_INVALID, "bad-txns-invalid-contract-spend");
@@ -3799,6 +3755,8 @@ static bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, 
     return true;
 }
 
+static int GetWitnessCommitmentIndex(const CBlock& block);
+
 bool CheckFirstCoinstakeOutput(const CBlock& block)
 {
     // Coinbase output should be empty if proof-of-stake block
@@ -3970,7 +3928,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     // checks that use witness data may be performed here.
 
     // Size limits
-    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
+    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > dgpMaxBlockWeight || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > dgpMaxBlockWeight)
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
 
     // First transaction must be coinbase for PoW blocks, the rest must not be
@@ -4282,7 +4240,7 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
             return true;
         }
 
-        if (!CheckBlockHeader(block, state, chainparams.GetConsensus()))
+        if (!CheckBlockHeader(block, state, chainparams.GetConsensus(), block.IsProofOfStake()))
             return error("%s: Consensus::CheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
 
         // Get prev block index

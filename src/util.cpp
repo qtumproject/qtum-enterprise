@@ -95,6 +95,7 @@ const char * const BITCOIN_PID_FILENAME = "qtumd.pid";
 ArgsManager gArgs;
 bool fPrintToConsole = false;
 bool fPrintToDebugLog = true;
+bool fDebug = false;
 
 bool fLogTimestamps = DEFAULT_LOGTIMESTAMPS;
 bool fLogTimeMicros = DEFAULT_LOGTIMEMICROS;

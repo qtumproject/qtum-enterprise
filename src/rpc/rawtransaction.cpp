@@ -33,6 +33,7 @@
 
 #include <univalue.h>
 
+using namespace std;
 
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
 {

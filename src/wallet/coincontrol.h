@@ -12,6 +12,8 @@
 
 #include <boost/optional.hpp>
 
+extern bool fWalletRbf;
+
 /** Coin Control Features. */
 class CCoinControl
 {

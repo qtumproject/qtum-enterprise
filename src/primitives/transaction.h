@@ -172,6 +172,15 @@ public:
     }
 
     std::string ToString() const;
+    void SetEmpty()
+    {
+        nValue = 0;
+        scriptPubKey.clear();
+    }
+    bool IsEmpty() const
+    {
+        return (nValue == 0 && scriptPubKey.empty());
+    }
 };
 
 struct CMutableTransaction;

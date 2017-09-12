@@ -7,6 +7,7 @@
 #define BITCOIN_AMOUNT_H
 
 #include <stdint.h>
+#include <string>
 
 /** Amount in satoshis (Can be negative) */
 typedef int64_t CAmount;

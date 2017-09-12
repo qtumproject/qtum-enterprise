@@ -52,7 +52,7 @@ public:
 
 extern bool fPrintToConsole;
 extern bool fPrintToDebugLog;
-
+extern bool fDebug;
 extern bool fLogTimestamps;
 extern bool fLogTimeMicros;
 extern bool fLogIPs;
@@ -107,6 +107,8 @@ namespace BCLog {
         COINDB      = (1 << 18),
         QT          = (1 << 19),
         LEVELDB     = (1 << 20),
+        MINER       = (1 << 21),
+        STAKER      = (1 << 22),
         ALL         = ~(uint32_t)0,
     };
 }

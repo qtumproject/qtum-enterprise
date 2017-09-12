@@ -73,13 +73,39 @@ BlockAssembler::Options::Options() {
 
 BlockAssembler::BlockAssembler(const CChainParams& params, const Options& options) : chainparams(params)
 {
-    blockMinFeeRate = options.blockMinFeeRate;
-    // Limit weight to between 4K and MAX_BLOCK_WEIGHT-4K for sanity:
-    nBlockMaxWeight = std::max<size_t>(4000, std::min<size_t>(MAX_BLOCK_WEIGHT - 4000, options.nBlockMaxWeight));
-    // Limit size to between 1K and MAX_BLOCK_SERIALIZED_SIZE-1K for sanity:
-    nBlockMaxSize = std::max<size_t>(1000, std::min<size_t>(MAX_BLOCK_SERIALIZED_SIZE - 1000, options.nBlockMaxSize));
+    // Block resource limits
+    // If neither -blockmaxsize or -blockmaxweight is given, limit to DEFAULT_BLOCK_MAX_*
+    // If only one is given, only restrict the specified resource.
+    // If both are given, restrict both.
+    nBlockMaxWeight = DEFAULT_BLOCK_MAX_WEIGHT;
+    nBlockMaxSize = DEFAULT_BLOCK_MAX_SIZE;
+    bool fWeightSet = false;
+    if (gArgs.IsArgSet("-blockmaxweight")) {
+        nBlockMaxWeight = gArgs.GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT);
+        nBlockMaxSize = dgpMaxBlockSerSize;
+        fWeightSet = true;
+    }
+    if (gArgs.IsArgSet("-blockmaxsize")) {
+        nBlockMaxSize = gArgs.GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
+        if (!fWeightSet) {
+            nBlockMaxWeight = nBlockMaxSize * WITNESS_SCALE_FACTOR;
+        }
+    }
+    if (gArgs.IsArgSet("-blockmintxfee")) {
+        CAmount n = 0;
+        ParseMoney(gArgs.GetArg("-blockmintxfee", ""), n);
+        blockMinFeeRate = CFeeRate(n);
+    } else {
+        blockMinFeeRate = CFeeRate(DEFAULT_BLOCK_MIN_TX_FEE);
+    }
+
+    // Limit weight to between 4K and dgpMaxBlockWeight-4K for sanity:
+    nBlockMaxWeight = std::max((unsigned int)4000, std::min((unsigned int)(dgpMaxBlockWeight-4000), nBlockMaxWeight));
+    // Limit size to between 1K and dgpMaxBlockSerSize-1K for sanity:
+    nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(dgpMaxBlockSerSize-1000), nBlockMaxSize));
     // Whether we need to account for byte usage (in addition to weight usage)
-    fNeedSizeAccounting = (nBlockMaxSize < MAX_BLOCK_SERIALIZED_SIZE - 1000);
+    fNeedSizeAccounting = (nBlockMaxSize < dgpMaxBlockSerSize-1000);
+    blockMinFeeRate = options.blockMinFeeRate;
 }
 
 static BlockAssembler::Options DefaultOptions(const CChainParams& params)
@@ -92,9 +118,9 @@ static BlockAssembler::Options DefaultOptions(const CChainParams& params)
     options.nBlockMaxWeight = DEFAULT_BLOCK_MAX_WEIGHT;
     options.nBlockMaxSize = DEFAULT_BLOCK_MAX_SIZE;
     bool fWeightSet = false;
-    if (IsArgSet("-blockmaxweight")) {
-        nBlockMaxWeight = GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT);
-        nBlockMaxSize = dgpMaxBlockSerSize;
+    if (gArgs.IsArgSet("-blockmaxweight")) {
+        options.nBlockMaxWeight = gArgs.GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT);
+        options.nBlockMaxSize = dgpMaxBlockSerSize;
         fWeightSet = true;
     }
     if (gArgs.IsArgSet("-blockmaxsize")) {
@@ -111,12 +137,6 @@ static BlockAssembler::Options DefaultOptions(const CChainParams& params)
         options.blockMinFeeRate = CFeeRate(DEFAULT_BLOCK_MIN_TX_FEE);
     }
 
-    // Limit weight to between 4K and dgpMaxBlockWeight-4K for sanity:
-    options.nBlockMaxWeight = std::max((unsigned int)4000, std::min((unsigned int)(dgpMaxBlockWeight-4000), nBlockMaxWeight));
-    // Limit size to between 1K and dgpMaxBlockSerSize-1K for sanity:
-    options.nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(dgpMaxBlockSerSize-1000), nBlockMaxSize));
-    // Whether we need to account for byte usage (in addition to weight usage)
-    options.fNeedSizeAccounting = (nBlockMaxSize < dgpMaxBlockSerSize-1000);
     return options;
 }
 
@@ -255,23 +275,24 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     globalSealEngine->setQtumSchedule(qtumDGP.getGasSchedule(nHeight));
     uint32_t blockSizeDGP = qtumDGP.getBlockSize(nHeight);
     minGasPrice = qtumDGP.getMinGasPrice(nHeight);
-    if(IsArgSet("-staker-min-tx-gas-price")) {
+    if(gArgs.IsArgSet("-staker-min-tx-gas-price")) {
         CAmount stakerMinGasPrice;
-        if(ParseMoney(GetArg("-staker-min-tx-gas-price", ""), stakerMinGasPrice)) {
+        if(ParseMoney(gArgs.GetArg("-staker-min-tx-gas-price", ""), stakerMinGasPrice)) {
             minGasPrice = std::max(minGasPrice, (uint64_t)stakerMinGasPrice);
         }
     }
     hardBlockGasLimit = qtumDGP.getBlockGasLimit(nHeight);
-    softBlockGasLimit = GetArg("-staker-soft-block-gas-limit", hardBlockGasLimit);
+    softBlockGasLimit = gArgs.GetArg("-staker-soft-block-gas-limit", hardBlockGasLimit);
     softBlockGasLimit = std::min(softBlockGasLimit, hardBlockGasLimit);
-    txGasLimit = GetArg("-staker-max-tx-gas-limit", softBlockGasLimit);
+    txGasLimit = gArgs.GetArg("-staker-max-tx-gas-limit", softBlockGasLimit);
 
     nBlockMaxSize = blockSizeDGP ? blockSizeDGP : nBlockMaxSize;
     
     dev::h256 oldHashStateRoot(globalState->rootHash());
     dev::h256 oldHashUTXORoot(globalState->rootHashUTXO());
-    addPriorityTxs(minGasPrice);
-    addPackageTxs(minGasPrice);
+    int nPackagesSelected = 0;
+    int nDescendantsUpdated = 0;
+    addPackageTxs(nPackagesSelected, nDescendantsUpdated, minGasPrice);
     pblock->hashStateRoot = uint256(h256Touint(dev::h256(globalState->rootHash())));
     pblock->hashUTXORoot = uint256(h256Touint(dev::h256(globalState->rootHashUTXO())));
     globalState->setRoot(oldHashStateRoot);
@@ -286,7 +307,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblocktemplate->vTxFees[0] = -nFees;
 
     uint64_t nSerializeSize = GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION);
-    LogPrint("miner", "CreateNewBlock(): total size: %u block weight: %u txs: %u fees: %ld sigops %d\n", nSerializeSize, GetBlockWeight(*pblock), nBlockTx, nFees, nBlockSigOpsCost);
+    LogPrint(BCLog::MINER, "CreateNewBlock(): total size: %u block weight: %u txs: %u fees: %ld sigops %d\n", nSerializeSize, GetBlockWeight(*pblock), nBlockTx, nFees, nBlockSigOpsCost);
 
     // The total fee is the Fees minus the Refund
     if (pTotalFees)
@@ -302,8 +323,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, FormatStateMessage(state)));
     }
     int64_t nTime2 = GetTimeMicros();
-
-    LogPrint(BCLog::BENCH, "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), validity: %.2fms (total %.2fms)\n", 0.001 * (nTime1 - nTimeStart), nPackagesSelected, nDescendantsUpdated, 0.001 * (nTime2 - nTime1), 0.001 * (nTime2 - nTimeStart));
 
     return std::move(pblocktemplate);
 }
@@ -335,7 +354,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateEmptyBlock(const CScript& 
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (chainparams.MineBlocksOnDemand())
-        pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
+        pblock->nVersion = gArgs.GetArg("-blockversion", pblock->nVersion);
 
     uint32_t txProofTime = nTime == 0 ? GetAdjustedTime() : nTime;
     if(fProofOfStake)
@@ -417,18 +436,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateEmptyBlock(const CScript& 
     return std::move(pblocktemplate);
 }
 
-
-bool BlockAssembler::isStillDependent(CTxMemPool::txiter iter)
-{
-    BOOST_FOREACH(CTxMemPool::txiter parent, mempool.GetMemPoolParents(iter))
-    {
-        if (!inBlock.count(parent)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void BlockAssembler::onlyUnconfirmed(CTxMemPool::setEntries& testSet)
 {
     for (CTxMemPool::setEntries::iterator iit = testSet.begin(); iit != testSet.end(); ) {
@@ -476,58 +483,6 @@ bool BlockAssembler::TestPackageTransactions(const CTxMemPool::setEntries& packa
     return true;
 }
 
-bool BlockAssembler::TestForBlock(CTxMemPool::txiter iter)
-{
-    if (nBlockWeight + iter->GetTxWeight() >= nBlockMaxWeight) {
-        // If the block is so close to full that no more txs will fit
-        // or if we've tried more than 50 times to fill remaining space
-        // then flag that the block is finished
-        if (nBlockWeight >  nBlockMaxWeight - 400 || lastFewTxs > 50) {
-             blockFinished = true;
-             return false;
-        }
-        // Once we're within 4000 weight of a full block, only look at 50 more txs
-        // to try to fill the remaining space.
-        if (nBlockWeight > nBlockMaxWeight - 4000) {
-            lastFewTxs++;
-        }
-        return false;
-    }
-
-    if (fNeedSizeAccounting) {
-        if (nBlockSize + ::GetSerializeSize(iter->GetTx(), SER_NETWORK, PROTOCOL_VERSION) >= nBlockMaxSize) {
-            if (nBlockSize >  nBlockMaxSize - 100 || lastFewTxs > 50) {
-                 blockFinished = true;
-                 return false;
-            }
-            if (nBlockSize > nBlockMaxSize - 1000) {
-                lastFewTxs++;
-            }
-            return false;
-        }
-    }
-
-    if (nBlockSigOpsCost + iter->GetSigOpCost() >= (uint64_t)dgpMaxBlockSigOps) {
-        // If the block has room for no more sig ops then
-        // flag that the block is finished
-        if (nBlockSigOpsCost > (uint64_t)dgpMaxBlockSigOps - 8) {
-            blockFinished = true;
-            return false;
-        }
-        // Otherwise attempt to find another tx with fewer sigops
-        // to put in the block.
-        return false;
-    }
-
-    // Must check that lock times are still valid
-    // This can be removed once MTP is always enforced
-    // as long as reorgs keep the mempool consistent.
-    if (!IsFinalTx(iter->GetTx(), nHeight, nLockTimeCutoff))
-        return false;
-
-    return true;
-}
-
 bool BlockAssembler::CheckBlockBeyondFull()
 {
     if (nBlockSize > dgpMaxBlockSerSize) {
@@ -544,7 +499,7 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
     if (nTimeLimit != 0 && GetAdjustedTime() >= nTimeLimit - BYTECODE_TIME_BUFFER) {
         return false;
     }
-    if (GetBoolArg("-disablecontractstaking", false))
+    if (gArgs.GetBoolArg("-disablecontractstaking", false))
     {
         return false;
     }
@@ -976,9 +931,9 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
         return error("CheckStake() : proof-of-stake checking failed");
 
     //// debug print
-    LogPrint("miner", "CheckStake() : new proof-of-stake block found  \n  hash: %s \nproofhash: %s  \ntarget: %s\n", hashBlock.GetHex(), proofHash.GetHex(), hashTarget.GetHex());
-    LogPrint("miner", "%s\n", pblock->ToString());
-    LogPrint("miner", "out %s\n", FormatMoney(pblock->vtx[1]->GetValueOut()));
+    LogPrint(BCLog::MINER, "CheckStake() : new proof-of-stake block found  \n  hash: %s \nproofhash: %s  \ntarget: %s\n", hashBlock.GetHex(), proofHash.GetHex(), hashTarget.GetHex());
+    LogPrint(BCLog::MINER, "%s\n", pblock->ToString());
+    LogPrint(BCLog::MINER, "out %s\n", FormatMoney(pblock->vtx[1]->GetValueOut()));
 
     // Found a solution
     {
@@ -1018,7 +973,7 @@ void ThreadStakeMiner(CWallet *pwallet)
             MilliSleep(10000);
         }
         //don't disable PoS mining for no connections if in regtest mode
-        if(!regtestMode && !GetBoolArg("-emergencystaking", false)) {
+        if(!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
             while (g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0 || IsInitialBlockDownload()) {
                 nLastCoinStakeSearchInterval = 0;
                 fTryToSync = true;
@@ -1069,7 +1024,7 @@ void ThreadStakeMiner(CWallet *pwallet)
                         return;
                     if(pindexPrev->GetBlockHash() != beginningHash){
                         //another block was received while building ours, scrap progress
-                        LogPrint("staker", "ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
+                        LogPrint(BCLog::STAKER, "ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
                         break;
                     }
                     // Sign the full block and use the timestamp from earlier for a valid stake
@@ -1081,13 +1036,13 @@ void ThreadStakeMiner(CWallet *pwallet)
                         while(!validBlock) {
                             if (pindexPrev->GetBlockHash() != beginningHash) {
                                 //another block was received while building ours, scrap progress
-                                LogPrint("staker", "ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
+                                LogPrint(BCLog::STAKER, "ThreadStakeMiner(): Valid future PoS block was orphaned before becoming valid");
                                 break;
                             }
                             //check timestamps
                             if (pblockfilled->GetBlockTime() <= pindexPrev->GetBlockTime() ||
                                 FutureDrift(pblockfilled->GetBlockTime()) < pindexPrev->GetBlockTime()) {
-                                LogPrint("staker", "ThreadStakeMiner(): Valid PoS block took too long to create and has expired");
+                                LogPrint(BCLog::STAKER, "ThreadStakeMiner(): Valid PoS block took too long to create and has expired");
                                 break; //timestamp too late, so ignore
                             }
                             if (pblockfilled->GetBlockTime() > FutureDrift(GetAdjustedTime())) {

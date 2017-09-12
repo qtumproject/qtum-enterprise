@@ -31,6 +31,8 @@
 
 #include <univalue.h>
 
+using namespace std;
+
 /**
  * @note Do not add or change anything in the information returned by this
  * method. `getinfo` exists for backwards-compatibility only. It combines
@@ -94,7 +96,7 @@ UniValue getinfo(const JSONRPCRequest& request)
     obj.push_back(Pair("version", CLIENT_VERSION));
     obj.push_back(Pair("protocolversion", PROTOCOL_VERSION));
 #ifdef ENABLE_WALLET
-    if (pwalletMain) {
+    if (pwallet) {
         obj.push_back(Pair("walletversion", pwallet->GetVersion()));
         obj.push_back(Pair("balance",       ValueFromAmount(pwallet->GetBalance())));
         obj.push_back(Pair("stake",         ValueFromAmount(pwallet->GetStake())));

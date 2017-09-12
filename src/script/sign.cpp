@@ -13,6 +13,7 @@
 #include "uint256.h"
 #include "coins.h"
 
+using namespace std;
 
 typedef std::vector<unsigned char> valtype;
 
@@ -225,19 +226,16 @@ bool SignSignature(const CKeyStore &keystore, const CTransaction& txFrom, CMutab
     return SignSignature(keystore, txout.scriptPubKey, txTo, nIn, txout.nValue, nHashType);
 }
 
-bool VerifySignature(const CCoins& txFrom, const uint256 txFromHash, const CTransaction& txTo, unsigned int nIn, unsigned int flags)
+bool VerifySignature(const Coin& txoutFrom, const uint256 txFromHash, const CTransaction& txTo, unsigned int nIn, unsigned int flags)
 {
     TransactionSignatureChecker checker(&txTo, nIn, 0);
 	
     const CTxIn& txin = txTo.vin[nIn];
-    if (txin.prevout.n >= txFrom.vout.size())
-        return false;
-    const CTxOut& txout = txFrom.vout[txin.prevout.n];
 
     if (txin.prevout.hash != txFromHash)
         return false;
 		
-    return VerifyScript(txin.scriptSig, txout.scriptPubKey, NULL, flags, checker);
+    return VerifyScript(txin.scriptSig, txoutFrom.out.scriptPubKey, NULL, flags, checker);
 }
 
 static vector<valtype> CombineMultisig(const CScript& scriptPubKey, const BaseSignatureChecker& checker,

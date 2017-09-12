@@ -37,6 +37,8 @@
 
 #include <univalue.h>
 
+using namespace std;
+
 unsigned int ParseConfirmTarget(const UniValue& value)
 {
     int target = value.get_int();
@@ -207,6 +209,9 @@ UniValue getsubsidy(const JSONRPCRequest& request)
 
 UniValue getmininginfo(const JSONRPCRequest& request)
 {
+#ifdef ENABLE_WALLET
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+#endif
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getmininginfo\n"
@@ -255,8 +260,8 @@ UniValue getmininginfo(const JSONRPCRequest& request)
 
     uint64_t nWeight = 0;
 #ifdef ENABLE_WALLET
-    if (pwalletMain)
-    nWeight = pwalletMain->GetStakeWeight(); 
+    if (pwallet)
+        nWeight = pwallet->GetStakeWeight(); //can wallets overlap?
 #endif
     weight.push_back(Pair("minimum",       (uint64_t)nWeight));
     weight.push_back(Pair("maximum",       (uint64_t)0));
@@ -278,10 +283,9 @@ UniValue getstakinginfo(const JSONRPCRequest& request)
 
     uint64_t nWeight = 0;
 #ifdef ENABLE_WALLET
-    if (pwalletMain)
-    {
-        nWeight = pwalletMain->GetStakeWeight();
-    }
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (pwallet)
+        nWeight += pwallet->GetStakeWeight(); //can wallets overlap?
 #endif
 
     uint64_t nNetworkWeight = GetPoSKernelPS();
@@ -292,7 +296,7 @@ UniValue getstakinginfo(const JSONRPCRequest& request)
 
     UniValue obj(UniValue::VOBJ);
 
-    obj.push_back(Pair("enabled", GetBoolArg("-staking", true)));
+    obj.push_back(Pair("enabled", gArgs.GetBoolArg("-staking", true)));
     obj.push_back(Pair("staking", staking));
     obj.push_back(Pair("errors", GetWarnings("statusbar")));
 
@@ -744,8 +748,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     if (fPreSegWit) {
         assert(nSigOpLimit % WITNESS_SCALE_FACTOR == 0);
         nSigOpLimit /= WITNESS_SCALE_FACTOR;
-        assert(nSizeLimit % WITNESS_SCALE_FACTOR == 0);
-        nSizeLimit /= WITNESS_SCALE_FACTOR;
     }
     result.push_back(Pair("sigoplimit", nSigOpLimit));
     if (fPreSegWit) {

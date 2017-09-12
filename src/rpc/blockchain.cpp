@@ -30,6 +30,7 @@
 #include "txdb.h"
 
 #include <stdint.h>
+#include <stdexcept>
 
 #include <univalue.h>
 
@@ -37,6 +38,8 @@
 
 #include <mutex>
 #include <condition_variable>
+
+using namespace std;
 
 struct CUpdatedBlock
 {
