@@ -9,7 +9,6 @@
 #include "chain.h"
 #include "primitives/block.h"
 #include "uint256.h"
-
 // ppcoin: find last block index up to pindex
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake)
 {
@@ -24,41 +23,31 @@ inline arith_uint256 GetLimit(const Consensus::Params& params, bool fProofOfStak
     return fProofOfStake ? UintToArith256(params.posLimit) : UintToArith256(params.powLimit);
 }
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, bool fProofOfStake)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+    assert(pindexLast != nullptr);
+    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
-    unsigned int  nTargetLimit = GetLimit(params, fProofOfStake).GetCompact();
-
-    // genesis block
-    if (pindexLast == NULL)
-        return nTargetLimit;
-
-    // first block
-    const CBlockIndex* pindexPrev = GetLastBlockIndex(pindexLast, fProofOfStake);
-    if (pindexPrev->pprev == NULL)
-        return nTargetLimit;
-
-    // second block
-    const CBlockIndex* pindexPrevPrev = GetLastBlockIndex(pindexPrev->pprev, fProofOfStake);
-    if (pindexPrevPrev->pprev == NULL)
-        return nTargetLimit;
-
-    // min difficulty
-    if (params.fPowAllowMinDifficultyBlocks)
+    // Only change once per difficulty adjustment interval
+    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
     {
-        // Special difficulty rule for testnet:
-        // If the new block's timestamp is more than 2* 10 minutes
-        // then allow mining of a min-difficulty block.
-        if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
-            return nTargetLimit;
-        else
+        if (params.fPowAllowMinDifficultyBlocks)
         {
-            // Return the last non-special-min-difficulty-rules-block
-            const CBlockIndex* pindex = pindexLast;
-            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nTargetLimit)
-                pindex = pindex->pprev;
-            return pindex->nBits;
+            // Special difficulty rule for testnet:
+            // If the new block's timestamp is more than 2* 10 minutes
+            // then allow mining of a min-difficulty block.
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+                return nProofOfWorkLimit;
+            else
+            {
+                // Return the last non-special-min-difficulty-rules-block
+                const CBlockIndex* pindex = pindexLast;
+                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                    pindex = pindex->pprev;
+                return pindex->nBits;
+            }
         }
+        return pindexLast->nBits;
     }
 
     return CalculateNextWorkRequired(pindexPrev, pindexPrevPrev->GetBlockTime(), params, fProofOfStake);
