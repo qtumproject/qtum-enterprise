@@ -37,7 +37,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include <miner.h>
-
+using namespace std;
 std::vector<CWalletRef> vpwallets;
 /** Transaction fee set by the user */
 CFeeRate payTxFee(DEFAULT_TRANSACTION_FEE);
@@ -156,7 +156,7 @@ bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight, const Cons
     CBlockIndex* pblockindex = chainActive[nHeight];
     if(!pblockindex)
     {
-        LogPrint("coinstake", "Block index not found\n");
+        LogPrint(BCLog::STAKER, "Block index not found\n");
         return false;
     }
 
@@ -179,7 +179,7 @@ bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight, const Cons
     {
         if(stakeAddress == uint160())
         {
-            LogPrint("coinstake", "Fail to solve script for mpos reward recipient\n");
+            LogPrint(BCLog::STAKER, "Fail to solve script for mpos reward recipient\n");
             //This should never fail, but in case it somehow did we don't want it to bring the network to a halt
             //So, use an OP_RETURN script to burn the coins for the unknown staker
             script = CScript() << OP_RETURN;
@@ -203,7 +203,7 @@ bool AddMPoSScript(std::vector<CScript> &mposScriptList, int nHeight, const Cons
             return true;
 
         }
-        LogPrint("coinstake", "The block is not proof-of-stake\n");
+        LogPrint(BCLog::STAKER, "The block is not proof-of-stake\n");
         return false;
     }
 
@@ -229,7 +229,7 @@ bool CreateMPoSOutputs(CMutableTransaction& txNew, int64_t nRewardPiece, int nHe
     std::vector<CScript> mposScriptList;
     if(!GetMPoSOutputScripts(mposScriptList, nHeight, consensusParams))
     {
-        LogPrint("coinstake", "Fail to get the list of recipients\n");
+        LogPrint(BCLog::STAKER, "Fail to get the list of recipients\n");
         return false;
     }
 
@@ -842,7 +842,7 @@ void CWallet::RemoveFromSpends(const uint256& wtxid)
 	if (thisTx.IsCoinBase()) // Coinbases don't spend anything!
         return;
 
-    BOOST_FOREACH(const CTxIn& txin, thisTx.tx->vin)
+    for(const CTxIn& txin : thisTx.tx->vin)
         RemoveFromSpends(txin.prevout, wtxid);
 }
 
@@ -2827,7 +2827,7 @@ bool CWallet::SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<co
     setCoinsRet.clear();
     nValueRet = 0;
 
-    BOOST_FOREACH(COutput output, vCoins)
+    for(COutput output : vCoins)
     {
         const CWalletTx *pcoin = output.tx;
         int i = output.i;
@@ -2953,9 +2953,9 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
     int nChangePosRequest = nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
 	COutPoint senderInput;
-    if(hasSender && coinControl && coinControl->HasSelected()){
+    if(hasSender && coin_control && coin_control->HasSelected()){
     	std::vector<COutPoint> vSenderInputs;
-    	coinControl->ListSelected(vSenderInputs);
+    	coin_control->ListSelected(vSenderInputs);
     	senderInput=vSenderInputs[0];
     }
     for (const auto& recipient : vecSend)
@@ -3148,7 +3148,7 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
                 // Move sender input to position 0
                 vCoins.clear();
                 std::copy(setCoins.begin(), setCoins.end(), std::back_inserter(vCoins));
-                if(hasSender && coinControl && coinControl->HasSelected()){
+                if(hasSender && coin_control && coin_control->HasSelected()){
                 for (std::vector<pair<const CWalletTx*,unsigned int>>::size_type i = 0 ; i != vCoins.size(); i++){
                 	if(COutPoint(vCoins[i].first->GetHash(),vCoins[i].second)==senderInput){
                 		if(i==0)break;
@@ -3189,11 +3189,11 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletT
 
                 nFeeNeeded = GetMinimumFee(nBytes, coin_control, ::mempool, ::feeEstimator, &feeCalc);
                 CAmount nFeeNeeded = GetMinimumFee(nBytes, currentConfirmationTarget, mempool)+nGasFee;
-                if (coinControl && nFeeNeeded > 0 && coinControl->nMinimumTotalFee > nFeeNeeded) {
-                    nFeeNeeded = coinControl->nMinimumTotalFee;
+                if (coin_control && nFeeNeeded > 0 && coin_control->nMinimumTotalFee > nFeeNeeded) {
+                    nFeeNeeded = coin_control->nMinimumTotalFee;
                 }
-                if (coinControl && coinControl->fOverrideFeeRate)
-                    nFeeNeeded = coinControl->nFeeRate.GetFee(nBytes);
+                if (coin_control && coin_control->fOverrideFeeRate)
+                    nFeeNeeded = coin_control->nFeeRate.GetFee(nBytes);
                 // If we made it here and we aren't even able to meet the relay fee on the next pass, give up
                 // because we must be at the maximum allowed fee.
                 if (nFeeNeeded < ::minRelayTxFee.GetFee(nBytes))
@@ -3350,7 +3350,7 @@ uint64_t CWallet::GetStakeWeight() const
     uint64_t nWeight = 0;
 
     LOCK2(cs_main, cs_wallet);
-    BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
+    for(PAIRTYPE(const CWalletTx*, unsigned int) pcoin : setCoins)
     {
         if (pcoin.first->GetDepthInMainChain() >= COINBASE_MATURITY)
             nWeight += pcoin.first->tx->vout[pcoin.second].nValue;
@@ -3401,7 +3401,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     }
     if(GetBoolArg("-stakecache", DEFAULT_STAKE_CACHE)) {
 
-        BOOST_FOREACH(const PAIRTYPE(const CWalletTx *, unsigned int) &pcoin, setCoins)
+        for(const PAIRTYPE(const CWalletTx *, unsigned int) &pcoin : setCoins)
         {
             boost::this_thread::interruption_point();
             COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
@@ -3410,7 +3410,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     }
     int64_t nCredit = 0;
     CScript scriptPubKeyKernel;
-    BOOST_FOREACH(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin, setCoins)
+    for(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin : setCoins)
     {
         bool fKernelFound = false;
         boost::this_thread::interruption_point();
@@ -3420,20 +3420,20 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
         if (CheckKernel(pindexPrev, nBits, nTimeBlock, prevoutStake, *pcoinsTip, stakeCache))
         {
             // Found a kernel
-            LogPrint("coinstake", "CreateCoinStake : kernel found\n");
+            LogPrint(BCLog::STAKER, "CreateCoinStake : kernel found\n");
             vector<valtype> vSolutions;
             txnouttype whichType;
             CScript scriptPubKeyOut;
             scriptPubKeyKernel = pcoin.first->tx->vout[pcoin.second].scriptPubKey;
             if (!Solver(scriptPubKeyKernel, whichType, vSolutions))
             {
-                LogPrint("coinstake", "CreateCoinStake : failed to parse kernel\n");
+                LogPrint(BCLog::STAKER, "CreateCoinStake : failed to parse kernel\n");
                 break;
             }
-            LogPrint("coinstake", "CreateCoinStake : parsed kernel type=%d\n", whichType);
+            LogPrint(BCLog::STAKER, "CreateCoinStake : parsed kernel type=%d\n", whichType);
             if (whichType != TX_PUBKEY && whichType != TX_PUBKEYHASH)
             {
-                LogPrint("coinstake", "CreateCoinStake : no support for kernel type=%d\n", whichType);
+                LogPrint(BCLog::STAKER, "CreateCoinStake : no support for kernel type=%d\n", whichType);
                 break;  // only support pay to public key and pay to address
             }
             if (whichType == TX_PUBKEYHASH) // pay to address type
@@ -3441,7 +3441,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
                 // convert to pay to public key type
                 if (!keystore.GetKey(uint160(vSolutions[0]), key))
                 {
-                    LogPrint("coinstake", "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
+                    LogPrint(BCLog::STAKER, "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
                     break;  // unable to find corresponding public key
                 }
                 scriptPubKeyOut << key.GetPubKey().getvch() << OP_CHECKSIG;
@@ -3451,13 +3451,13 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
                 valtype& vchPubKey = vSolutions[0];
                 if (!keystore.GetKey(Hash160(vchPubKey), key))
                 {
-                    LogPrint("coinstake", "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
+                    LogPrint(BCLog::STAKER, "CreateCoinStake : failed to get key for kernel type=%d\n", whichType);
                     break;  // unable to find corresponding public key
                 }
 
                 if (key.GetPubKey() != vchPubKey)
                 {
-                    LogPrint("coinstake", "CreateCoinStake : invalid key for kernel type=%d\n", whichType);
+                    LogPrint(BCLog::STAKER, "CreateCoinStake : invalid key for kernel type=%d\n", whichType);
                     break; // keys mismatch
                 }
 
@@ -3469,7 +3469,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
             vwtxPrev.push_back(pcoin.first);
             txNew.vout.push_back(CTxOut(0, scriptPubKeyOut));
 
-            LogPrint("coinstake", "CreateCoinStake : added kernel type=%d\n", whichType);
+            LogPrint(BCLog::STAKER, "CreateCoinStake : added kernel type=%d\n", whichType);
             fKernelFound = true;
             break;
         }
@@ -3481,7 +3481,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     if (nCredit == 0 || nCredit > nBalance - nReserveBalance)
         return false;
 
-    BOOST_FOREACH(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin, setCoins)
+    for(const PAIRTYPE(const CWalletTx*, unsigned int)& pcoin : setCoins)
     {
         // Attempt to add more inputs
         // Only add coins of the same key/address as kernel
@@ -3556,7 +3556,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
 
     // Sign the input coins
     int nIn = 0;
-    BOOST_FOREACH(const CWalletTx* pcoin, vwtxPrev)
+    for(const CWalletTx* pcoin : vwtxPrev)
     {
         if (!SignSignature(*this, *pcoin, txNew, nIn++, SIGHASH_ALL))
             return error("CreateCoinStake : failed to sign coinstake");
@@ -4221,7 +4221,7 @@ void CWallet::DisableTransaction(const CTransaction &tx)
     {
         RemoveFromSpends(hash);
         set<CWalletTx*> setCoins;
-        BOOST_FOREACH(const CTxIn& txin, tx.vin)
+        for(const CTxIn& txin : tx.vin)
         {
             CWalletTx &coin = mapWallet[txin.prevout.hash];
             coin.BindWallet(this);
