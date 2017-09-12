@@ -41,8 +41,10 @@ void AddressField::on_refresh()
     QString currentAddress = currentText();
     m_stringList.clear();
     vector<COutput> vecOutputs;
-    assert(pwalletMain != NULL);
+//0.15 MERGE TODO
+//    assert(pwalletMain != NULL);
 
+    /*
     // Fill the list with address
     if(m_addressType == AddressField::UTXO)
     {
@@ -65,7 +67,7 @@ void AddressField::on_refresh()
             }
         }
     }
-
+*/
     // Update the current index
     int index = m_stringList.indexOf(currentAddress);
     m_stringModel.setStringList(m_stringList);

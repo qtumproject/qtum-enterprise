@@ -515,7 +515,7 @@ UniValue createcontract(const JSONRPCRequest& request){
         throw runtime_error(
                 "createcontract \"bytecode\" (gaslimit gasprice \"senderaddress\" broadcast)"
                 "\nCreate a contract with bytcode.\n"
-                + HelpRequiringPassphrase() +
+                + HelpRequiringPassphrase(pwallet) +
                 "\nArguments:\n"
                 "1. \"bytecode\"  (string, required) contract bytcode.\n"
                 "2. gasLimit  (numeric or string, optional) gasLimit, default: "+i64tostr(DEFAULT_GAS_LIMIT_OP_CREATE)+", max: "+i64tostr(blockGasLimit)+"\n"
@@ -705,7 +705,7 @@ UniValue sendtocontract(const JSONRPCRequest& request){
         throw runtime_error(
                 "sendtocontract \"contractaddress\" \"data\" (amount gaslimit gasprice senderaddress broadcast)"
                 "\nSend funds and data to a contract.\n"
-                + HelpRequiringPassphrase() +
+                + HelpRequiringPassphrase(pwallet) +
                 "\nArguments:\n"
                 "1. \"contractaddress\" (string, required) The contract address that will receive the funds and data.\n"
                 "2. \"datahex\"  (string, required) data to send.\n"
@@ -1463,7 +1463,7 @@ UniValue sendmanywithdupes(const JSONRPCRequest& request)
         throw runtime_error(
             "sendmanywithdupes \"fromaccount\" {\"address\":amount,...} ( minconf \"comment\" [\"address\",...] )\n"
             "\nSend multiple times. Amounts are double-precision floating point numbers. Supports duplicate addresses"
-            + HelpRequiringPassphrase() + "\n"
+            + HelpRequiringPassphrase(pwallet) + "\n"
             "\nArguments:\n"
             "1. \"fromaccount\"         (string, required) DEPRECATED. The account to send the funds from. Should be \"\" for the default account\n"
             "2. \"amounts\"             (string, required) A json object with addresses and amounts\n"

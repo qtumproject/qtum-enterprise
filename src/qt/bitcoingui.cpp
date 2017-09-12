@@ -237,7 +237,7 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
 
-    if (GetBoolArg("-staking", true))
+    if (gArgs.GetBoolArg("-staking", true))
     {
         QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
         connect(timerStakingIcon, SIGNAL(timeout()), this, SLOT(updateStakingIcon()));
@@ -1215,21 +1215,25 @@ void BitcoinGUI::toggleHidden()
 
 void BitcoinGUI::updateWeight()
 {
-    if(!pwalletMain)
-        return;
+    uint64_t newWeight=0;
+    for(CWalletRef pwallet : vpwallets) {
+        if (!vpwallets.size())
+            return;
 
-    TRY_LOCK(cs_main, lockMain);
-    if (!lockMain)
-        return;
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
 
-    TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
-    if (!lockWallet)
-        return;
+        TRY_LOCK(pwallet->cs_wallet, lockWallet);
+        if (!lockWallet)
+            return;
 
 #ifdef ENABLE_WALLET
-    if (pwalletMain)
-    nWeight = pwalletMain->GetStakeWeight();
+        if (pwallet)
+            newWeight += pwallet->GetStakeWeight();
 #endif
+    }
+    nWeight = newWeight;
 }
 
 void BitcoinGUI::updateStakingIcon()
@@ -1279,8 +1283,9 @@ void BitcoinGUI::updateStakingIcon()
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
         else if (!nWeight)
             labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
-        else if (pwalletMain && pwalletMain->IsLocked())
-            labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
+            //0.15 MERGE TODO
+       // else if (pwalletMain && pwalletMain->IsLocked())
+       //     labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
         else
             labelStakingIcon->setToolTip(tr("Not staking"));
     }

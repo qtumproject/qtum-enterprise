@@ -98,8 +98,8 @@ void OptionsModel::Init(bool resetSettings)
 
     if (!settings.contains("nReserveBalance"))
         settings.setValue("nReserveBalance", (qint64)nReserveBalance);
-    if (!SoftSetArg("-reservebalance", settings.value("nReserveBalance").toString().toStdString()))
-        nReserveBalance = GetArg("-reservebalance", nReserveBalance);
+    if (!gArgs.SoftSetArg("-reservebalance", settings.value("nReserveBalance").toString().toStdString()))
+        nReserveBalance = gArgs.GetArg("-reservebalance", nReserveBalance);
     else
         nReserveBalance = settings.value("nReserveBalance").toLongLong();
 
