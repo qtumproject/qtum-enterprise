@@ -185,7 +185,9 @@ testScripts = [
     'qtum-null-sender.py',
     'qtum-transaction-prioritization.py',
     'qtum-dgp-block-size-sync.py',
-    'qtum-opcall.py'
+    'qtum-opcall.py',
+    'qtum-premature-coinstake-spend.py',
+    'qtum-ignore-mpos-participant-reward.py'
 ]
 
 
