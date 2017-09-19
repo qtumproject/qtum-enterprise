@@ -7,70 +7,98 @@
 #define BITCOIN_UNDO_H
 
 #include "compressor.h" 
+#include "consensus/consensus.h"
 #include "primitives/transaction.h"
 #include "serialize.h"
 
 /** Undo information for a CTxIn
  *
- *  Contains the prevout's CTxOut being spent, and if this was the
- *  last output of the affected transaction, its metadata as well
- *  (coinbase or not, height, transaction version)
+ *  Contains the prevout's CTxOut being spent, and its metadata as well
+ *  (coinbase or not, height). The serialization contains a dummy value of
+ *  zero. This is be compatible with older versions which expect to see
+ *  the transaction version there.
  */
-class CTxInUndo
+class TxInUndoSerializer
 {
 public:
-    CTxOut txout;         // the txout data before being spent
+    const Coin* txout;
     bool fCoinBase;       // if the outpoint was the last unspent: whether it belonged to a coinbase
     bool fCoinStake;      // if the outpoint was the last unspent: whether it belonged to a coinstake
-    unsigned int nHeight; // if the outpoint was the last unspent: its height
-    int nVersion;         // if the outpoint was the last unspent: its version
 
-    CTxInUndo() : txout(), fCoinBase(false), fCoinStake(false), nHeight(0), nVersion(0) {}
-    CTxInUndo(const CTxOut &txoutIn, bool fCoinBaseIn = false, bool fCoinStakeIn = false, unsigned int nHeightIn = 0, int nVersionIn = 0) : txout(txoutIn), fCoinBase(fCoinBaseIn), fCoinStake(fCoinStakeIn), nHeight(nHeightIn), nVersion(nVersionIn) { }
-
+public:
     template<typename Stream>
     void Serialize(Stream &s) const {
-/////////////////////////////////////////////////////////// // qtum
-        // ::Serialize(s, VARINT(nHeight*2+(fCoinBase ? 1 : 0)));
-        ::Serialize(s, VARINT(nHeight));
+        ::Serialize(s, VARINT(txout->nHeight));
         ::Serialize(s, fCoinBase);
         ::Serialize(s, fCoinStake);
-///////////////////////////////////////////////////////////
-        if (nHeight > 0)
-            ::Serialize(s, VARINT(this->nVersion));
-        ::Serialize(s, CTxOutCompressor(REF(txout)));
+        if (txout->nHeight > 0) {
+            // Required to maintain compatibility with older undo format.
+            ::Serialize(s, (unsigned char)0);
+        }
+        ::Serialize(s, CTxOutCompressor(REF(txout->out)));
     }
 
+    TxInUndoSerializer(const Coin* coin) : txout(coin) {}
+};
+
+class TxInUndoDeserializer
+{
+    Coin* txout;
+    bool fCoinBase;       // if the outpoint was the last unspent: whether it belonged to a coinbase
+    bool fCoinStake;      // if the outpoint was the last unspent: whether it belonged to a coinstake
+
+public:
     template<typename Stream>
     void Unserialize(Stream &s) {
-/////////////////////////////////////////////////////////// // qtum
-        // unsigned int nCode = 0;
-        // ::Unserialize(s, VARINT(nCode));
-        // nHeight = nCode / 4;
-        // fCoinBase = nCode & 1;
-        // fCoinStake = nCode & 2;
-        ::Unserialize(s, VARINT(nHeight));
+        unsigned int nCode = 0;
+        ::Unserialize(s, VARINT(txout->nHeight));
         ::Unserialize(s, fCoinBase);
         ::Unserialize(s, fCoinStake);
-///////////////////////////////////////////////////////////
-        if (nHeight > 0)
-            ::Unserialize(s, VARINT(this->nVersion));
-        ::Unserialize(s, REF(CTxOutCompressor(REF(txout))));
+        if (txout->nHeight > 0) {
+            // Old versions stored the version number for the last spend of
+            // a transaction's outputs. Non-final spends were indicated with
+            // height = 0.
+            int nVersionDummy;
+            ::Unserialize(s, VARINT(nVersionDummy));
+        }
+        ::Unserialize(s, REF(CTxOutCompressor(REF(txout->out))));
     }
+
+    TxInUndoDeserializer(Coin* coin) : txout(coin) {}
 };
+
+static const size_t MIN_TRANSACTION_INPUT_WEIGHT = WITNESS_SCALE_FACTOR * ::GetSerializeSize(CTxIn(), SER_NETWORK, PROTOCOL_VERSION);
+static const size_t MAX_INPUTS_PER_BLOCK = dgpMaxBlockWeight / MIN_TRANSACTION_INPUT_WEIGHT;
 
 /** Undo information for a CTransaction */
 class CTxUndo
 {
 public:
     // undo information for all txins
-    std::vector<CTxInUndo> vprevout;
+    std::vector<Coin> vprevout;
 
-    ADD_SERIALIZE_METHODS;
+    template <typename Stream>
+    void Serialize(Stream& s) const {
+        // TODO: avoid reimplementing vector serializer
+        uint64_t count = vprevout.size();
+        ::Serialize(s, COMPACTSIZE(REF(count)));
+        for (const auto& prevout : vprevout) {
+            ::Serialize(s, REF(TxInUndoSerializer(&prevout)));
+        }
+    }
 
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(vprevout);
+    template <typename Stream>
+    void Unserialize(Stream& s) {
+        // TODO: avoid reimplementing vector deserializer
+        uint64_t count = 0;
+        ::Unserialize(s, COMPACTSIZE(count));
+        if (count > MAX_INPUTS_PER_BLOCK) {
+            throw std::ios_base::failure("Too many input undo records");
+        }
+        vprevout.resize(count);
+        for (auto& prevout : vprevout) {
+            ::Unserialize(s, REF(TxInUndoDeserializer(&prevout)));
+        }
     }
 };
 
