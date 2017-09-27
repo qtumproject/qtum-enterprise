@@ -51,7 +51,7 @@
 #include <QTimer>
 #include <QTranslator>
 #include <QSslConfiguration>
-
+#include <QFile>
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
 #if QT_VERSION < 0x050000
@@ -373,6 +373,13 @@ void BitcoinApplication::createOptionsModel(bool resetSettings)
 void BitcoinApplication::createWindow(const NetworkStyle *networkStyle)
 {
     window = new BitcoinGUI(platformStyle, networkStyle, 0);
+
+    QFile f(":/css/Style");
+        if(f.open(QIODevice::ReadOnly)){
+        window->setStyleSheet(QLatin1String(f.readAll()));
+        f.close();
+    }
+
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));

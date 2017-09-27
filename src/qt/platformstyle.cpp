@@ -22,10 +22,10 @@ static const struct {
     /** Extra padding/spacing in transactionview */
     const bool useExtraSpacing;
 } platform_styles[] = {
-    {"macosx", false, false, true},
-    {"windows", true, false, false},
+    {"macosx", true, true, true},
+    {"windows", true, true, true},
     /* Other: linux, unix, ... */
-    {"other", true, true, false}
+    {"other", true, true, true}
 };
 static const unsigned platform_styles_count = sizeof(platform_styles)/sizeof(*platform_styles);
 
@@ -81,42 +81,30 @@ PlatformStyle::PlatformStyle(const QString &_name, bool _imagesOnButtons, bool _
     singleColor(0,0,0),
     textColor(0,0,0)
 {
-    // Determine icon highlighting color
-    if (colorizeIcons) {
-        const QColor colorHighlightBg(QApplication::palette().color(QPalette::Highlight));
-        const QColor colorHighlightFg(QApplication::palette().color(QPalette::HighlightedText));
-        const QColor colorText(QApplication::palette().color(QPalette::WindowText));
-        const int colorTextLightness = colorText.lightness();
-        QColor colorbase;
-        if (abs(colorHighlightBg.lightness() - colorTextLightness) < abs(colorHighlightFg.lightness() - colorTextLightness))
-            colorbase = colorHighlightBg;
-        else
-            colorbase = colorHighlightFg;
-        singleColor = colorbase;
-    }
+    singleColor = qRgb(0x8b,0x8c,0x8d);
     // Determine text color
     textColor = QColor(QApplication::palette().color(QPalette::WindowText));
 }
 
-QImage PlatformStyle::SingleColorImage(const QString& filename) const
+QImage PlatformStyle::SingleColorImage(const QString& filename,QColor color) const
 {
     if (!colorizeIcons)
         return QImage(filename);
-    return ColorizeImage(filename, SingleColor());
+    return ColorizeImage(filename, color);
 }
 
-QIcon PlatformStyle::SingleColorIcon(const QString& filename) const
+QIcon PlatformStyle::SingleColorIcon(const QString& filename,QColor color) const
 {
     if (!colorizeIcons)
         return QIcon(filename);
-    return ColorizeIcon(filename, SingleColor());
+    return ColorizeIcon(filename, color);
 }
 
-QIcon PlatformStyle::SingleColorIcon(const QIcon& icon) const
+QIcon PlatformStyle::SingleColorIcon(const QIcon& icon, QColor color) const
 {
     if (!colorizeIcons)
         return icon;
-    return ColorizeIcon(icon, SingleColor());
+    return ColorizeIcon(icon, color);
 }
 
 QIcon PlatformStyle::TextColorIcon(const QString& filename) const

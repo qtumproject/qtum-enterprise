@@ -30,7 +30,7 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     platformStyle(_platformStyle)
 {
     ui->setupUi(this);
-
+    ui->recentRequestsView->setShowGrid(false);
     if (!_platformStyle->getImagesOnButtons()) {
         ui->clearButton->setIcon(QIcon());
         ui->receiveButton->setIcon(QIcon());
@@ -39,9 +39,10 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     } else {
         ui->clearButton->setIcon(_platformStyle->SingleColorIcon(":/icons/remove"));
         ui->receiveButton->setIcon(_platformStyle->SingleColorIcon(":/icons/receiving_addresses"));
-        ui->showRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/edit"));
+        ui->showRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/eye"));
         ui->removeRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/remove"));
     }
+    ui->receiveButton->setDefault(true);
 
     ui->copyAddressButton->setIcon(platformStyle->SingleColorIcon(":/icons/editcopy"));
     ui->copyAddressButton->setEnabled(false);
@@ -204,7 +205,7 @@ void ReceiveCoinsDialog::on_recentRequestsView_clicked(const QModelIndex &index)
     ui->reqMessage->setText(info.message);
     ui->reqAmount->setValue(info.amount);
 
-    if(ReceiveRequestDialog::createQRCode(ui->lblQRCode, info))
+    if(ReceiveRequestDialog::createQRCode(ui->lblQRCode, info, 0xf2f2f2))
     {
         ui->lblQRCode->setScaledContents(true);
     }

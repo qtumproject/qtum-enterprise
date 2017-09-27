@@ -94,6 +94,7 @@ QVariant RecentRequestsTableModel::data(const QModelIndex &index, int role) cons
     {
         if (index.column() == Amount)
             return (int)(Qt::AlignRight|Qt::AlignVCenter);
+        return (int)Qt::AlignCenter|Qt::AlignVCenter;
     }
     return QVariant();
 }

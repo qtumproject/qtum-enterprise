@@ -5,13 +5,20 @@
 
 namespace NavigationBar_NS
 {
-static const int ToolButtonWidth = 150;
-static const int ToolButtonHeight = 54;
-static const int ToolButtonIconSize = 32;
-static const int MarginLeft = 6;
-static const int MarginRight = 3;
-static const int MarginTop = 2;
+static const int ToolButtonWidth = 180;
+static const int ToolButtonHeight = 30;
+static const int ToolButtonIconSize = 20;
+static const int MarginLeft = 10;
+static const int MarginRight = 0;
+static const int MarginTop = 0;
 static const int MarginBottom = 9;
+static const int MarginLeftSubBar = 115;
+static const int MarginRightSubBar = 5;
+static const int MarginTopSubBar = 0;
+static const int MarginBottomSubBar = 0;
+static const float scaleSubBarWidth = 0.5;
+static const float scaleSubBarHeight = 0.8;
+
 }
 using namespace NavigationBar_NS;
 
@@ -57,12 +64,12 @@ void NavigationBar::buildUi()
         QActionGroup* actionGroup = new QActionGroup(this);
         actionGroup->setExclusive(true);
         QVBoxLayout* vboxLayout = new QVBoxLayout(this);
-        int defButtonWidth = m_subBar ? ToolButtonWidth / 2 : ToolButtonWidth;
-        int defButtonHeight = m_subBar ? ToolButtonHeight / 2 : ToolButtonHeight;
-        vboxLayout->setContentsMargins(m_subBar ? defButtonWidth : MarginLeft,
-                                       m_subBar ? 0 : MarginTop,
-                                       m_subBar ? 0 : MarginRight,
-                                       m_subBar ? 0 : MarginBottom);
+        int defButtonWidth = m_subBar ? ToolButtonWidth * scaleSubBarWidth : ToolButtonWidth;
+        int defButtonHeight = m_subBar ? ToolButtonHeight * scaleSubBarHeight : ToolButtonHeight;
+        vboxLayout->setContentsMargins(m_subBar ? MarginLeftSubBar : MarginLeft,
+                                       m_subBar ? MarginTopSubBar : MarginTop,
+                                       m_subBar ? MarginRightSubBar : MarginRight,
+                                       m_subBar ? MarginBottomSubBar : MarginBottom);
         vboxLayout->setSpacing(MarginLeft / 2);
 
         // List all actions
@@ -78,6 +85,7 @@ void NavigationBar::buildUi()
             toolButton->setToolButtonStyle(m_toolStyle);
             toolButton->setDefaultAction(action);
             toolButton->setIconSize(QSize(ToolButtonIconSize, ToolButtonIconSize));
+            toolButton->setObjectName(action->objectName());
             vboxLayout->addWidget(toolButton);
 
             if(m_groups.contains(action))
@@ -105,6 +113,7 @@ void NavigationBar::buildUi()
             }
             setMinimumWidth(defButtonWidth + MarginLeft);
             vboxLayout->addStretch(1);
+
         }
 
         // The component is built

@@ -25,13 +25,13 @@ public:
     QColor SingleColor() const { return singleColor; }
 
     /** Colorize an image (given filename) with the icon color */
-    QImage SingleColorImage(const QString& filename) const;
+    QImage SingleColorImage(const QString& filename,QColor color = QColor::fromRgb(0x8b,0x8c,0x8d)) const;
 
     /** Colorize an icon (given filename) with the icon color */
-    QIcon SingleColorIcon(const QString& filename) const;
+    QIcon SingleColorIcon(const QString& filename,QColor color = QColor::fromRgb(0x8b,0x8c,0x8d)) const;
 
     /** Colorize an icon (given object) with the icon color */
-    QIcon SingleColorIcon(const QIcon& icon) const;
+    QIcon SingleColorIcon(const QIcon& icon,QColor color = QColor::fromRgb(0x8b,0x8c,0x8d)) const;
 
     /** Colorize an icon (given filename) with the text color */
     QIcon TextColorIcon(const QString& filename) const;

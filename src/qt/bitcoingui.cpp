@@ -25,6 +25,7 @@
 #include "rpc/server.h"
 #include "navigationbar.h"
 #include "titlebar.h"
+#include "bottombar.h"
 
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
@@ -192,11 +193,12 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     // Create application menu bar
     createMenuBar();
 
+    // Create the title bar
+    createTitleBars();
+
     // Create the toolbars
     createToolBars();
 
-    // Create the title bar
-    createTitleBars();
 
     // Create system tray icon and notification
     createTrayIcon(networkStyle);
@@ -258,10 +260,6 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     // as they make the text unreadable (workaround for issue #1071)
     // See https://qt-project.org/doc/qt-4.8/gallery.html
     QString curStyle = QApplication::style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
-        progressBar->setStyleSheet("QProgressBar { background-color: #e8e8e8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #FF8000, stop: 1 orange); border-radius: 7px; margin: 0px; }");
-    }
 
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
@@ -287,7 +285,6 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     }
 #endif
 
-    setStyleSheet("QMainWindow::separator { width: 1px; height: 1px; margin: 0px; padding: 0px; }");
 }
 
 BitcoinGUI::~BitcoinGUI()
@@ -302,7 +299,6 @@ BitcoinGUI::~BitcoinGUI()
     delete appMenuBar;
     MacDockIconHandler::cleanup();
 #endif
-
     delete rpcConsole;
 }
 
@@ -347,8 +343,11 @@ void BitcoinGUI::createActions()
     tabGroup->addAction(smartContractAction);
 
     createContractAction = new QAction(tr("Create"), this);
+    createContractAction->setObjectName("createContractAction");
     sendToContractAction = new QAction(tr("SendTo"), this);
+    sendToContractAction->setObjectName("sendToContractAction");
     callContractAction = new QAction(tr("Call"), this);
+    callContractAction->setObjectName("callContractAction");
 
     historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history"), tr("&Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
@@ -529,6 +528,9 @@ void BitcoinGUI::createToolBars()
         appNavigationBar->addAction(historyAction);
         appNavigationBar->buildUi();
         overviewAction->setChecked(true);
+
+        appBottomBar = new BottomBar();
+        addDockWindows(Qt::LeftDockWidgetArea, appBottomBar);
     }
 }
 
@@ -537,9 +539,10 @@ void BitcoinGUI::createTitleBars()
     if(walletFrame)
     {
         // Create custom title bar component
-        appTitleBar = new TitleBar();
-        addDockWindows(Qt::TopDockWidgetArea, appTitleBar);
+        appTitleBar = new TitleBar(platformStyle);
+        addDockWindows(Qt::LeftDockWidgetArea, appTitleBar);
         connect(appNavigationBar, SIGNAL(resized(QSize)), appTitleBar, SLOT(on_navigationResized(QSize)));
+        connect(appTitleBar,SIGNAL(on_settings_clicked()),this,SLOT(optionsClicked()));
     }
 }
 
@@ -612,7 +615,7 @@ bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModel)
     if(!walletFrame)
         return false;
     setWalletActionsEnabled(true);
-    appTitleBar->setModel(walletModel);
+    appBottomBar->setModel(walletModel);
     return walletFrame->addWallet(name, walletModel);
 }
 
@@ -1387,6 +1390,7 @@ void BitcoinGUI::toggleNetworkActive()
 void BitcoinGUI::addDockWindows(Qt::DockWidgetArea area, QWidget* widget)
 {
     QDockWidget *dock = new QDockWidget(this);
+    dock->setObjectName("dock");
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     dock->setAllowedAreas(area);
     QWidget* titleBar = new QWidget();

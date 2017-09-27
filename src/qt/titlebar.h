@@ -23,18 +23,12 @@ public:
      * @brief TitleBar Constructor
      * @param parent Parent widget
      */
-    explicit TitleBar(QWidget *parent = 0);
+    explicit TitleBar(const PlatformStyle *platformStyle, QWidget *parent = 0);
     
     /**
      * @brief TitleBar Destrustor
      */
     ~TitleBar();
-
-    /**
-     * @brief setModel Set wallet model
-     * @param _model Wallet model
-     */
-    void setModel(WalletModel *_model);
 
     /**
      * @brief setTabBarInfo Set the tab bar info
@@ -43,13 +37,8 @@ public:
     void setTabBarInfo(QObject* info);
 
 Q_SIGNALS:
-
+    void on_settings_clicked();
 public Q_SLOTS:
-    /**
-     * @brief setBalance Slot for changing the balance
-     */
-    void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake,
-                    const CAmount& watchBalance, const CAmount& watchUnconfirmedBalance, const CAmount& watchImmatureBalance, const CAmount& watchStake);
 
     /**
      * @brief on_navigationResized Slot for changing the size of the navigation bar
@@ -59,8 +48,8 @@ public Q_SLOTS:
 
 private:
     Ui::TitleBar *ui;
-    WalletModel *model;
     TabBarInfo* m_tab;
+    const PlatformStyle  *style;
 };
 
 #endif // TITLEBAR_H

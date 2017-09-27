@@ -45,8 +45,6 @@ CreateContract::CreateContract(const PlatformStyle *platformStyle, QWidget *pare
     // Setup ui components
     Q_UNUSED(platformStyle);
     ui->setupUi(this);
-    ui->groupBoxOptional->setStyleSheet(STYLE_GROUPBOX);
-    ui->groupBoxConstructor->setStyleSheet(STYLE_GROUPBOX);
     ui->scrollAreaConstructor->setStyleSheet(".QScrollArea {border: none;}");
     setLinkLabels();
     m_ABIFunctionField = new ABIFunctionField(platformStyle, ABIFunctionField::Constructor, ui->scrollAreaConstructor);
@@ -64,6 +62,7 @@ CreateContract::CreateContract(const PlatformStyle *platformStyle, QWidget *pare
     ui->lineEditGasLimit->setMaximum(DEFAULT_GAS_LIMIT_OP_CREATE);
     ui->lineEditGasLimit->setValue(DEFAULT_GAS_LIMIT_OP_CREATE);
     ui->pushButtonCreateContract->setEnabled(false);
+    ui->pushButtonCreateContract->setDefault(true);
 
     // Create new PRC command line interface
     QStringList lstMandatory;
