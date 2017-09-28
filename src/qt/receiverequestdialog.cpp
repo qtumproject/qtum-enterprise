@@ -98,7 +98,7 @@ ReceiveRequestDialog::ReceiveRequestDialog(QWidget *parent) :
 
 #ifndef USE_QRCODE
     ui->btnSaveAs->setVisible(false);
-    ui->lblQRCode->setVisible(false);
+    ui->labelQRCode->setVisible(false);
 #endif
 
     connect(ui->btnSaveAs, SIGNAL(clicked()), ui->labelQRCode, SLOT(saveImage()));
