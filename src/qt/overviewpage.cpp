@@ -173,7 +173,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     currentWatchOnlyStake(-1),
     txdelegate(new TxViewDelegate(platformStyle, this))
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
 
     ui->frameBalances->setStyleSheet(STYLE_GROUPBOX);
     ui->frameRecent->setStyleSheet(STYLE_GROUPBOX);

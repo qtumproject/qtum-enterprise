@@ -94,7 +94,7 @@ ReceiveRequestDialog::ReceiveRequestDialog(QWidget *parent) :
     ui(new Ui::ReceiveRequestDialog),
     model(0)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     QFile f(":/css/Style");
         if(f.open(QIODevice::ReadOnly)){
         this->setStyleSheet(QLatin1String(f.readAll()));

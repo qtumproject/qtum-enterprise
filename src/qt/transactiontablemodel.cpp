@@ -461,18 +461,13 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
 
 QString TransactionTableModel::formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed, BitcoinUnits::SeparatorStyle separators) const
 {
-    QString str = BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit, false, separators,true);
+    QString str = BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit,true, separators,true);
     if(showUnconfirmed)
     {
         if(!wtx->status.countsForBalance)
         {
             str = QString("[") + str + QString("]");
         }
-    }
-    if((wtx->credit + wtx->debit) > 0){
-        str.push_front("+");
-    }else{
-        str.push_front("-");
     }
     return QString(str);
 }

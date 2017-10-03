@@ -15,7 +15,7 @@ BottomBar::BottomBar(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::BottomBar)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     // Hide the fiat balance label
     ui->lblFiatBalance->hide();
     // Set size policy

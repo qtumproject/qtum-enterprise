@@ -44,7 +44,7 @@ CreateContract::CreateContract(const PlatformStyle *platformStyle, QWidget *pare
 {
     // Setup ui components
     Q_UNUSED(platformStyle);
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     ui->scrollAreaConstructor->setStyleSheet(".QScrollArea {border: none;}");
     setLinkLabels();
     m_ABIFunctionField = new ABIFunctionField(platformStyle, ABIFunctionField::Constructor, ui->scrollAreaConstructor);

@@ -17,7 +17,7 @@ TitleBar::TitleBar(const PlatformStyle *platformStyle, QWidget *parent) :
     m_tab(0),
     style(platformStyle)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     // Set the logo
     // Set size policy
     ui->settings->setIcon(style->SingleColorIcon(":/icons/options",QColor(0xa1bdcd)));
