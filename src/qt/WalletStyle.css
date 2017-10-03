@@ -25,13 +25,13 @@ QLabel{
     border: none;
     margin-top:15px;
     background: #f2f2f2;
-    border-radius: 4px;
+    border-top-left-radius: 4px;
     min-height: 600px;
 }
 
 #WalletView{
     background: transparent;
-    border-radius: 4px;
+    border-top-left-radius: 4px;
     margin:0px;
 }
 
@@ -41,8 +41,9 @@ QPushButton{
     min-width: 170px;
     margin:5px;
     border:1px solid #b9b9ba;
-    border-radius:10px;
-    height: 30px;
+    border-radius:15px;
+    min-height: 35px;
+    height: 35px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -90,44 +91,6 @@ QPushButton:default:disabled{
     background-color: #cccccc
 }
 
-.QToolButton{
-    background: transparent;
-    border-radius: 14px;
-    border:0px;
-    min-height: 30px;
-    border-top-right-radius:0px;
-    border-bottom-right-radius:0px;
-    font: 13px;
-    color: #fff;
-    font-weight: 600;
-}
-.QToolButton:pressed{
-    background-color:#51575b;
-}
-.QToolButton:hover{
-    background-color:#51575b;
-}
-.QToolButton:checked{
-    color: #51575b;
-    background: #fff;
-}
-#createContractAction ,#sendToContractAction ,#callContractAction{
-    color: #96bdd3;
-    background:transparent;
-    text-align:left;
-    min-height: 25px;
-    border-radius: 0px;
-}
-
-#createContractAction:checked ,#sendToContractAction:checked ,#callContractAction:checked{
-    border-left: 2px solid #fff;
-    color: #fff;
-}
-#createContractAction:hover ,#sendToContractAction:hover ,#callContractAction:hover{
-    background: rgba(100,100,100,100);
-
-}
-
 QLineEdit::text,QValidatedLineEdit::text,QSpinBox::text,QDoubleSpinBox::text, AmountSpinBox::text,QComboBox::text,QValueComboBox::text{
     margin-left: 10px;
 }
@@ -137,7 +100,9 @@ QSpinBox::text,QDoubleSpinBox::text, AmountSpinBox::text{
 }
 QLineEdit,QValidatedLineEdit{
 
-    height: 30px;
+    height: 35px;
+    min-height: 35px;
+
     font-size: 13px;
     font-weight: 200;
     color: #989899;
@@ -158,7 +123,7 @@ QLineEdit:hover,QValidatedLineEdit:hover{
 
 .QStatusBar{
     border-top: 0px;
-    height:20px;
+    min-height:30px;
     color:#979797;
     background: #e3e3e4;
     margin-left: 0px;
@@ -242,7 +207,8 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
 
 QDateTimeEdit,QSpinBox,QDoubleSpinBox,AmountSpinBox,QComboBox,QValueComboBox,QComboBox,QValueComboBox{
         margin-left:5px;
-        height: 30px;
+        height: 35px;
+        min-height: 35px;
         font-size: 13px;
         font-weight: 200;
         padding-left: 10px;
@@ -271,7 +237,7 @@ QSpinBox::up-button,QDoubleSpinBox::up-button,AmountSpinBox::up-button{
     border-left: 2px solid #b5b5b6;
     margin-right: 0px;
     background-color: #fff;
-    height: 15px;
+    height: 17px;
     padding-bottom: 1px;
     width: 32px;
 }
@@ -282,7 +248,7 @@ QSpinBox::down-button,QDoubleSpinBox::down-button,AmountSpinBox::down-button{
     border-left: 2px solid #b5b5b6;
     margin-right: 0px;
     background-color: #fff;
-    height: 15px;
+    height: 17px;
     padding-top: 1px;
     width: 32px;
 }
@@ -409,8 +375,8 @@ QComboBox QAbstractItemView::item:selected,QValueComboBox QAbstractItemView:item
         margin: 5px;
 }
 .QCheckBox::indicator, .QRadioButton::indicator{
-        height: 13px;
-        width: 13px;
+        height: 10px;
+        width: 10px;
         border-radius: 2px;
         background: transparent;
         border: 3px solid #69b2d6;
@@ -536,6 +502,7 @@ QHeaderView::section {
 #TitleBar{
     min-height: 80px;
     min-width: 250px;
+    max-height: 80px;
 }
 #settings{
     min-height: 25px;
@@ -557,11 +524,13 @@ QHeaderView::section {
     background: #fff;
 }
 #lblLogo{
-    font-size:16px;
+    font-size:18px;
     font-weight: 700;
     color: #fff;
-    margin:30px;
-    margin-top:35px;
+    margin:25px;
+    margin-top:30px;
+    margin-left:0px;
+    padding-right: 20px;
     text-transform: uppercase;
     qproperty-alignment: AlignVCenter AlignCenter;
 }
@@ -569,7 +538,44 @@ QHeaderView::section {
     min-width:0px;
     max-width:0px;
 }
+.QToolButton{
+    background: transparent;
+    border-radius: 14px;
+    border:0px;
+    padding-left: 20px;
+    min-height: 30px;
+    border-top-right-radius:0px;
+    border-bottom-right-radius:0px;
+    font: 13px;
+    color: #fff;
+    font-weight: 600;
+}
+.QToolButton:pressed{
+    background-color:#51575b;
+}
+.QToolButton:hover{
+    background-color:#51575b;
+}
+.QToolButton:checked{
+    color: #51575b;
+    background: #fff;
+}
+#createContractAction ,#sendToContractAction ,#callContractAction{
+    color: #96bdd3;
+    background:transparent;
+    text-align:left;
+    min-height: 25px;
+    border-radius: 0px;
+}
 
+#createContractAction:checked ,#sendToContractAction:checked ,#callContractAction:checked{
+    border-left: 2px solid #fff;
+    color: #fff;
+}
+#createContractAction:hover ,#sendToContractAction:hover ,#callContractAction:hover{
+    background: rgba(100,100,100,100);
+
+}
 
 /******************** OverView Page *******************/
 
@@ -581,12 +587,6 @@ QHeaderView::section {
 
 }
 
-#frameBalances QLabel{
-    color:#51575b;
-    border-radius: 4px;
-
-}
-
 #RecentTransactionsLabel,#BalancesLabel{
     margin-left: 40px;
     margin-top: 30px;
@@ -595,6 +595,23 @@ QHeaderView::section {
     size:16px;
 
 }
+
+#labelBalanceText, #labelPendingText, #labelImmatureText, #labelStakeText, #labelTotalText{
+    color:#959595;
+    font-weight: 500;
+
+}
+#labelBalance, #labelUnconfirmed, #labelImmature, #labelStake, #labelWatchAvailable, #labelWatchPending, #labelWatchStake, #labelWatchImmature{
+    color:#5a5a5d;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+#labelTotal , #labelWatchTotal{
+    font-weight: 700;
+    color:#5a5a5d;
+}
+
 #frameRecent{
     background:#e2e2e2;
     border-radius: 2px;
@@ -614,27 +631,34 @@ QHeaderView::section {
     background: transparent;
 }
 #labelWalletStatus{
-    margin-left: 45px;
+    margin-left: 15px;
 }
 #labelTransactionsStatus{
     margin-left: 20px;
-}
-#labelTotal , #labelWatchTotal{
-    font-weight: 700;
 }
 
 
 /******************** sendCoin Page *******************/
 
+#SendCoinsDialog{
+    border-radius: 4px;
+}
 #SendCoinsEntry{
+    min-height: 150px;
+    margin-top: 30px;
     border-radius: 4px;
 }
 #copyAddressButton , #refreshButton, #addressBookButton, #deleteButton, #pasteButton{
     height: 25px;
     width: 25px;
+    padding: 0px;
     border-radius:1px;
     background: transparent;
 }
+#addressBookButton , #pasteButton{
+    border-right: 1px solid #e2e2e2;
+}
+
 #copyAddressButton:hover , #refreshButton:hover, #addressBookButton:hover, #deleteButton:hover, #pasteButton:hover{
     background:#d4d4d4;
 }
@@ -645,6 +669,9 @@ QHeaderView::section {
 #frameFee{
     background: #e2e2e2;
     border: none;
+}
+#frameFee QLabel{
+    font-weight: 500;
 }
 #TransactionFee{
     margin-left:10px;
@@ -693,16 +720,22 @@ QHeaderView::section {
     margin-left: 35px;
     margin-right: 35px;
 }
+#scrollArea{
+    border:none;
+    border-radius: 4px;
+}
 
+#scrollAreaWidgetContents{
+    border-radius: 4px;
+}
 
 /***************************Overlay****************************/
 
-#ModalOverlay{
-}
 #TitleOfOverlay{
     background: #fff;
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
+    min-height: 50px;
 }
 #TitleOfOverlay QLabel{
     margin-left:30px;
@@ -715,6 +748,7 @@ QHeaderView::section {
      border-radius:1px
 }
 #horizontalButtons{
+    min-height: 70px;
     background: #e2e2e2;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
@@ -722,6 +756,19 @@ QHeaderView::section {
 #contentWidget{
     background: #f2f2f2;
     border-radius: 10px;
+}
+#contentWidget QLabel{
+    color:#717274;
+}
+#infoText, #infoTextStrong{
+    font-weight: 400;
+    margin-right: 60px;
+    margin-bottom: 10px;
+    max-height: 70px;
+}
+#infoTextStrong{
+    max-height: 40px;
+    font-weight: 600;
 }
 #warningIcon{
     min-width: 0px;
@@ -745,10 +792,10 @@ QHeaderView::section {
     margin-left:35px;
 }
 #lblQRCode{
-    min-width:140px;
-    min-height:140px;
-    max-width:140px;
-    max-height:140px;
+    min-width:160px;
+    min-height:160px;
+    max-width:160px;
+    max-height:160px;
 
 }
 #receiveDownFrame , #receiveUpFrame {
@@ -756,11 +803,48 @@ QHeaderView::section {
 }
 
 #outUri{
-    min-width:400px;
+    min-width:300px;
     margin-left: 40px;
     margin-right: 40px;
     qproperty-alignment: AlignVCenter AlignLeft;
 }
+
+#ReceiveCoinsDialog #label, #ReceiveCoinsDialog #label_2, #ReceiveCoinsDialog #label_3, #ReceiveCoinsDialog #label_8{
+    margin-left: 30px;
+    qproperty-alignment: AlignVCenter AlignLeft;
+}
+
+#ReceiveRequestDialog{
+    background: #f2f2f2;
+    min-height: 520px;
+}
+
+#ReceiveRequestDialog #Title{
+    background: #fff;
+    min-height: 40px;
+    color:      #636466;
+    text-transform: uppercase;
+    size: 14px;
+    min-width:600px;
+    padding: 10px;
+    padding-left: 30px;
+    qproperty-alignment: AlignVCenter AlignLeft;
+}
+
+#ReceiveRequestDialog #horizontalLayout_3{
+    margin: 30px;
+    margin-top:0px;
+    background: transparent;
+}
+
+#ReceiveRequestDialog #horizontalLayout_3 QPushButton{
+    max-width:190px;
+}
+
+#ReceiveRequestDialog #buttonBox{
+    min-height: 75px;
+}
+
 
 /***********Create Contract ******************/
 
@@ -768,7 +852,7 @@ QHeaderView::section {
     min-height: 20px;
 }
 #frameOptional{
-    min-height: 200px;
+    min-height: 240px;
 }
 #createContractPage{
     border-radius: 4px;
@@ -820,7 +904,7 @@ QHeaderView::section {
     border:none;
     border-radius: 4px;
     background: #e2e2e2;
-    min-height:280px;
+    min-height:320px;
 }
 
 #BottomSendContract{

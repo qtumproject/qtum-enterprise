@@ -95,6 +95,12 @@ ReceiveRequestDialog::ReceiveRequestDialog(QWidget *parent) :
     model(0)
 {
     ui->setupUi(this);
+    QFile f(":/css/Style");
+        if(f.open(QIODevice::ReadOnly)){
+        this->setStyleSheet(QLatin1String(f.readAll()));
+        f.close();
+    }
+    setWindowFlags(Qt::CustomizeWindowHint);
 
 #ifndef USE_QRCODE
     ui->btnSaveAs->setVisible(false);
@@ -200,7 +206,7 @@ void ReceiveRequestDialog::update()
     ui->outUri->setText(html);
 
 #ifdef USE_QRCODE
-    ui->btnSaveAs->setEnabled(createQRCode(ui->labelQRCode, info, 0xefebe7));
+    ui->btnSaveAs->setEnabled(createQRCode(ui->labelQRCode, info, 0xf2f2f2));
 #endif
 }
 

@@ -85,6 +85,7 @@ public:
         painter->setPen(0xd1d1d1);
         painter->drawLine(amountRect.left() -3, amountRect.top() + 5, amountRect.left() - 3, qtumRect.bottom() - 5);
         painter->setPen(txColor);
+        decorationRect.setTop(decorationRect.top() + 8);
         icon.paint(painter, decorationRect);
 
 
@@ -103,6 +104,17 @@ public:
 
         painter->setPen(foreground);
         QRect boundingRect;
+        QFont font(painter->font());
+#ifdef Q_OS_MAC
+        font.setPointSize(13);
+#endif
+#ifdef Q_OS_WIN
+        font.setPointSize(9);
+#endif
+#ifdef Q_OS_LINUX
+        font.setPointSize(10);
+#endif
+        painter->setFont(font);
         painter->drawText(addressRect, Qt::AlignLeft|Qt::AlignVCenter, address, &boundingRect);
         painter->drawText(dateRect, Qt::AlignLeft|Qt::AlignVCenter, GUIUtil::dateTimeStr(date));
         painter->drawText(TypeRect,Qt::AlignLeft|Qt::AlignVCenter,txType+":");
@@ -123,7 +135,7 @@ public:
         QString qtumString = BitcoinUnits::name(unit);
         amountText.remove(amountText.lastIndexOf(" "),-1);
         painter->drawText(qtumRect, Qt::AlignCenter|Qt::AlignVCenter, qtumString);
-        QFont font=painter->font();
+        font=painter->font();
         font.setBold(true);
         painter->setPen(QColor::fromRgb(0x1c1d1e));
         painter->setFont(font);

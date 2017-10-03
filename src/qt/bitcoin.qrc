@@ -63,6 +63,7 @@
         <file alias="Up">res/icons/Up.png</file>
         <file alias="Down">res/icons/Down.png</file>
         <file alias="checkbox">res/icons/checkbox.png</file>
+        <file alias="request_receive">res/icons/in.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="spinner-000">res/movies/spinner-000.png</file>
@@ -105,5 +106,6 @@
     </qresource>
     <qresource prefix="/css">
         <file alias="Style">WalletStyle.css</file>
+        <file alias="Tahoma">res/Tahoma.otf</file>
     </qresource>
 </RCC>

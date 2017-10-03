@@ -21,13 +21,13 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>5</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>5</number>
    </property>
    <item>
     <widget class="QGroupBox" name="groupBoxCoinControl">
@@ -537,7 +537,7 @@
         <x>0</x>
         <y>0</y>
         <width>853</width>
-        <height>258</height>
+        <height>248</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">

@@ -306,14 +306,14 @@ void BitcoinGUI::createActions()
 {
     QActionGroup *tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(platformStyle->SingleColorIcon(":/icons/overview"), tr("&Overview"), this);
+    overviewAction = new QAction(platformStyle->SingleColorIcon(":/icons/overview",QColor::fromRgb(0x8bb0c6)), tr("&Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
     overviewAction->setToolTip(overviewAction->statusTip());
     overviewAction->setCheckable(true);
     overviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_1));
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(platformStyle->SingleColorIcon(":/icons/send"), tr("&Send"), this);
+    sendCoinsAction = new QAction(platformStyle->SingleColorIcon(":/icons/send",QColor::fromRgb(0x8bb0c6)), tr("&Send"), this);
     sendCoinsAction->setStatusTip(tr("Send coins to a Qtum address"));
     sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
     sendCoinsAction->setCheckable(true);
@@ -324,7 +324,7 @@ void BitcoinGUI::createActions()
     sendCoinsMenuAction->setStatusTip(sendCoinsAction->statusTip());
     sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
-    receiveCoinsAction = new QAction(platformStyle->SingleColorIcon(":/icons/receiving_addresses"), tr("&Receive"), this);
+    receiveCoinsAction = new QAction(platformStyle->SingleColorIcon(":/icons/request_receive", QColor::fromRgb(0x8bb0c6)), tr("&Receive"), this);
     receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and qtum: URIs)"));
     receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
     receiveCoinsAction->setCheckable(true);
@@ -335,7 +335,7 @@ void BitcoinGUI::createActions()
     receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
     receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
-    smartContractAction = new QAction(platformStyle->SingleColorIcon(":/icons/smart_contract"), tr("Smart &Contract"), this);
+    smartContractAction = new QAction(platformStyle->SingleColorIcon(":/icons/smart_contract", QColor::fromRgb(0x8bb0c6)), tr("Smart &Contract"), this);
     smartContractAction->setStatusTip(tr("Smart contract"));
     smartContractAction->setToolTip(smartContractAction->statusTip());
     smartContractAction->setCheckable(true);
@@ -349,7 +349,7 @@ void BitcoinGUI::createActions()
     callContractAction = new QAction(tr("Call"), this);
     callContractAction->setObjectName("callContractAction");
 
-    historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history"), tr("&Transactions"), this);
+    historyAction = new QAction(platformStyle->SingleColorIcon(":/icons/history", QColor::fromRgb(0x8bb0c6)), tr("&Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);

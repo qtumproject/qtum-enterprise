@@ -28,6 +28,7 @@ userClosed(false)
     }
 
     blockProcessTime.clear();
+    ui->closeButton->setDefault(true);
     setVisible(false);
 }
 

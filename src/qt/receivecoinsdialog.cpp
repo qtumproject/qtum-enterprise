@@ -174,7 +174,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     }
     SendCoinsRecipient info(address, label,
         ui->reqAmount->value(), ui->reqMessage->text());
-    ReceiveRequestDialog *dialog = new ReceiveRequestDialog(this);
+    ReceiveRequestDialog *dialog = new ReceiveRequestDialog();
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->setModel(model->getOptionsModel());
     dialog->setInfo(info);
@@ -188,7 +188,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::on_recentRequestsView_doubleClicked(const QModelIndex &index)
 {
     const RecentRequestsTableModel *submodel = model->getRecentRequestsTableModel();
-    ReceiveRequestDialog *dialog = new ReceiveRequestDialog(this);
+    ReceiveRequestDialog *dialog = new ReceiveRequestDialog();
     dialog->setModel(model->getOptionsModel());
     dialog->setInfo(submodel->entry(index.row()).recipient);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
