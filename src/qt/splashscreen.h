@@ -33,7 +33,7 @@ public Q_SLOTS:
     void slotFinish(QWidget *mainWin);
 
     /** Show message and progress */
-    void showMessage(const QString &message, int alignment, const QColor &color);
+    void showMessage(const QString &message, int alignment, const QColor);
 
 private:
     /** Connect core signals to splash screen */

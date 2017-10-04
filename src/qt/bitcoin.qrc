@@ -64,6 +64,7 @@
         <file alias="Down">res/icons/Down.png</file>
         <file alias="checkbox">res/icons/checkbox.png</file>
         <file alias="request_receive">res/icons/in.png</file>
+        <file alias="load">res/icons/loadIcon.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="spinner-000">res/movies/spinner-000.png</file>

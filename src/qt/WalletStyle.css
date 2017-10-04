@@ -502,6 +502,10 @@ QHeaderView::section {
     min-height: 80px;
     min-width: 250px;
     max-height: 80px;
+    border: none;
+}
+#BottomBar{
+    border: none;
 }
 #settings{
     min-height: 25px;

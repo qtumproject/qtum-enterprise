@@ -33,7 +33,6 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     int paddingRight            = 50;
     int paddingTop              = 50;
     int titleVersionVSpace      = 30;
-    int titleCopyrightVSpace    = 10;
     int footerheight            = 40;
 
 
@@ -64,17 +63,17 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     QPainter pixPaint(&pixmap);
 
     // draw a slightly radial gradient
-    QRadialGradient gradient(QPoint(0,0), splashSize.width()/devicePixelRatio);
-    gradient.setColorAt(0, 0x2477a3);
-    gradient.setColorAt(1, 0x2e9ad0);
+    QRadialGradient gradient(QPoint(splashSize.width()/2,splashSize.height()/2), splashSize.width()/devicePixelRatio);
+    gradient.setColorAt(0,0x2d97cd);
+    gradient.setColorAt(1,0x2476a2);
     QRect rGradient(QPoint(0,0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
     // draw the bitcoin icon, expected size of PNG: 1024x1024
-    QRect rectIcon(QPoint(70,-200), QSize(340,340));
+    QRect rectIcon(QPoint(80,-160), QSize(330,288));
 
     const QSize requiredSize(1024,1024);
-    QPixmap icon(networkStyle->getAppIcon().pixmap(requiredSize));
+    QPixmap icon(QIcon(":/icons/load").pixmap(requiredSize));
 
     pixPaint.drawPixmap(rectIcon, icon);
 
@@ -92,7 +91,7 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     pixPaint.setPen(Qt::white);
     pixPaint.drawText(this->width() / 2 - titleTextWidth  ,pixmap.height() - 200 + paddingTop,titleText);
 
-    pixPaint.setPen(QColor(100,100,100));
+    pixPaint.setPen(QColor(0x0f4969));
 
     pixPaint.setFont(QFont(font, 15*fontFactor));
 
@@ -209,11 +208,11 @@ void SplashScreen::unsubscribeFromCoreSignals()
 #endif
 }
 
-void SplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
+void SplashScreen::showMessage(const QString &message, int alignment, const QColor)
 {
     curMessage = message;
     curAlignment = alignment | Qt::AlignRight;
-    curColor = color;
+    curColor = QColor(0x0f4969);
     update();
 }
 
