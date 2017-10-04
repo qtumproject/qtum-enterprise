@@ -32,11 +32,14 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     // set reference point, paddings
     int paddingRight            = 50;
     int paddingTop              = 50;
-    int titleVersionVSpace      = 17;
-    int titleCopyrightVSpace    = 40;
+    int titleVersionVSpace      = 30;
+    int titleCopyrightVSpace    = 10;
+    int footerheight            = 40;
+
 
     float fontFactor            = 1.0;
     float devicePixelRatio      = 1.0;
+
 #if QT_VERSION > 0x050100
     devicePixelRatio = ((QGuiApplication*)QCoreApplication::instance())->devicePixelRatio();
 #endif
@@ -59,17 +62,16 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
 #endif
 
     QPainter pixPaint(&pixmap);
-    pixPaint.setPen(QColor(100,100,100));
 
     // draw a slightly radial gradient
     QRadialGradient gradient(QPoint(0,0), splashSize.width()/devicePixelRatio);
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, QColor(247,247,247));
+    gradient.setColorAt(0, 0x2477a3);
+    gradient.setColorAt(1, 0x2e9ad0);
     QRect rGradient(QPoint(0,0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
     // draw the bitcoin icon, expected size of PNG: 1024x1024
-    QRect rectIcon(QPoint(-150,-122), QSize(430,430));
+    QRect rectIcon(QPoint(70,-200), QSize(340,340));
 
     const QSize requiredSize(1024,1024);
     QPixmap icon(networkStyle->getAppIcon().pixmap(requiredSize));
@@ -87,7 +89,10 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     pixPaint.setFont(QFont(font, 33*fontFactor));
     fm = pixPaint.fontMetrics();
     titleTextWidth  = fm.width(titleText);
-    pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight,paddingTop,titleText);
+    pixPaint.setPen(Qt::white);
+    pixPaint.drawText(this->width() / 2 - titleTextWidth  ,pixmap.height() - 200 + paddingTop,titleText);
+
+    pixPaint.setPen(QColor(100,100,100));
 
     pixPaint.setFont(QFont(font, 15*fontFactor));
 
@@ -98,15 +103,24 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
         pixPaint.setFont(QFont(font, 10*fontFactor));
         titleVersionVSpace -= 5;
     }
-    pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight+2,paddingTop+titleVersionVSpace,versionText);
+    pixPaint.drawText(this->width() / 2 - titleTextWidth + 10  ,pixmap.height() - 200 + paddingTop+titleVersionVSpace,versionText);
+
+    //draw footer
+
+    QRect footer(0, splashSize.height() - footerheight, splashSize.width() , footerheight);
+
+    QPainterPath path;
+    path.addRect(footer);
+    pixPaint.fillPath(path,QColor::fromRgb(0x1f6d97));
+    pixPaint.setPen(0x17597d);
+    pixPaint.drawPath(path);
+
 
     // draw copyright stuff
     {
         pixPaint.setFont(QFont(font, 10*fontFactor));
-        const int x = pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight;
-        const int y = paddingTop+titleCopyrightVSpace;
-        QRect copyrightRect(x, y, pixmap.width() - x - paddingRight, pixmap.height() - y);
-        pixPaint.drawText(copyrightRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, copyrightText);
+        QRect copyrightRect(footer.x() + 25, footer.y(), footer.y() - footer.height(), footer.height() );
+        pixPaint.drawText(copyrightRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap, copyrightText);
     }
 
     // draw additional text if special network
@@ -115,8 +129,9 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
         boldFont.setWeight(QFont::Bold);
         pixPaint.setFont(boldFont);
         fm = pixPaint.fontMetrics();
-        int titleAddTextWidth  = fm.width(titleAddText);
-        pixPaint.drawText(pixmap.width()/devicePixelRatio-titleAddTextWidth-10,15,titleAddText);
+
+        QRect additionalRect(footer.x() + 25, footer.y(), footer.y() - footer.height(), footer.height() );
+        pixPaint.drawText(additionalRect, Qt::AlignLeft | Qt::AlignBottom | Qt::TextWordWrap, titleAddText);
     }
 
     pixPaint.end();
@@ -197,7 +212,7 @@ void SplashScreen::unsubscribeFromCoreSignals()
 void SplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
 {
     curMessage = message;
-    curAlignment = alignment;
+    curAlignment = alignment | Qt::AlignRight;
     curColor = color;
     update();
 }
@@ -206,7 +221,7 @@ void SplashScreen::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     painter.drawPixmap(0, 0, pixmap);
-    QRect r = rect().adjusted(5, 5, -5, -5);
+    QRect r = rect().adjusted(5, 5, -5, -10);
     painter.setPen(curColor);
     painter.drawText(r, curAlignment, curMessage);
 }
