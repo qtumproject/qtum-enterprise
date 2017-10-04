@@ -83,6 +83,8 @@ extern double NSAppKitVersionNumber;
 
 namespace GUIUtil {
 
+int FontID=0;
+
 QString dateTimeStr(const QDateTime &date)
 {
     return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") + date.toString("hh:mm");
@@ -96,16 +98,19 @@ QString dateTimeStr(qint64 nTime)
 QFont fixedPitchFont()
 {
 #if QT_VERSION >= 0x50200
-    return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    #ifdef Q_OS_WIN
+        QFont font("sans-serif");
+        font.setStyleHint(QFont::SansSerif);
+        return font;
+    #endif
+        QString family = QFontDatabase::applicationFontFamilies(FontID).at(0);
+        return QFont (family);
 #else
-    QFont font("Monospace");
-#if QT_VERSION >= 0x040800
-    font.setStyleHint(QFont::Monospace);
-#else
-    font.setStyleHint(QFont::TypeWriter);
+        QFont font("sans-serif");
+        font.setStyleHint(QFont::SansSerif);
+        return font;
 #endif
-    return font;
-#endif
+
 }
 
 // Just some dummy data to generate an convincing random-looking (but consistent) address

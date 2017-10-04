@@ -94,14 +94,20 @@ ReceiveRequestDialog::ReceiveRequestDialog(QWidget *parent) :
     ui(new Ui::ReceiveRequestDialog),
     model(0)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
+    QFile f(":/css/Style");
+        if(f.open(QIODevice::ReadOnly)){
+        this->setStyleSheet(QLatin1String(f.readAll()));
+        f.close();
+    }
+    setWindowFlags(Qt::CustomizeWindowHint);
 
 #ifndef USE_QRCODE
     ui->btnSaveAs->setVisible(false);
-    ui->lblQRCode->setVisible(false);
+    ui->labelQRCode->setVisible(false);
 #endif
 
-    connect(ui->btnSaveAs, SIGNAL(clicked()), ui->lblQRCode, SLOT(saveImage()));
+    connect(ui->btnSaveAs, SIGNAL(clicked()), ui->labelQRCode, SLOT(saveImage()));
 }
 
 ReceiveRequestDialog::~ReceiveRequestDialog()
@@ -126,7 +132,7 @@ void ReceiveRequestDialog::setInfo(const SendCoinsRecipient &_info)
     update();
 }
 
-bool ReceiveRequestDialog::createQRCode(QLabel *label, SendCoinsRecipient _info)
+bool ReceiveRequestDialog::createQRCode(QLabel *label, SendCoinsRecipient _info,uint background)
 {
 #ifdef USE_QRCODE
     QString uri = GUIUtil::formatBitcoinURI(_info);
@@ -145,28 +151,22 @@ bool ReceiveRequestDialog::createQRCode(QLabel *label, SendCoinsRecipient _info)
                 return false;
             }
             QImage qrImage = QImage(code->width + 8, code->width + 8, QImage::Format_RGB32);
-            qrImage.fill(0xffffff);
+            qrImage.fill(background);
             unsigned char *p = code->data;
             for (int y = 0; y < code->width; y++)
             {
                 for (int x = 0; x < code->width; x++)
                 {
-                    qrImage.setPixel(x + 4, y + 4, ((*p & 1) ? 0x0 : 0xffffff));
+                    qrImage.setPixel(x + 4, y + 4, ((*p & 1) ? 0x0 : background));
                     p++;
                 }
             }
             QRcode_free(code);
 
             QImage qrAddrImage = QImage(QR_IMAGE_SIZE, QR_IMAGE_SIZE+20, QImage::Format_RGB32);
-            qrAddrImage.fill(0xffffff);
+            qrAddrImage.fill(background);
             QPainter painter(&qrAddrImage);
             painter.drawImage(0, 0, qrImage.scaled(QR_IMAGE_SIZE, QR_IMAGE_SIZE));
-            QFont font = GUIUtil::fixedPitchFont();
-            font.setPixelSize(12);
-            painter.setFont(font);
-            QRect paddedRect = qrAddrImage.rect();
-            paddedRect.setHeight(QR_IMAGE_SIZE+12);
-            painter.drawText(paddedRect, Qt::AlignBottom|Qt::AlignCenter, _info.address);
             painter.end();
 
             label->setPixmap(QPixmap::fromImage(qrAddrImage));
@@ -206,7 +206,7 @@ void ReceiveRequestDialog::update()
     ui->outUri->setText(html);
 
 #ifdef USE_QRCODE
-    ui->btnSaveAs->setEnabled(createQRCode(ui->lblQRCode, info));
+    ui->btnSaveAs->setEnabled(createQRCode(ui->labelQRCode, info, 0xf2f2f2));
 #endif
 }
 

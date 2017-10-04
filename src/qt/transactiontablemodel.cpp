@@ -35,7 +35,7 @@ static int column_alignments[] = {
         Qt::AlignLeft|Qt::AlignVCenter, /* date */
         Qt::AlignLeft|Qt::AlignVCenter, /* type */
         Qt::AlignLeft|Qt::AlignVCenter, /* address */
-        Qt::AlignRight|Qt::AlignVCenter /* amount */
+        Qt::AlignLeft|Qt::AlignVCenter  /* amount */
     };
 
 // Comparison operator for sort/binary search of model tx list
@@ -456,12 +456,12 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
     default:
         break;
     }
-    return QVariant();
+    return  QColor(0x97,0x97,0x97);
 }
 
 QString TransactionTableModel::formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed, BitcoinUnits::SeparatorStyle separators) const
 {
-    QString str = BitcoinUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit, false, separators);
+    QString str = BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit,true, separators,true);
     if(showUnconfirmed)
     {
         if(!wtx->status.countsForBalance)
@@ -541,14 +541,14 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
             return txStatusDecoration(rec);
         case Watchonly:
             return txWatchonlyDecoration(rec);
-        case ToAddress:
+        case Type:
             return txAddressDecoration(rec);
         }
         break;
     case Qt::DecorationRole:
     {
         QIcon icon = qvariant_cast<QIcon>(index.data(RawDecorationRole));
-        return platformStyle->TextColorIcon(icon);
+        return icon;
     }
     case Qt::DisplayRole:
         switch(index.column())
@@ -560,7 +560,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         case ToAddress:
             return formatTxToAddress(rec, false);
         case Amount:
-            return formatTxAmount(rec, true, BitcoinUnits::separatorAlways);
+            return formatTxAmount(rec, false, BitcoinUnits::separatorAlways);
         }
         break;
     case Qt::EditRole:

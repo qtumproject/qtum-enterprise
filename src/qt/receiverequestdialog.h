@@ -55,7 +55,7 @@ public:
 
     void setModel(OptionsModel *model);
     void setInfo(const SendCoinsRecipient &info);
-    static bool createQRCode(QLabel * label, SendCoinsRecipient info);
+    static bool createQRCode(QLabel * label, SendCoinsRecipient info, uint background = 0xffffff);
 
 private Q_SLOTS:
     void on_btnCopyURI_clicked();

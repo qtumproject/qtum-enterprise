@@ -28,7 +28,9 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
     mode(_mode),
     tab(_tab)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
+
+    ui->tableView->setShowGrid(false);
 
     if (!platformStyle->getImagesOnButtons()) {
         ui->newAddress->setIcon(QIcon());

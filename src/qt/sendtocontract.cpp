@@ -43,7 +43,7 @@ SendToContract::SendToContract(const PlatformStyle *platformStyle, QWidget *pare
 {
     // Setup ui components
     Q_UNUSED(platformStyle);
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     ui->groupBoxOptional->setStyleSheet(STYLE_GROUPBOX);
     ui->groupBoxFunction->setStyleSheet(STYLE_GROUPBOX);
     ui->scrollAreaFunction->setStyleSheet(".QScrollArea {border: none;}");

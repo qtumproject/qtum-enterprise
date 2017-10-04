@@ -116,7 +116,8 @@ QT_FORMS_UI = \
   qt/forms/sendtocontract.ui \
   qt/forms/signverifymessagedialog.ui \
   qt/forms/titlebar.ui \
-  qt/forms/transactiondescdialog.ui
+  qt/forms/transactiondescdialog.ui \
+  qt/forms/bottombar.ui 
 
 QT_MOC_CPP = \
   qt/moc_abifunctionfield.cpp \
@@ -176,7 +177,8 @@ QT_MOC_CPP = \
   qt/moc_utilitydialog.cpp \
   qt/moc_walletframe.cpp \
   qt/moc_walletmodel.cpp \
-  qt/moc_walletview.cpp
+  qt/moc_walletview.cpp \
+  qt/moc_bottombar.cpp 
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -265,7 +267,8 @@ BITCOIN_QT_H = \
   qt/walletmodel.h \
   qt/walletmodeltransaction.h \
   qt/walletview.h \
-  qt/winshutdownmonitor.h
+  qt/winshutdownmonitor.h \
+  qt/bottombar.h 
 
 RES_ICONS = \
   qt/res/icons/add.png \
@@ -357,7 +360,8 @@ BITCOIN_QT_BASE_CPP = \
   qt/tabbarinfo.cpp \
   qt/titlebar.cpp \
   qt/trafficgraphwidget.cpp \
-  qt/utilitydialog.cpp
+  qt/utilitydialog.cpp \
+  qt/bottombar.cpp 
 
 BITCOIN_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
 

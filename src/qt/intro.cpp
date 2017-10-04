@@ -121,7 +121,12 @@ Intro::Intro(QWidget *parent) :
     thread(0),
     signalled(false)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
+    QFile f(":/css/Style");
+        if(f.open(QIODevice::ReadOnly)){
+        this->setStyleSheet(QLatin1String(f.readAll()));
+        f.close();
+    }
     ui->welcomeLabel->setText(ui->welcomeLabel->text().arg(tr(PACKAGE_NAME)));
     ui->storageLabel->setText(ui->storageLabel->text().arg(tr(PACKAGE_NAME)));
     uint64_t pruneTarget = std::max<int64_t>(0, GetArg("-prune", 0));

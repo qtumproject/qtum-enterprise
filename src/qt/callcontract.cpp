@@ -30,9 +30,7 @@ CallContract::CallContract(const PlatformStyle *platformStyle, QWidget *parent) 
     m_tabInfo(0)
 {
     // Setup ui components
-    ui->setupUi(this);
-    ui->groupBoxOptional->setStyleSheet(STYLE_GROUPBOX);
-    ui->groupBoxFunction->setStyleSheet(STYLE_GROUPBOX);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     ui->scrollAreaFunction->setStyleSheet(".QScrollArea {border: none;}");
     m_ABIFunctionField = new ABIFunctionField(platformStyle, ABIFunctionField::Function, ui->scrollAreaFunction);
     ui->scrollAreaFunction->setWidget(m_ABIFunctionField);
@@ -40,6 +38,8 @@ CallContract::CallContract(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelContractAddress->setToolTip(tr("The account address."));
     ui->labelSenderAddress->setToolTip(tr("The sender address hex string."));
     ui->pushButtonCallContract->setEnabled(false);
+    ui->pushButtonCallContract->setDefault(true);
+
 
     m_tabInfo = new TabBarInfo(ui->stackedWidget);
     m_tabInfo->addTab(0, tr("CallContract"));

@@ -29,8 +29,8 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     model(0),
     platformStyle(_platformStyle)
 {
-    ui->setupUi(this);
-
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
+    ui->recentRequestsView->setShowGrid(false);
     if (!_platformStyle->getImagesOnButtons()) {
         ui->clearButton->setIcon(QIcon());
         ui->receiveButton->setIcon(QIcon());
@@ -39,9 +39,10 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     } else {
         ui->clearButton->setIcon(_platformStyle->SingleColorIcon(":/icons/remove"));
         ui->receiveButton->setIcon(_platformStyle->SingleColorIcon(":/icons/receiving_addresses"));
-        ui->showRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/edit"));
+        ui->showRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/eye"));
         ui->removeRequestButton->setIcon(_platformStyle->SingleColorIcon(":/icons/remove"));
     }
+    ui->receiveButton->setDefault(true);
 
     ui->copyAddressButton->setIcon(platformStyle->SingleColorIcon(":/icons/editcopy"));
     ui->copyAddressButton->setEnabled(false);
@@ -173,7 +174,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
     }
     SendCoinsRecipient info(address, label,
         ui->reqAmount->value(), ui->reqMessage->text());
-    ReceiveRequestDialog *dialog = new ReceiveRequestDialog(this);
+    ReceiveRequestDialog *dialog = new ReceiveRequestDialog();
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->setModel(model->getOptionsModel());
     dialog->setInfo(info);
@@ -187,7 +188,7 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
 void ReceiveCoinsDialog::on_recentRequestsView_doubleClicked(const QModelIndex &index)
 {
     const RecentRequestsTableModel *submodel = model->getRecentRequestsTableModel();
-    ReceiveRequestDialog *dialog = new ReceiveRequestDialog(this);
+    ReceiveRequestDialog *dialog = new ReceiveRequestDialog();
     dialog->setModel(model->getOptionsModel());
     dialog->setInfo(submodel->entry(index.row()).recipient);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -204,7 +205,7 @@ void ReceiveCoinsDialog::on_recentRequestsView_clicked(const QModelIndex &index)
     ui->reqMessage->setText(info.message);
     ui->reqAmount->setValue(info.amount);
 
-    if(ReceiveRequestDialog::createQRCode(ui->lblQRCode, info))
+    if(ReceiveRequestDialog::createQRCode(ui->lblQRCode, info, 0xf2f2f2))
     {
         ui->lblQRCode->setScaledContents(true);
     }

@@ -8,7 +8,7 @@ ContractResult::ContractResult(QWidget *parent) :
     QStackedWidget(parent),
     ui(new Ui::ContractResult)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
     ui->groupBoxCallContract->setStyleSheet(STYLE_GROUPBOX);
     ui->groupBoxResult->setStyleSheet(STYLE_GROUPBOX);
     ui->groupBoxCreateOrSendTo->setStyleSheet(STYLE_GROUPBOX);

@@ -133,7 +133,7 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setTabKeyNavigation(false);
     view->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    view->setShowGrid(false);
     view->installEventFilter(this);
 
     transactionView = view;
@@ -509,15 +509,16 @@ QWidget *TransactionView::createDateRangeWidget()
 
     dateFrom = new QDateTimeEdit(this);
     dateFrom->setDisplayFormat("dd/MM/yy");
-    dateFrom->setCalendarPopup(true);
+    dateFrom->setCalendarPopup(false);
     dateFrom->setMinimumWidth(100);
     dateFrom->setDate(QDate::currentDate().addDays(-7));
     layout->addWidget(dateFrom);
     layout->addWidget(new QLabel(tr("to")));
 
+
     dateTo = new QDateTimeEdit(this);
     dateTo->setDisplayFormat("dd/MM/yy");
-    dateTo->setCalendarPopup(true);
+    dateTo->setCalendarPopup(false);
     dateTo->setMinimumWidth(100);
     dateTo->setDate(QDate::currentDate());
     layout->addWidget(dateTo);

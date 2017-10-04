@@ -51,6 +51,11 @@
 #include <QTimer>
 #include <QTranslator>
 #include <QSslConfiguration>
+#include <QFile>
+
+#if QT_VERSION >= 0x50200
+#include <QFontDatabase>
+#endif
 
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
@@ -328,6 +333,18 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     // UI per-platform customization
     // This must be done inside the BitcoinApplication constructor, or after it, because
     // PlatformStyle::instantiate requires a QApplication
+
+#if QT_VERSION >= 0x50200
+    QString family;
+    #ifdef Q_OS_WIN
+        family="sans-serif";
+    #else
+        GUIUtil::FontID = QFontDatabase::addApplicationFont(":/css/Tahoma");
+        family = QFontDatabase::applicationFontFamilies(GUIUtil::FontID).at(0);
+    #endif
+    QApplication::setFont(QFont (family));
+
+#endif
     std::string platformName;
     platformName = GetArg("-uiplatform", BitcoinGUI::DEFAULT_UIPLATFORM);
     platformStyle = PlatformStyle::instantiate(QString::fromStdString(platformName));
@@ -373,6 +390,13 @@ void BitcoinApplication::createOptionsModel(bool resetSettings)
 void BitcoinApplication::createWindow(const NetworkStyle *networkStyle)
 {
     window = new BitcoinGUI(platformStyle, networkStyle, 0);
+
+    QFile f(":/css/Style");
+        if(f.open(QIODevice::ReadOnly)){
+        window->setStyleSheet(QLatin1String(f.readAll()));
+        f.close();
+    }
+
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));

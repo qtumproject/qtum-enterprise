@@ -18,7 +18,7 @@ EditAddressDialog::EditAddressDialog(Mode _mode, QWidget *parent) :
     mode(_mode),
     model(0)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); this->setWindowFlags(this->windowFlags()& ~Qt::WindowContextHelpButtonHint);
 
     GUIUtil::setupAddressWidget(ui->addressEdit, this);
 
