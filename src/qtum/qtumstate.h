@@ -11,6 +11,8 @@
 #include <libethereum/Executive.h>
 #include <libethcore/SealEngine.h>
 
+#include <qtum/vm.h>
+
 using OnOpFunc = std::function<void(uint64_t, uint64_t, dev::eth::Instruction, dev::bigint, dev::bigint, 
     dev::bigint, dev::eth::VM*, dev::eth::ExtVMFace const*)>;
 using plusAndMinus = std::pair<dev::u256, dev::u256>;

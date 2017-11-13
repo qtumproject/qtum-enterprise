@@ -171,6 +171,7 @@ BITCOIN_CORE_H = \
   qtum/qtumstate.h \
   qtum/qtumtransaction.h \
   qtum/qtumDGP.h \
+  qtum/vm.h \
   qtum/storageresults.h
 
 
@@ -223,6 +224,7 @@ libbitcoin_server_a_SOURCES = \
   qtum/qtumstate.cpp \
   qtum/qtumtransaction.cpp \
   qtum/qtumDGP.cpp \
+  qtum/vm.cpp \
   consensus/consensus.cpp \
   qtum/storageresults.cpp \
   $(BITCOIN_CORE_H)
