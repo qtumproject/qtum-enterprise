@@ -36,23 +36,21 @@ namespace qtum {
         };
         
         struct ExecutionInfo {
-            const std::vector<uint8_t>& fullSenderScript;
-            const uint256& senderAddress;
-            const std::vector<uint256>& externalCallStack;
-            const std::vector<uint8_t>& inputData;
-            const uint64_t gasLimit;
-            const uint64_t gasPrice;
-            const bool allowPaymentConsumption;
-            const uint64_t totalGasLimit;
-            const uint256& toAddress;
-            
-            ExecutionInfo(CTransactionRef, size_t nOut, uint64_t _totalGasLimit, CCoinsViewCache&);
+            std::vector<uint8_t> fullSenderScript;
+            uint256 senderAddress;
+            std::vector<uint256> externalCallStack;
+            std::vector<uint8_t> inputData;
+            uint64_t gasLimit;
+            uint64_t gasPrice;
+            bool allowPaymentConsumption;
+            uint64_t totalGasLimit;
+            uint256 toAddress;
         };
         
         struct ExecutionResult {
-            const uint64_t gasConsumed;
-            const uint32_t executionStatus;
-            const std::shared_ptr<const std::vector<uint8_t>> outputData;
+            uint64_t gasConsumed;
+            uint32_t executionStatus;
+            std::shared_ptr<const std::vector<uint8_t>> outputData;
             // const std::map<uint256, std::map<std::vector<uint8_t>, std::vector<uint8_t>>> storageWrites;
             const uint64_t paymentConsumed;
         };
@@ -68,6 +66,7 @@ namespace qtum {
         class QtumEVM : public QtumVMBase {
         public:
             QtumEVM(const QtumBlockchainDataFeed& dataFeed) : QtumVMBase(dataFeed) {}
+            ExecutionInfo PrepareExecutionInfo(CTransactionRef, size_t nOut, uint64_t _totalGasLimit, CCoinsViewCache&);
             ExecutionResult Execute(const ExecutionInfo&, const VersionVM, const uint256 address, 
                         const std::vector<uint8_t>& bytecode, const uint64_t) override;
         };

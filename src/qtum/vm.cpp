@@ -38,21 +38,24 @@ QtumBlockchainDataFeed::QtumBlockchainDataFeed (const CChain& chain, const CBloc
     }
 }
 
-// const std::vector<uint8_t>& fullSenderScript;
-// const uint256& senderAddress;
-// const std::vector<uint256>& externalCallStack;
-// const std::vector<uint8_t>& inputData;
-// const uint64_t gasLimit;
-// const uint64_t gasPrice;
-// const bool allowPaymentConsumption;
-// const uint64_t totalGasLimit;
-// const uint256& toAddress;
+// std::vector<uint8_t>& fullSenderScript;
+// uint256& senderAddress;
+// std::vector<uint256>& externalCallStack;
+// std::vector<uint8_t>& inputData;
+// uint64_t gasLimit;
+// uint64_t gasPrice;
+// bool allowPaymentConsumption;
+// uint64_t totalGasLimit;
+// uint256 toAddress;
 
-// ExecutionInfo::ExecutionInfo(CTransactionRef tx, size_t nOut, uint64_t _totalGasLimit, CCoinsViewCache& view) : totalGasLimit() {
-//     fullSenderScript = valtype(tx.vout[nOut].scriptPubKey.begin(), tx.vout[nOut].scriptPubKey.end());
-//     senderAddress = ExtractAddress(tx.vout[nOut].scriptPubKey);
-    
-// }
+ExecutionInfo QtumEVM::PrepareExecutionInfo(CTransactionRef tx, size_t nOut, uint64_t _totalGasLimit, CCoinsViewCache& view) {
+    ExecutionInfo ret;
+    ret.totalGasLimit = _totalGasLimit;
+    // convert the scriptSig into a stack, so we can inspect exec data
+    // std::vector<std::vector<unsigned char> > stack;
+    // if (!EvalScript(stack, tx.vout[nOut].scriptPubKey, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SIGVERSION_BASE));
+    //     return false;
+}
 
 ExecutionResult QtumEVM::Execute(const ExecutionInfo&, const VersionVM, const uint256 address, 
     const std::vector<uint8_t>& bytecode, const uint64_t) {

@@ -49,9 +49,9 @@ extern bool fRecordLogOpcodes;
 extern bool fIsVMlogFile;
 extern bool fGettingValuesDGP;
 
-struct EthTransactionParams;
+struct QtumTransactionParams;
 using valtype = std::vector<unsigned char>;
-using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<EthTransactionParams>>;
+using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<QtumTransactionParams>>;
 ///////////////////////////////////////////
 
 class CBlockIndex;
@@ -705,7 +705,7 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
 
 bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx);
 
-bool CheckMinGasPrice(std::vector<EthTransactionParams>& etps, const uint64_t& minGasPrice);
+bool CheckMinGasPrice(std::vector<QtumTransactionParams>& etps, const uint64_t& minGasPrice);
 
 struct ByteCodeExecResult;
 
@@ -714,14 +714,16 @@ void EnforceContractVoutLimit(ByteCodeExecResult& bcer, ByteCodeExecResult& bcer
 
 void writeVMlog(const std::vector<ResultExecute>& res, const CTransaction& tx = CTransaction(), const CBlock& block = CBlock());
 
-struct EthTransactionParams{
+struct QtumTransactionParams{
     VersionVM version;
-    dev::u256 gasLimit;
-    dev::u256 gasPrice;
+    uint64_t gasLimit;
+    uint64_t gasPrice;
     valtype code;
     dev::Address receiveAddress;
 
-    bool operator!=(EthTransactionParams etp){
+    bool fromStack(std::vector<valtype>& v, opcodetype op);
+
+    bool operator!=(QtumTransactionParams etp) {
         if(this->version.toRaw() != etp.version.toRaw() || this->gasLimit != etp.gasLimit ||
         this->gasPrice != etp.gasPrice || this->code != etp.code ||
         this->receiveAddress != etp.receiveAddress)
@@ -737,6 +739,8 @@ struct ByteCodeExecResult{
     std::vector<CTransaction> valueTransfers;
 };
 
+std::vector<valtype> GetStack(const CScript& scriptPubKey);
+
 class QtumTxConverter{
 
 public:
@@ -747,15 +751,16 @@ public:
 
 private:
 
-    bool receiveStack(const CScript& scriptPubKey);
+    bool validateStack(std::vector<valtype>&);
 
-    bool parseEthTXParams(EthTransactionParams& params);
+    bool parseEthTXParams(QtumTransactionParams& params, std::vector<valtype> stack);
 
-    QtumTransaction createEthTX(const EthTransactionParams& etp, const uint32_t nOut);
+    bool validateQtumTransactionParameters(QtumTransactionParams& params);
+
+    QtumTransaction createEthTX(const QtumTransactionParams& etp, const uint32_t nOut);
 
     const CTransaction txBit;
     const CCoinsViewCache* view;
-    std::vector<valtype> stack;
     opcodetype opcode;
     const std::vector<CTransactionRef> *blockTransactions;
 

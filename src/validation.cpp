@@ -777,7 +777,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 return state.DoS(100, error("AcceptToMempool(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }
             std::vector<QtumTransaction> qtumTransactions = resultConverter.first;
-            std::vector<EthTransactionParams> qtumETP = resultConverter.second;
+            std::vector<QtumTransactionParams> qtumETP = resultConverter.second;
 
             dev::u256 sumGas = dev::u256(0);
             dev::u256 gasAllTxs = dev::u256(0);
@@ -1990,8 +1990,8 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     return exec.getResult();
 }
 
-bool CheckMinGasPrice(std::vector<EthTransactionParams>& etps, const uint64_t& minGasPrice){
-    for(EthTransactionParams& etp : etps){
+bool CheckMinGasPrice(std::vector<QtumTransactionParams>& etps, const uint64_t& minGasPrice){
+    for(QtumTransactionParams& etp : etps){
         if(etp.gasPrice < dev::u256(minGasPrice))
             return false;
     }
@@ -2283,31 +2283,57 @@ dev::Address ByteCodeExec::EthAddrFromScript(const CScript& script){
 
 bool QtumTxConverter::extractionQtumTransactions(ExtractQtumTX& qtumtx){
     std::vector<QtumTransaction> resultTX;
-    std::vector<EthTransactionParams> resultETP;
+    std::vector<QtumTransactionParams> resultETP;
     for(size_t i = 0; i < txBit.vout.size(); i++){
         if(txBit.vout[i].scriptPubKey.HasOpCreate() || txBit.vout[i].scriptPubKey.HasOpCall()){
-            if(receiveStack(txBit.vout[i].scriptPubKey)){
-                EthTransactionParams params;
-                if(parseEthTXParams(params)){
-                    resultTX.push_back(createEthTX(params, i));
-                    resultETP.push_back(params);
-                }else{
-                    return false;
-                }
+            auto stack = GetStack(txBit.vout[i].scriptPubKey);
+            if (!validateStack(stack))
+                return false;
+
+            QtumTransactionParams params;
+            if(parseEthTXParams(params, stack)){
+                resultTX.push_back(createEthTX(params, i));
+                resultETP.push_back(params);
             }else{
                 return false;
             }
+
         }
     }
     qtumtx = std::make_pair(resultTX, resultETP);
     return true;
 }
 
-bool QtumTxConverter::receiveStack(const CScript& scriptPubKey){
+std::vector<valtype> GetStack(const CScript& scriptPubKey){
+    std::vector<valtype> stack;
     EvalScript(stack, scriptPubKey, SCRIPT_EXEC_BYTE_CODE, BaseSignatureChecker(), SIGVERSION_BASE, nullptr);
-    if (stack.empty())
-        return false;
+    return stack;
+}
 
+bool QtumTransactionParams::fromStack(std::vector<valtype>& v, opcodetype op) {
+    try{
+        auto it = std::prev(v.end());
+        if (op == OP_CALL) {
+            if (v.size() < 5) return false;
+            receiveAddress = dev::Address(*it--);
+        }
+
+        valtype code(*it--);
+        gasPrice = CScriptNum::vch_to_uint64(*it--);
+        gasLimit = CScriptNum::vch_to_uint64(*it--);
+        
+        if(it->size() > 4) return false;
+
+        version = VersionVM::fromRaw((uint32_t)CScriptNum::vch_to_uint64(*it--));
+        return true;
+    } catch(const scriptnum_error& err){
+        LogPrintf("Incorrect parameters to VM.");
+        return false;
+    }
+}
+
+bool QtumTxConverter::validateStack(std::vector<valtype>& stack) {
+    if (stack.size() == 0) return false; 
     CScript scriptRest(stack.back().begin(), stack.back().end());
     stack.pop_back();
 
@@ -2316,59 +2342,36 @@ bool QtumTxConverter::receiveStack(const CScript& scriptPubKey){
         stack.clear();
         return false;
     }
-
     return true;
 }
 
-bool QtumTxConverter::parseEthTXParams(EthTransactionParams& params){
-    try{
-        dev::Address receiveAddress;
-        valtype vecAddr;
-        if (opcode == OP_CALL)
-        {
-            vecAddr = stack.back();
-            stack.pop_back();
-            receiveAddress = dev::Address(vecAddr);
-        }
-        if(stack.size() < 4)
-            return false;
-
-        if(stack.back().size() < 1){
-            return false;
-        }
-        valtype code(stack.back());
-        stack.pop_back();
-        uint64_t gasPrice = CScriptNum::vch_to_uint64(stack.back());
-        stack.pop_back();
-        uint64_t gasLimit = CScriptNum::vch_to_uint64(stack.back());
-        stack.pop_back();
-        if(gasPrice > INT64_MAX || gasLimit > INT64_MAX){
-            return false;
-        }
-        //we track this as CAmount in some places, which is an int64_t, so constrain to INT64_MAX
-        if(gasPrice !=0 && gasLimit > INT64_MAX / gasPrice){
-            //overflows past 64bits, reject this tx
-            return false;
-        }
-        if(stack.back().size() > 4){
-            return false;
-        }
-        VersionVM version = VersionVM::fromRaw((uint32_t)CScriptNum::vch_to_uint64(stack.back()));
-        stack.pop_back();
-        params.version = version;
-        params.gasPrice = dev::u256(gasPrice);
-        params.receiveAddress = receiveAddress;
-        params.code = code;
-        params.gasLimit = dev::u256(gasLimit);
-        return true;
-    }
-    catch(const scriptnum_error& err){
-        LogPrintf("Incorrect parameters to VM.");
+bool QtumTxConverter::validateQtumTransactionParameters(QtumTransactionParams& params) {
+    if(params.gasPrice > INT64_MAX || params.gasLimit > INT64_MAX)
         return false;
-    }
+
+    //we track this as CAmount in some places, which is an int64_t, so constrain to INT64_MAX
+    if(params.gasPrice !=0 && params.gasLimit > INT64_MAX / params.gasPrice)
+        return false; //overflows past 64bits, reject this tx
+    
+    if (params.code.empty())
+        return false;
+    
+    return true;
 }
 
-QtumTransaction QtumTxConverter::createEthTX(const EthTransactionParams& etp, uint32_t nOut){
+bool QtumTxConverter::parseEthTXParams(QtumTransactionParams& params, std::vector<valtype> stack){
+        QtumTransactionParams ret;
+        if (!ret.fromStack(stack, opcode))
+            return false;
+
+        if (!validateQtumTransactionParameters(ret))
+            return false;
+
+        params = ret;
+        return true;
+}
+
+QtumTransaction QtumTxConverter::createEthTX(const QtumTransactionParams& etp, uint32_t nOut){
     QtumTransaction txEth;
     if (etp.receiveAddress == dev::Address() && opcode != OP_CALL){
         txEth = QtumTransaction(txBit.vout[nOut].nValue, etp.gasPrice, etp.gasLimit, etp.code, dev::u256(0));
