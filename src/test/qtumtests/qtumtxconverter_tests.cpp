@@ -64,8 +64,8 @@ void runTest(bool isCreation, size_t n, CScript& script1, CScript script2 = CScr
     }    
     tx2 = createTX(outs2, hashParentTx);
     CTransaction transaction(tx2);
-    QtumTxConverter converter(transaction, NULL);
-    ExtractQtumTX qtumTx;
+    qtum::vm::QtumTxConverter converter(transaction, NULL);
+    qtum::vm::ExtractQtumTX qtumTx;
     BOOST_CHECK(converter.extractionQtumTransactions(qtumTx));
     std::vector<QtumTransaction> result = qtumTx.first;
     if(script2 == CScript()){
@@ -98,8 +98,8 @@ void runFailingTest(bool isCreation, size_t n, CScript& script1, CScript script2
     }
     tx2 = createTX(outs2, hashParentTx);
     CTransaction transaction(tx2);
-    QtumTxConverter converter(transaction, NULL);
-    ExtractQtumTX qtumTx;
+    qtum::vm::QtumTxConverter converter(transaction, NULL);
+    qtum::vm::ExtractQtumTX qtumTx;
     BOOST_CHECK(!converter.extractionQtumTransactions(qtumTx));
 }
 

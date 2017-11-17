@@ -771,13 +771,13 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             size_t count = 0;
             for(const CTxOut& o : tx.vout)
                 count += o.scriptPubKey.HasOpCreate() || o.scriptPubKey.HasOpCall() ? 1 : 0;
-            QtumTxConverter converter(tx, NULL);
-            ExtractQtumTX resultConverter;
+            qtum::vm::QtumTxConverter converter(tx, NULL);
+            qtum::vm::ExtractQtumTX resultConverter;
             if(!converter.extractionQtumTransactions(resultConverter)){
                 return state.DoS(100, error("AcceptToMempool(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }
             std::vector<QtumTransaction> qtumTransactions = resultConverter.first;
-            std::vector<QtumTransactionParams> qtumETP = resultConverter.second;
+            std::vector<qtum::vm::QtumTransactionParams> qtumETP = resultConverter.second;
 
             dev::u256 sumGas = dev::u256(0);
             dev::u256 gasAllTxs = dev::u256(0);
@@ -1990,8 +1990,8 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     return exec.getResult();
 }
 
-bool CheckMinGasPrice(std::vector<QtumTransactionParams>& etps, const uint64_t& minGasPrice){
-    for(QtumTransactionParams& etp : etps){
+bool CheckMinGasPrice(std::vector<qtum::vm::QtumTransactionParams>& etps, const uint64_t& minGasPrice){
+    for(qtum::vm::QtumTransactionParams& etp : etps){
         if(etp.gasPrice < dev::u256(minGasPrice))
             return false;
     }
@@ -2076,49 +2076,6 @@ bool CheckReward(const CBlock& block, CValidationState& state, int nHeight, cons
     return true;
 }
 
-valtype GetSenderAddress(const CTransaction& tx, const CCoinsViewCache* coinsView, const std::vector<CTransactionRef>* blockTxs){
-    CScript script;
-    bool scriptFilled=false; //can't use script.empty() because an empty script is technically valid
-
-    // First check the current (or in-progress) block for zero-confirmation change spending that won't yet be in txindex
-    if(blockTxs){
-        for(auto btx : *blockTxs){
-            if(btx->GetHash() == tx.vin[0].prevout.hash){
-                script = btx->vout[tx.vin[0].prevout.n].scriptPubKey;
-                scriptFilled=true;
-                break;
-            }
-        }
-    }
-    if(!scriptFilled && coinsView){
-        script = coinsView->AccessCoin(tx.vin[0].prevout).out.scriptPubKey;
-        scriptFilled = true;
-    }
-    if(!scriptFilled)
-    {
-        CTransactionRef txPrevout;
-        uint256 hashBlock;
-        if(GetTransaction(tx.vin[0].prevout.hash, txPrevout, Params().GetConsensus(), hashBlock, true)){
-            script = txPrevout->vout[tx.vin[0].prevout.n].scriptPubKey;
-        } else {
-            LogPrintf("Error fetching transaction details of tx %s. This will probably cause more errors", tx.vin[0].prevout.hash.ToString());
-            return valtype();
-        }
-    }
-
-	CTxDestination addressBit;
-    txnouttype txType=TX_NONSTANDARD;
-	if(ExtractDestination(script, addressBit, &txType)){
-		if ((txType == TX_PUBKEY || txType == TX_PUBKEYHASH) &&
-                addressBit.type() == typeid(CKeyID)){
-			CKeyID senderAddress(boost::get<CKeyID>(addressBit));
-			return valtype(senderAddress.begin(), senderAddress.end());
-		}
-	}
-    //prevout is not a standard transaction format, so just return 0
-    return valtype();
-}
-
 UniValue vmLogToJSON(const ResultExecute& execRes, const CTransaction& tx, const CBlock& block){
     UniValue result(UniValue::VOBJ);
     if(tx != CTransaction())
@@ -2182,12 +2139,12 @@ void writeVMlog(const std::vector<ResultExecute>& res, const CTransaction& tx, c
 }
 
 bool ByteCodeExec::performByteCode(dev::eth::Permanence type){
+    dev::eth::EnvInfo envInfo(BuildEVMEnvironment());
     for(QtumTransaction& tx : txs){
         //validate VM version
         if(tx.getVersion().toRaw() != VersionVM::GetEVMDefault().toRaw()){
             return false;
         }
-        dev::eth::EnvInfo envInfo(BuildEVMEnvironment());
         if(!tx.isCreation() && !globalState->addressInUse(tx.receiveAddress())){
             dev::eth::ExecutionResult execRes;
             execRes.excepted = dev::eth::TransactionException::Unknown;
@@ -2279,113 +2236,6 @@ dev::Address ByteCodeExec::EthAddrFromScript(const CScript& script){
     }
     //if not standard or not a pubkey or pubkeyhash output, then return 0
     return dev::Address();
-}
-
-bool QtumTxConverter::extractionQtumTransactions(ExtractQtumTX& qtumtx){
-    std::vector<QtumTransaction> resultTX;
-    std::vector<QtumTransactionParams> resultETP;
-    for(size_t i = 0; i < txBit.vout.size(); i++){
-        if(txBit.vout[i].scriptPubKey.HasOpCreate() || txBit.vout[i].scriptPubKey.HasOpCall()){
-            auto stack = GetStack(txBit.vout[i].scriptPubKey);
-            if (!validateStack(stack))
-                return false;
-
-            QtumTransactionParams params;
-            if(parseEthTXParams(params, stack)){
-                resultTX.push_back(createEthTX(params, i));
-                resultETP.push_back(params);
-            }else{
-                return false;
-            }
-
-        }
-    }
-    qtumtx = std::make_pair(resultTX, resultETP);
-    return true;
-}
-
-std::vector<valtype> GetStack(const CScript& scriptPubKey){
-    std::vector<valtype> stack;
-    EvalScript(stack, scriptPubKey, SCRIPT_EXEC_BYTE_CODE, BaseSignatureChecker(), SIGVERSION_BASE, nullptr);
-    return stack;
-}
-
-bool QtumTransactionParams::fromStack(std::vector<valtype>& v, opcodetype op) {
-    try{
-        auto it = std::prev(v.end());
-        if (op == OP_CALL) {
-            if (v.size() < 5) return false;
-            receiveAddress = dev::Address(*it--);
-        }
-
-        valtype code(*it--);
-        gasPrice = CScriptNum::vch_to_uint64(*it--);
-        gasLimit = CScriptNum::vch_to_uint64(*it--);
-        
-        if(it->size() > 4) return false;
-
-        version = VersionVM::fromRaw((uint32_t)CScriptNum::vch_to_uint64(*it--));
-        return true;
-    } catch(const scriptnum_error& err){
-        LogPrintf("Incorrect parameters to VM.");
-        return false;
-    }
-}
-
-bool QtumTxConverter::validateStack(std::vector<valtype>& stack) {
-    if (stack.size() == 0) return false; 
-    CScript scriptRest(stack.back().begin(), stack.back().end());
-    stack.pop_back();
-
-    opcode = (opcodetype)(*scriptRest.begin());
-    if((opcode == OP_CREATE && stack.size() < 4) || (opcode == OP_CALL && stack.size() < 5)){
-        stack.clear();
-        return false;
-    }
-    return true;
-}
-
-bool QtumTxConverter::validateQtumTransactionParameters(QtumTransactionParams& params) {
-    if(params.gasPrice > INT64_MAX || params.gasLimit > INT64_MAX)
-        return false;
-
-    //we track this as CAmount in some places, which is an int64_t, so constrain to INT64_MAX
-    if(params.gasPrice !=0 && params.gasLimit > INT64_MAX / params.gasPrice)
-        return false; //overflows past 64bits, reject this tx
-    
-    if (params.code.empty())
-        return false;
-    
-    return true;
-}
-
-bool QtumTxConverter::parseEthTXParams(QtumTransactionParams& params, std::vector<valtype> stack){
-        QtumTransactionParams ret;
-        if (!ret.fromStack(stack, opcode))
-            return false;
-
-        if (!validateQtumTransactionParameters(ret))
-            return false;
-
-        params = ret;
-        return true;
-}
-
-QtumTransaction QtumTxConverter::createEthTX(const QtumTransactionParams& etp, uint32_t nOut){
-    QtumTransaction txEth;
-    if (etp.receiveAddress == dev::Address() && opcode != OP_CALL){
-        txEth = QtumTransaction(txBit.vout[nOut].nValue, etp.gasPrice, etp.gasLimit, etp.code, dev::u256(0));
-    }
-    else{
-        txEth = QtumTransaction(txBit.vout[nOut].nValue, etp.gasPrice, etp.gasLimit, etp.receiveAddress, etp.code, dev::u256(0));
-    }
-    dev::Address sender(GetSenderAddress(txBit, view, blockTransactions));
-    txEth.forceSender(sender);
-    txEth.setHashWith(uintToh256(txBit.GetHash()));
-    txEth.setNVout(nOut);
-    txEth.setVersion(etp.version);
-
-    return txEth;
 }
 ///////////////////////////////////////////////////////////////////////
 
@@ -2653,9 +2503,9 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-invalid-sender-script");
             }
 
-            QtumTxConverter convert(tx, &view, &block.vtx);
+            qtum::vm::QtumTxConverter convert(tx, &view, &block.vtx);
 
-            ExtractQtumTX resultConvertQtumTX;
+            qtum::vm::ExtractQtumTX resultConvertQtumTX;
             if(!convert.extractionQtumTransactions(resultConvertQtumTX)){
                 return state.DoS(100, error("ConnectBlock(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }

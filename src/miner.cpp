@@ -545,9 +545,9 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
     uint64_t nBlockSize = this->nBlockSize;
     uint64_t nBlockSigOpsCost = this->nBlockSigOpsCost;
 
-    QtumTxConverter convert(iter->GetTx(), NULL, &pblock->vtx);
+    qtum::vm::QtumTxConverter convert(iter->GetTx(), NULL, &pblock->vtx);
 
-    ExtractQtumTX resultConverter;
+    qtum::vm::ExtractQtumTX resultConverter;
     if(!convert.extractionQtumTransactions(resultConverter)){
         //this check already happens when accepting txs into mempool
         //therefore, this can only be triggered by using raw transactions on the staker itself

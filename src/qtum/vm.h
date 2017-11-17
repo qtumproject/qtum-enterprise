@@ -1,6 +1,7 @@
 #pragma once
 
 #include <uint256.h>
+#include <coins.h>
 #include <chain.h>
 #include <chainparams.h>
 #include <script/standard.h>
@@ -9,16 +10,62 @@
 #include <primitives/block.h>
 #include <qtum/qtumtransaction.h>
 
-struct CCoinsViewCache;
 struct VersionVM;
 
 namespace qtum {
     namespace vm {
 
-        uint256 ExtractAddress(const CScript&);
+        struct QtumTransactionParams{
+            VersionVM version;
+            uint64_t gasLimit;
+            uint64_t gasPrice;
+            valtype code;
+            dev::Address receiveAddress;
+        
+            bool fromStack(const std::vector<valtype>& v);
+        
+            bool operator!=(QtumTransactionParams etp) {
+                return (this->version.toRaw() != etp.version.toRaw() || this->gasLimit != etp.gasLimit ||
+                this->gasPrice != etp.gasPrice || this->code != etp.code ||
+                this->receiveAddress != etp.receiveAddress);
+            }
+        };
+        
+
+        using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<QtumTransactionParams>>;
+
+        std::vector<valtype> GetStack(const CScript& scriptPubKey);
+        
+        
+        class QtumTxConverter{
+        
+        public:
+        
+            QtumTxConverter(CTransaction tx, CCoinsViewCache* v = NULL, const std::vector<CTransactionRef>* blockTxs = NULL) : txBit(tx), view(v), blockTransactions(blockTxs){}
+        
+            bool extractionQtumTransactions(ExtractQtumTX& qtumTx);
+        
+            static bool trimStack(std::vector<valtype>&);
+            
+            static bool parseEthTXParams(QtumTransactionParams& params,const std::vector<valtype>& stack);
+            static bool validateQtumTransactionParameters(QtumTransactionParams& params);
+        private:
+        
+            QtumTransaction createEthTX(const QtumTransactionParams& etp, const uint32_t nOut);
+        
+            const CTransaction txBit;
+            const CCoinsViewCache* view;
+            const std::vector<CTransactionRef> *blockTransactions;
+        
+        };
+        
+
+
+        valtype ExtractAddress(const CScript&);
+        uint256 WrapAddress(valtype in);
 
         struct QtumBlockchainDataFeed {
-            struct BlockData{
+            struct BlockData {
                 uint256 blockHash;
                 uint256 blockCreator;
                 uint64_t blockTime;
@@ -33,24 +80,27 @@ namespace qtum {
 
         private:
             BlockData extractData(const CBlock&);
+            BlockData extractData(const CBlockIndex*);
         };
         
         struct ExecutionInfo {
-            std::vector<uint8_t> fullSenderScript;
+            CScript fullSenderScript;
             uint256 senderAddress;
             std::vector<uint256> externalCallStack;
-            std::vector<uint8_t> inputData;
+            valtype inputData;
             uint64_t gasLimit;
             uint64_t gasPrice;
             bool allowPaymentConsumption;
             uint64_t totalGasLimit;
             uint256 toAddress;
+            VersionVM version;
+            CAmount outValue;
         };
         
         struct ExecutionResult {
             uint64_t gasConsumed;
             uint32_t executionStatus;
-            std::shared_ptr<const std::vector<uint8_t>> outputData;
+            std::shared_ptr<const valtype> outputData;
             // const std::map<uint256, std::map<std::vector<uint8_t>, std::vector<uint8_t>>> storageWrites;
             const uint64_t paymentConsumed;
         };
@@ -59,16 +109,16 @@ namespace qtum {
             const QtumBlockchainDataFeed& chainFeed;
         public:
             QtumVMBase(const QtumBlockchainDataFeed& chainFeed) : chainFeed(chainFeed) {}
-            virtual ExecutionResult Execute(const ExecutionInfo&, const VersionVM, const uint256 address, 
-                                const std::vector<uint8_t>& bytecode, const uint64_t) = 0;
+            virtual bool isValidInput(const ExecutionInfo&) = 0;
+            virtual ExecutionResult execute(const ExecutionInfo&) = 0;
         };
         
         class QtumEVM : public QtumVMBase {
         public:
             QtumEVM(const QtumBlockchainDataFeed& dataFeed) : QtumVMBase(dataFeed) {}
-            ExecutionInfo PrepareExecutionInfo(CTransactionRef, size_t nOut, uint64_t _totalGasLimit, CCoinsViewCache&);
-            ExecutionResult Execute(const ExecutionInfo&, const VersionVM, const uint256 address, 
-                        const std::vector<uint8_t>& bytecode, const uint64_t) override;
+            ExecutionInfo prepareExecutionInfo(CTxOut& out, CTxOut& prevOut, uint64_t _totalGasLimit);
+            bool isValidInput(const ExecutionInfo&) override;
+            ExecutionResult execute(const ExecutionInfo&) override;
         };
     
     }

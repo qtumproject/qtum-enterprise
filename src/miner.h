@@ -15,6 +15,7 @@
 #include "boost/multi_index/ordered_index.hpp"
 
 #include <validation.h> // qtum
+#include "qtum/vm.h"
 
 class CBlockIndex;
 class CChainParams;
