@@ -63,6 +63,7 @@ namespace qtum {
 
         valtype ExtractAddress(const CScript&);
         uint256 WrapAddress(valtype in);
+        valtype UnwrapAddress(uint256 in);
 
         struct QtumBlockchainDataFeed {
             struct BlockData {
@@ -73,10 +74,10 @@ namespace qtum {
             };
 
             std::vector<BlockData> prevBlocksData;
-            const BlockData currentBlockData;
-            const uint32_t currentBlockNum;
+            BlockData currentBlockData;
+            uint32_t currentBlockNum;
 
-            QtumBlockchainDataFeed(const CChain&, const CBlock&);
+            QtumBlockchainDataFeed(CBlockIndex* lastIdx, const CBlock&);
 
         private:
             BlockData extractData(const CBlock&);
@@ -95,6 +96,7 @@ namespace qtum {
             uint256 toAddress;
             VersionVM version;
             CAmount outValue;
+            std::shared_ptr<QtumBlockchainDataFeed> blockChainFeed;
         };
         
         struct ExecutionResult {

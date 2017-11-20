@@ -725,25 +725,23 @@ class ByteCodeExec {
 
 public:
 
-    ByteCodeExec(const CBlock& _block, std::vector<QtumTransaction> _txs, const uint64_t _blockGasLimit) : txs(_txs), block(_block), blockGasLimit(_blockGasLimit) {}
+    ByteCodeExec(std::vector<QtumTransaction> _txs, const uint64_t _blockGasLimit) : txs(_txs), blockGasLimit(_blockGasLimit) {}
 
-    bool performByteCode(dev::eth::Permanence type = dev::eth::Permanence::Committed);
+    bool performByteCode(dev::eth::EnvInfo envInfo, dev::eth::Permanence type = dev::eth::Permanence::Committed);
 
     bool processingResults(ByteCodeExecResult& result);
 
     std::vector<ResultExecute>& getResult(){ return result; }
 
-private:
+    static dev::eth::EnvInfo BuildEVMEnvironment(qtum::vm::QtumBlockchainDataFeed&, uint64_t);
 
-    dev::eth::EnvInfo BuildEVMEnvironment();
+private:
 
     dev::Address EthAddrFromScript(const CScript& scriptIn);
 
     std::vector<QtumTransaction> txs;
 
     std::vector<ResultExecute> result;
-
-    const CBlock& block;
 
     const uint64_t blockGasLimit;
 

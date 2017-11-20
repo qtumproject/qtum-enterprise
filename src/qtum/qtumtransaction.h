@@ -17,7 +17,7 @@ struct VersionVM{
     // CONSENSUS CRITICAL!
     // Do not add any other fields to this struct
 
-    uint32_t toRaw(){
+    uint32_t toRaw() const{
         return *(uint32_t*)this;
     }
     static VersionVM fromRaw(uint32_t val){

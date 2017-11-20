@@ -572,8 +572,9 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
         }
     }
     // We need to pass the DGP's block gas limit (not the soft limit) since it is consensus critical.
-    ByteCodeExec exec(*pblock, qtumTransactions, hardBlockGasLimit);
-    if(!exec.performByteCode()){
+    ByteCodeExec exec(qtumTransactions, hardBlockGasLimit);
+    qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), *pblock);
+    if(!exec.performByteCode(ByteCodeExec::BuildEVMEnvironment(df, hardBlockGasLimit))){
         //error, don't add contract
         globalState->setRoot(oldHashStateRoot);
         globalState->setRootUTXO(oldHashUTXORoot);

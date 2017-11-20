@@ -56,8 +56,9 @@ std::pair<std::vector<ResultExecute>, ByteCodeExecResult> executeBC(std::vector<
     CBlock block(generateBlock());
     QtumDGP qtumDGP(globalState.get(), fGettingValuesDGP);
     uint64_t blockGasLimit = qtumDGP.getBlockGasLimit(chainActive.Tip()->nHeight + 1);
-    ByteCodeExec exec(block, txs, blockGasLimit);
-    exec.performByteCode();
+    ByteCodeExec exec(txs, blockGasLimit);
+    qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), block);
+    exec.performByteCode(ByteCodeExec::BuildEVMEnvironment(df, blockGasLimit));
     std::vector<ResultExecute> res = exec.getResult();
     ByteCodeExecResult bceExecRes;
     exec.processingResults(bceExecRes); //error handling?

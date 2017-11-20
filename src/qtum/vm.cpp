@@ -17,19 +17,21 @@ valtype GetSenderAddress(const CTransaction& tx, const CCoinsViewCache* coinsVie
             }
         }
     }
-    if(script.empty() && coinsView)
-        script = coinsView->AccessCoin(tx.vin[0].prevout).out.scriptPubKey;
-    else
-    {
-        CTransactionRef txPrevout;
-        uint256 hashBlock;
-        if(GetTransaction(tx.vin[0].prevout.hash, txPrevout, Params().GetConsensus(), hashBlock, true)){
-            script = txPrevout->vout[tx.vin[0].prevout.n].scriptPubKey;
-        } else {
-            // LogPrintf("Error fetching transaction details of tx %s. This will probably cause more errors", tx.vin[0].prevout.hash.ToString());
-            return valtype();
+    if(script.empty()) {
+        if(coinsView)
+            script = coinsView->AccessCoin(tx.vin[0].prevout).out.scriptPubKey;
+        else
+        {
+            CTransactionRef txPrevout;
+            uint256 hashBlock;
+            if(GetTransaction(tx.vin[0].prevout.hash, txPrevout, Params().GetConsensus(), hashBlock, true)){
+                script = txPrevout->vout[tx.vin[0].prevout.n].scriptPubKey;
+            } else {
+                // LogPrintf("Error fetching transaction details of tx %s. This will probably cause more errors", tx.vin[0].prevout.hash.ToString());
+                return valtype();
+            }
         }
-    }
+    } 
 
 	CTxDestination addressBit;
     txnouttype txType=TX_NONSTANDARD;
@@ -160,6 +162,10 @@ uint256 qtum::vm::WrapAddress(valtype in){
     return uint256(in);
 }
 
+valtype qtum::vm::UnwrapAddress(uint256 in) {
+    return valtype(in.end() - 20, in.end());
+}
+
 QtumBlockchainDataFeed::BlockData QtumBlockchainDataFeed::extractData(const CBlockIndex* block) {
     return BlockData{block->GetBlockHash(), uint256(), block->nTime, block->nBits};
 }
@@ -170,12 +176,12 @@ QtumBlockchainDataFeed::BlockData QtumBlockchainDataFeed::extractData(const CBlo
     return BlockData{block.GetHash(), WrapAddress(dest), block.nTime, block.nBits};
 } 
 
-QtumBlockchainDataFeed::QtumBlockchainDataFeed (const CChain& chain, const CBlock& currentBlock) : 
-                                                currentBlockData(extractData(currentBlock)),
-                                                currentBlockNum(chain.Height() + 1) {
-    CBlockIndex* tip = chain.Tip();
+QtumBlockchainDataFeed::QtumBlockchainDataFeed (CBlockIndex* lastIdx, const CBlock& currentBlock) : 
+                                                currentBlockData(extractData(currentBlock)) {
+    if (lastIdx != nullptr)
+        currentBlockNum = lastIdx->nHeight + 1;
+    CBlockIndex* tip = lastIdx;
     prevBlocksData.resize(256);
-    
     for(int i = 0; i < 256; i++){
         if(tip == nullptr)
             break;
@@ -183,16 +189,6 @@ QtumBlockchainDataFeed::QtumBlockchainDataFeed (const CChain& chain, const CBloc
         tip = tip->pprev;
     }
 }
-
-// std::vector<uint8_t>& fullSenderScript;
-// uint256& senderAddress;
-// std::vector<uint256>& externalCallStack;
-// std::vector<uint8_t>& inputData;
-// uint64_t gasLimit;
-// uint64_t gasPrice;
-// bool allowPaymentConsumption;
-// uint64_t totalGasLimit;
-// uint256 toAddress;
 
 bool QtumEVM::isValidInput(const ExecutionInfo& in) {
     if(in.gasPrice > INT64_MAX || in.gasLimit > INT64_MAX)
@@ -205,30 +201,41 @@ bool QtumEVM::isValidInput(const ExecutionInfo& in) {
     if (in.inputData.empty())
         return false;
 
+    if(in.version.toRaw() != VersionVM::GetEVMDefault().toRaw())
+        return false;
+
+    if (!in.blockChainFeed)
+        return false;
+
     return true;
 }
 
 ExecutionInfo QtumEVM::prepareExecutionInfo(CTxOut& out, CTxOut& prevOut, uint64_t _totalGasLimit) {
-    ExecutionInfo ret;
-    ret.totalGasLimit = _totalGasLimit;
-    ret.senderAddress = WrapAddress(ExtractAddress(prevOut.scriptPubKey));
     std::vector<valtype> stack(GetStack(out.scriptPubKey));
     if (!QtumTxConverter::trimStack(stack))
-        return ret;
+        return ExecutionInfo();
     
     QtumTransactionParams params;
     if (!QtumTxConverter::parseEthTXParams(params, stack))
-        return ret;
+        return ExecutionInfo();
 
-    ret.outValue = out.nValue;
-    ret.inputData = params.code;
-    ret.gasLimit = params.gasLimit;
-    ret.gasPrice = params.gasPrice;
-    ret.toAddress = WrapAddress(params.receiveAddress.asBytes());
-    ret.version = params.version;
-    return ret;
+    return ExecutionInfo{CScript(), WrapAddress(ExtractAddress(prevOut.scriptPubKey)), std::vector<uint256>(), params.code,
+                         params.gasLimit, params.gasPrice, false, _totalGasLimit, WrapAddress(params.receiveAddress.asBytes()),
+                         params.version, out.nValue, std::shared_ptr<QtumBlockchainDataFeed>()};
 }
 
 ExecutionResult QtumEVM::execute(const ExecutionInfo&) {
-    
+    // dev::eth::EnvInfo envInfo(BuildEVMEnvironment());
+    //     //validate VM version
+    //     if(!tx.isCreation() && !globalState->addressInUse(tx.receiveAddress())){
+    //         dev::eth::ExecutionResult execRes;
+    //         execRes.excepted = dev::eth::TransactionException::Unknown;
+    //         result.push_back(ResultExecute{execRes, dev::eth::TransactionReceipt(dev::h256(), dev::u256(), dev::eth::LogEntries()), CTransaction()});
+    //         continue;
+    //     }
+    //     result.push_back(globalState->execute(envInfo, *globalSealEngine.get(), tx, type, OnOpFunc()));
+    // }
+    // globalState->db().commit();
+    // globalState->dbUtxo().commit();
+    // globalSealEngine.get()->deleteAddresses.clear();
 }

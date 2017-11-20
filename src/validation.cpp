@@ -1985,8 +1985,9 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     callTransaction.setVersion(VersionVM::GetEVMDefault());
 
     
-    ByteCodeExec exec(block, std::vector<QtumTransaction>(1, callTransaction), blockGasLimit);
-    exec.performByteCode(dev::eth::Permanence::Reverted);
+    ByteCodeExec exec(std::vector<QtumTransaction>(1, callTransaction), blockGasLimit);
+    qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), block);
+    exec.performByteCode(ByteCodeExec::BuildEVMEnvironment(df, blockGasLimit), dev::eth::Permanence::Reverted);
     return exec.getResult();
 }
 
@@ -2138,13 +2139,9 @@ void writeVMlog(const std::vector<ResultExecute>& res, const CTransaction& tx, c
     fIsVMlogFile = true;
 }
 
-bool ByteCodeExec::performByteCode(dev::eth::Permanence type){
-    dev::eth::EnvInfo envInfo(BuildEVMEnvironment());
+bool ByteCodeExec::performByteCode(dev::eth::EnvInfo envInfo, dev::eth::Permanence type){
     for(QtumTransaction& tx : txs){
         //validate VM version
-        if(tx.getVersion().toRaw() != VersionVM::GetEVMDefault().toRaw()){
-            return false;
-        }
         if(!tx.isCreation() && !globalState->addressInUse(tx.receiveAddress())){
             dev::eth::ExecutionResult execRes;
             execRes.excepted = dev::eth::TransactionException::Unknown;
@@ -2198,28 +2195,22 @@ bool ByteCodeExec::processingResults(ByteCodeExecResult& resultBCE){
     return true;
 }
 
-dev::eth::EnvInfo ByteCodeExec::BuildEVMEnvironment(){
+dev::eth::EnvInfo ByteCodeExec::BuildEVMEnvironment(qtum::vm::QtumBlockchainDataFeed& df, uint64_t blockGasLimit) {
     dev::eth::EnvInfo env;
-    CBlockIndex* tip = chainActive.Tip();
-    env.setNumber(dev::u256(tip->nHeight + 1));
-    env.setTimestamp(dev::u256(block.nTime));
-    env.setDifficulty(dev::u256(block.nBits));
+    env.setNumber(df.currentBlockNum);
+    env.setTimestamp(df.currentBlockData.blockTime);
+    env.setDifficulty(df.currentBlockData.blockDifficulty);
 
     dev::eth::LastHashes lh;
-    lh.resize(256);
-    for(int i=0;i<256;i++){
-        if(!tip)
+    lh.reserve(256);
+    for(auto it = df.prevBlocksData.crbegin(); it != df.prevBlocksData.crend(); it++) {
+        if(it->blockHash == uint256())
             break;
-        lh[i]= uintToh256(*tip->phashBlock);
-        tip = tip->pprev;
+        lh.emplace_back(uintToh256(it->blockHash));
     }
     env.setLastHashes(std::move(lh));
     env.setGasLimit(blockGasLimit);
-    if(block.IsProofOfStake()){
-        env.setAuthor(EthAddrFromScript(block.vtx[1]->vout[1].scriptPubKey));
-    }else {
-        env.setAuthor(EthAddrFromScript(block.vtx[0]->vout[0].scriptPubKey));
-    }
+    env.setAuthor(dev::Address(qtum::vm::UnwrapAddress(df.currentBlockData.blockCreator)));
     return env;
 }
 
@@ -2243,7 +2234,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                   CCoinsViewCache& view, const CChainParams& chainparams, bool fJustCheck)
 {
     AssertLockHeld(cs_main);
-    qtum::vm::QtumBlockchainDataFeed feed(chainActive, block);
+    qtum::vm::QtumBlockchainDataFeed feed(chainActive.Tip(), block);
     int64_t nTimeStart = GetTimeMicros();
 
     ///////////////////////////////////////////////// // qtum
@@ -2514,7 +2505,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
 
             dev::u256 gasAllTxs = dev::u256(0);
-            ByteCodeExec exec(block, resultConvertQtumTX.first, blockGasLimit);
+            ByteCodeExec exec(resultConvertQtumTX.first, blockGasLimit);
             //validate VM version and other ETH params before execution
             //Reject anything unknown (could be changed later by DGP)
             //TODO evaluate if this should be relaxed for soft-fork purposes
@@ -2572,8 +2563,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                     return state.DoS(100, error("ConnectBlock(): Version 0 contract executions are not allowed unless created by the AAL "), REJECT_INVALID, "bad-tx-improper-version-0");
                 }
             }
-
-            if(!exec.performByteCode()){
+            qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), block);
+            if(!exec.performByteCode(ByteCodeExec::BuildEVMEnvironment(df, blockGasLimit))){
                 return state.DoS(100, error("ConnectBlock(): Unknown error during contract execution"), REJECT_INVALID, "bad-tx-unknown-error");
             }
 
