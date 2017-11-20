@@ -704,7 +704,7 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
 
 bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx);
 
-bool CheckMinGasPrice(std::vector<qtum::vm::QtumTransactionParams>& etps, const uint64_t& minGasPrice);
+bool CheckMinGasPrice(std::vector<QtumTransaction>& etps, const uint64_t& minGasPrice);
 
 struct ByteCodeExecResult;
 

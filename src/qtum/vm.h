@@ -32,7 +32,7 @@ namespace qtum {
         };
         
 
-        using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<QtumTransactionParams>>;
+        using ExtractQtumTX = std::vector<QtumTransaction>;
 
         std::vector<valtype> GetStack(const CScript& scriptPubKey);
         

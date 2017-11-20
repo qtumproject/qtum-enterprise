@@ -772,12 +772,10 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
             for(const CTxOut& o : tx.vout)
                 count += o.scriptPubKey.HasOpCreate() || o.scriptPubKey.HasOpCall() ? 1 : 0;
             qtum::vm::QtumTxConverter converter(tx, NULL);
-            qtum::vm::ExtractQtumTX resultConverter;
-            if(!converter.extractionQtumTransactions(resultConverter)){
+            qtum::vm::ExtractQtumTX qtumTransactions;
+            if(!converter.extractionQtumTransactions(qtumTransactions)){
                 return state.DoS(100, error("AcceptToMempool(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }
-            std::vector<QtumTransaction> qtumTransactions = resultConverter.first;
-            std::vector<qtum::vm::QtumTransactionParams> qtumETP = resultConverter.second;
 
             dev::u256 sumGas = dev::u256(0);
             dev::u256 gasAllTxs = dev::u256(0);
@@ -823,7 +821,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                     return state.DoS(100, error("AcceptToMempool(): Contract execution has lower gas price than allowed"), REJECT_INVALID, "bad-tx-low-gas-price");
             }
 
-            if(!CheckMinGasPrice(qtumETP, minGasPrice))
+            if(!CheckMinGasPrice(qtumTransactions, minGasPrice))
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-small-gasprice");
 
             if(count > qtumTransactions.size())
@@ -1991,11 +1989,10 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     return exec.getResult();
 }
 
-bool CheckMinGasPrice(std::vector<qtum::vm::QtumTransactionParams>& etps, const uint64_t& minGasPrice){
-    for(qtum::vm::QtumTransactionParams& etp : etps){
-        if(etp.gasPrice < dev::u256(minGasPrice))
+bool CheckMinGasPrice(std::vector<QtumTransaction>& etps, const uint64_t& minGasPrice){
+    for(QtumTransaction& etp : etps)
+        if(etp.gasPrice() < dev::u256(minGasPrice))
             return false;
-    }
     return true;
 }
 
@@ -2500,19 +2497,19 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             if(!convert.extractionQtumTransactions(resultConvertQtumTX)){
                 return state.DoS(100, error("ConnectBlock(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }
-            if(!CheckMinGasPrice(resultConvertQtumTX.second, minGasPrice))
+            if(!CheckMinGasPrice(resultConvertQtumTX, minGasPrice))
                 return state.DoS(100, error("ConnectBlock(): Contract execution has lower gas price than allowed"), REJECT_INVALID, "bad-tx-low-gas-price");
 
 
             dev::u256 gasAllTxs = dev::u256(0);
-            ByteCodeExec exec(resultConvertQtumTX.first, blockGasLimit);
+            ByteCodeExec exec(resultConvertQtumTX, blockGasLimit);
             //validate VM version and other ETH params before execution
             //Reject anything unknown (could be changed later by DGP)
             //TODO evaluate if this should be relaxed for soft-fork purposes
             bool nonZeroVersion=false;
             dev::u256 sumGas = dev::u256(0);
             CAmount nTxFee = view.GetValueIn(tx)-tx.GetValueOut();
-            for(QtumTransaction& qtx : resultConvertQtumTX.first){
+            for(QtumTransaction& qtx : resultConvertQtumTX){
                 sumGas += qtx.gas() * qtx.gasPrice();
 
                 if(sumGas > dev::u256(INT64_MAX)) {
@@ -2578,13 +2575,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             std::vector<TransactionReceiptInfo> tri;
             if (fLogEvents)
             {
-                for(size_t k = 0; k < resultConvertQtumTX.first.size(); k ++){
+                for(size_t k = 0; k < resultConvertQtumTX.size(); k ++){
                     dev::Address key = resultExec[k].execRes.newAddress;
                     if(!heightIndexes.count(key)){
                         heightIndexes[key].first = CHeightTxIndexKey(pindex->nHeight, resultExec[k].execRes.newAddress);
                     }
                     heightIndexes[key].second.push_back(tx.GetHash());
-                    tri.push_back(TransactionReceiptInfo{block.GetHash(), uint32_t(pindex->nHeight), tx.GetHash(), uint32_t(i), resultConvertQtumTX.first[k].from(), resultConvertQtumTX.first[k].to(),
+                    tri.push_back(TransactionReceiptInfo{block.GetHash(), uint32_t(pindex->nHeight), tx.GetHash(), uint32_t(i), resultConvertQtumTX[k].from(), resultConvertQtumTX[k].to(),
                                 countCumulativeGasUsed, uint64_t(resultExec[k].execRes.gasUsed), resultExec[k].execRes.newAddress, resultExec[k].txRec.log()});
                 }
 

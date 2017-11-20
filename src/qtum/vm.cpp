@@ -48,7 +48,6 @@ valtype GetSenderAddress(const CTransaction& tx, const CCoinsViewCache* coinsVie
 
 bool QtumTxConverter::extractionQtumTransactions(ExtractQtumTX& qtumtx){
     std::vector<QtumTransaction> resultTX;
-    std::vector<QtumTransactionParams> resultETP;
     for(size_t i = 0; i < txBit.vout.size(); i++){
         if(txBit.vout[i].scriptPubKey.HasOpCreate() || txBit.vout[i].scriptPubKey.HasOpCall()){
             auto stack = GetStack(txBit.vout[i].scriptPubKey);
@@ -59,10 +58,9 @@ bool QtumTxConverter::extractionQtumTransactions(ExtractQtumTX& qtumtx){
             if(!parseEthTXParams(params, stack))
                 return false;
             resultTX.push_back(createEthTX(params, i));
-            resultETP.push_back(params);
         }
     }
-    qtumtx = std::make_pair(resultTX, resultETP);
+    qtumtx = resultTX;
     return true;
 }
 
