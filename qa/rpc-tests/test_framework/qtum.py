@@ -114,8 +114,10 @@ def collect_prevouts(node, amount=None):
     return staking_prevouts
 
 
-def create_unsigned_pos_block(node, staking_prevouts, nTime=None):
-    tip = node.getblock(node.getbestblockhash())
+def create_unsigned_pos_block(node, staking_prevouts, nTime=None, tip=None):
+    if not tip:
+        tip = node.getblock(node.getbestblockhash())
+    
     if not nTime:
         current_time = int(time.time()) + 16
         nTime = current_time & 0xfffffff0
@@ -134,7 +136,7 @@ def create_unsigned_pos_block(node, staking_prevouts, nTime=None):
 
     txout = node.gettxout(hex(block.prevoutStake.hash)[2:], block.prevoutStake.n)
     # input value + block reward
-    out_value = int((float(str(txout['value'])) + INITIAL_BLOCK_REWARD) * COIN) // 2
+    out_value = int((float(20000) + INITIAL_BLOCK_REWARD) * COIN) // 2
 
     # create a new private key used for block signing.
     block_sig_key = CECKey()
@@ -157,6 +159,7 @@ def create_unsigned_pos_block(node, staking_prevouts, nTime=None):
     block.vtx.append(stake_tx_signed)
     block.hashMerkleRoot = block.calc_merkle_root()
     return (block, block_sig_key)
+
 
 
 def create_unsigned_mpos_block(node, staking_prevouts, nTime=None, block_fees=0):
