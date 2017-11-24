@@ -545,10 +545,11 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
     uint64_t nBlockSize = this->nBlockSize;
     uint64_t nBlockSigOpsCost = this->nBlockSigOpsCost;
 
-    qtum::vm::QtumTxConverter convert(iter->GetTx(), NULL, &pblock->vtx);
+    auto sender = qtum::GetSenderAddress(iter->GetTx().vin[0].prevout, NULL, &pblock->vtx);
+    qtum::vm::QtumTxConverter convert(iter->GetTx(), sender);
 
-    qtum::vm::ExtractQtumTX qtumTransactions;
-    if(!convert.extractionQtumTransactions(qtumTransactions)){
+    qtum::vm::QtumTransactions qtumTransactions;
+    if(!convert.extractQtumTransactions(qtumTransactions)){
         //this check already happens when accepting txs into mempool
         //therefore, this can only be triggered by using raw transactions on the staker itself
         return false;
@@ -571,9 +572,9 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
         }
     }
     // We need to pass the DGP's block gas limit (not the soft limit) since it is consensus critical.
-    ByteCodeExec exec(qtumTransactions, hardBlockGasLimit);
-    qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), *pblock);
-    if(!exec.performByteCode(ByteCodeExec::BuildEVMEnvironment(df, hardBlockGasLimit))){
+    qtum::vm::QtumBlockchainDataFeed df(chainActive.Tip(), *pblock, hardBlockGasLimit);
+    ByteCodeExec exec(qtumTransactions, df);
+    if(!exec.performByteCode()){
         //error, don't add contract
         globalState->setRoot(oldHashStateRoot);
         globalState->setRootUTXO(oldHashUTXORoot);

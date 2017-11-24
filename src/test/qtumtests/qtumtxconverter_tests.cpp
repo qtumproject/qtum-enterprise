@@ -64,9 +64,11 @@ void runTest(bool isCreation, size_t n, CScript& script1, CScript script2 = CScr
     }    
     tx2 = createTX(outs2, hashParentTx);
     CTransaction transaction(tx2);
-    qtum::vm::QtumTxConverter converter(transaction, NULL);
-    qtum::vm::ExtractQtumTX qtumTx;
-    BOOST_CHECK(converter.extractionQtumTransactions(qtumTx));
+
+    auto sender = qtum::GetSenderAddress(transaction.vin[0].prevout);
+    qtum::vm::QtumTxConverter converter(transaction, sender);
+    qtum::vm::QtumTransactions qtumTx;
+    BOOST_CHECK(converter.extractQtumTransactions(qtumTx));
     std::vector<QtumTransaction> result = qtumTx;
     if(script2 == CScript()){
         BOOST_CHECK(result.size() == n);
@@ -98,9 +100,10 @@ void runFailingTest(bool isCreation, size_t n, CScript& script1, CScript script2
     }
     tx2 = createTX(outs2, hashParentTx);
     CTransaction transaction(tx2);
-    qtum::vm::QtumTxConverter converter(transaction, NULL);
-    qtum::vm::ExtractQtumTX qtumTx;
-    BOOST_CHECK(!converter.extractionQtumTransactions(qtumTx));
+    auto sender = qtum::GetSenderAddress(transaction.vin[0].prevout);
+    qtum::vm::QtumTxConverter converter(transaction, sender);
+    qtum::vm::QtumTransactions qtumTx;
+    BOOST_CHECK(!converter.extractQtumTransactions(qtumTx));
 }
 
 BOOST_FIXTURE_TEST_SUITE(qtumtxconverter_tests, TestingSetup)
