@@ -40,7 +40,7 @@
 #include "pubkey.h"
 #include "key.h"
 #include "wallet/wallet.h"
-
+#include "miner.h"
 #include <atomic>
 #include <sstream>
 
@@ -1967,8 +1967,6 @@ bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx){
 }
 
 std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::vector<unsigned char> opcode, const dev::Address& sender, uint64_t gasLimit){
-    CBlock block;
-    CMutableTransaction tx;
 
     QtumDGP qtumDGP(globalState.get(), fGettingValuesDGP);
     uint64_t blockGasLimit = qtumDGP.getBlockGasLimit(chainActive.Tip()->nHeight + 1);
@@ -1976,8 +1974,15 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     if(gasLimit == 0){
         gasLimit = blockGasLimit - 1;
     }
+
     dev::Address senderAddress = sender == dev::Address() ? dev::Address("ffffffffffffffffffffffffffffffffffffffff") : sender;
-    tx.vout.push_back(CTxOut(0, CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG));
+    CScript scriptDummy = CScript() << OP_DUP << OP_HASH160 << senderAddress.asBytes() << OP_EQUALVERIFY << OP_CHECKSIG;
+    static std::unique_ptr<CBlockTemplate> pblocktemplate;
+    pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, true);
+    CBlock block= pblocktemplate->block;
+    CMutableTransaction tx;
+
+    tx.vout.push_back(CTxOut(0, scriptDummy));
     block.vtx.push_back(MakeTransactionRef(CTransaction(tx)));
  
     QtumTransaction callTransaction(0, 1, dev::u256(gasLimit), addrContract, opcode, dev::u256(0));
