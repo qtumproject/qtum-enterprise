@@ -778,12 +778,12 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 return state.DoS(100, error("AcceptToMempool(): Contract transaction of the wrong format"), REJECT_INVALID, "bad-tx-bad-contract-format");
             }
             std::vector<QtumTransaction> qtumTransactions = resultConverter.first;
-            std::vector<EthTransactionParams> qtumETP = resultConverter.second;
+            std::vector<ContractTransactionParams> qtumETP = resultConverter.second;
 
             dev::u256 sumGas = dev::u256(0);
             dev::u256 gasAllTxs = dev::u256(0);
             for(QtumTransaction qtumTransaction : qtumTransactions){
-                sumGas += qtumTransaction.gas() * qtumTransaction.gasPrice();
+                sumGas += qtumTransaction.getGas() * qtumTransaction.getGasPrice();
 
                 if(sumGas > dev::u256(INT64_MAX)) {
                     return state.DoS(100, error("AcceptToMempool(): Transaction's gas stipend overflows"), REJECT_INVALID, "bad-tx-gas-stipend-overflow");
@@ -794,9 +794,9 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 }
 
                 if(txMinGasPrice != 0) {
-                    txMinGasPrice = std::min(txMinGasPrice, qtumTransaction.gasPrice());
+                    txMinGasPrice = std::min(txMinGasPrice, qtumTransaction.getGasPrice());
                 } else {
-                    txMinGasPrice = qtumTransaction.gasPrice();
+                    txMinGasPrice = qtumTransaction.getGasPrice();
                 }
                 VersionVM v = qtumTransaction.getVersion();
                 if(v.format!=0)
@@ -809,22 +809,22 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                     return state.DoS(100, error("AcceptToMempool(): Contract execution uses unknown flag options"), REJECT_INVALID, "bad-tx-version-flags");
 
                 //check gas limit is not less than minimum mempool gas limit
-                if(qtumTransaction.gas() < GetArg("-minmempoolgaslimit", MEMPOOL_MIN_GAS_LIMIT))
+                if(qtumTransaction.getGas() < GetArg("-minmempoolgaslimit", MEMPOOL_MIN_GAS_LIMIT))
                     return state.DoS(100, error("AcceptToMempool(): Contract execution has lower gas limit than allowed to accept into mempool"), REJECT_INVALID, "bad-tx-too-little-mempool-gas");
 
                 //check gas limit is not less than minimum gas limit (unless it is a no-exec tx)
-                if(qtumTransaction.gas() < MINIMUM_GAS_LIMIT && v.rootVM != 0)
+                if(qtumTransaction.getGas() < MINIMUM_GAS_LIMIT && v.rootVM != 0)
                     return state.DoS(100, error("AcceptToMempool(): Contract execution has lower gas limit than allowed"), REJECT_INVALID, "bad-tx-too-little-gas");
 
-                if(qtumTransaction.gas() > UINT32_MAX)
+                if(qtumTransaction.getGas() > UINT32_MAX)
                     return state.DoS(100, error("AcceptToMempool(): Contract execution can not specify greater gas limit than can fit in 32-bits"), REJECT_INVALID, "bad-tx-too-much-gas");
 
-                gasAllTxs += qtumTransaction.gas();
+                gasAllTxs += qtumTransaction.getGas();
                 if(gasAllTxs > dev::u256(blockGasLimit))
                     return state.DoS(1, false, REJECT_INVALID, "bad-txns-gas-exceeds-blockgaslimit");
 
                 //don't allow less than DGP set minimum gas price to prevent MPoS greedy mining/spammers
-                if(v.rootVM!=0 && (uint64_t)qtumTransaction.gasPrice() < minGasPrice)
+                if(v.rootVM!=0 && (uint64_t)qtumTransaction.getGasPrice() < minGasPrice)
                     return state.DoS(100, error("AcceptToMempool(): Contract execution has lower gas price than allowed"), REJECT_INVALID, "bad-tx-low-gas-price");
             }
 
@@ -2003,8 +2003,8 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
     return exec.getResult();
 }
 
-bool CheckMinGasPrice(std::vector<EthTransactionParams>& etps, const uint64_t& minGasPrice){
-    for(EthTransactionParams& etp : etps){
+bool CheckMinGasPrice(std::vector<ContractTransactionParams>& etps, const uint64_t& minGasPrice){
+    for(ContractTransactionParams& etp : etps){
         if(etp.gasPrice < dev::u256(minGasPrice))
             return false;
     }
@@ -2296,11 +2296,11 @@ dev::Address ByteCodeExec::EthAddrFromScript(const CScript& script){
 
 bool QtumTxConverter::extractionQtumTransactions(ExtractQtumTX& qtumtx){
     std::vector<QtumTransaction> resultTX;
-    std::vector<EthTransactionParams> resultETP;
+    std::vector<ContractTransactionParams> resultETP;
     for(size_t i = 0; i < txBit.vout.size(); i++){
         if(txBit.vout[i].scriptPubKey.HasOpCreate() || txBit.vout[i].scriptPubKey.HasOpCall()){
             if(receiveStack(txBit.vout[i].scriptPubKey)){
-                EthTransactionParams params;
+                ContractTransactionParams params;
                 if(parseEthTXParams(params)){
                     resultTX.push_back(createEthTX(params, i));
                     resultETP.push_back(params);
@@ -2333,7 +2333,7 @@ bool QtumTxConverter::receiveStack(const CScript& scriptPubKey){
     return true;
 }
 
-bool QtumTxConverter::parseEthTXParams(EthTransactionParams& params){
+bool QtumTxConverter::parseEthTXParams(ContractTransactionParams& params){
     try{
         dev::Address receiveAddress;
         valtype vecAddr;
@@ -2369,10 +2369,10 @@ bool QtumTxConverter::parseEthTXParams(EthTransactionParams& params){
         VersionVM version = VersionVM::fromRaw((uint32_t)CScriptNum::vch_to_uint64(stack.back()));
         stack.pop_back();
         params.version = version;
-        params.gasPrice = dev::u256(gasPrice);
+        params.gasPrice = (uint64_t) dev::u256(gasPrice);
         params.receiveAddress = receiveAddress;
         params.code = code;
-        params.gasLimit = dev::u256(gasLimit);
+        params.gasLimit = (uint64_t) dev::u256(gasLimit);
         return true;
     }
     catch(const scriptnum_error& err){
@@ -2381,7 +2381,7 @@ bool QtumTxConverter::parseEthTXParams(EthTransactionParams& params){
     }
 }
 
-QtumTransaction QtumTxConverter::createEthTX(const EthTransactionParams& etp, uint32_t nOut){
+QtumTransaction QtumTxConverter::createEthTX(const ContractTransactionParams& etp, uint32_t nOut){
     QtumTransaction txEth;
     if (etp.receiveAddress == dev::Address() && opcode != OP_CALL){
         txEth = QtumTransaction(txBit.vout[nOut].nValue, etp.gasPrice, etp.gasLimit, etp.code, dev::u256(0));
@@ -2680,7 +2680,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             dev::u256 sumGas = dev::u256(0);
             CAmount nTxFee = view.GetValueIn(tx)-tx.GetValueOut();
             for(QtumTransaction& qtx : resultConvertQtumTX.first){
-                sumGas += qtx.gas() * qtx.gasPrice();
+                sumGas += qtx.getGas() * qtx.getGasPrice();
 
                 if(sumGas > dev::u256(INT64_MAX)) {
                     return state.DoS(100, error("ConnectBlock(): Transaction's gas stipend overflows"), REJECT_INVALID, "bad-tx-gas-stipend-overflow");
@@ -2709,13 +2709,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                     return state.DoS(100, error("ConnectBlock(): Contract execution uses unknown flag options"), REJECT_INVALID, "bad-tx-version-flags");
 
                 //check gas limit is not less than minimum gas limit (unless it is a no-exec tx)
-                if(qtx.gas() < MINIMUM_GAS_LIMIT && v.rootVM != 0)
+                if(qtx.getGas() < MINIMUM_GAS_LIMIT && v.rootVM != 0)
                     return state.DoS(100, error("ConnectBlock(): Contract execution has lower gas limit than allowed"), REJECT_INVALID, "bad-tx-too-little-gas");
 
-                if(qtx.gas() > UINT32_MAX)
+                if(qtx.getGas() > UINT32_MAX)
                     return state.DoS(100, error("ConnectBlock(): Contract execution can not specify greater gas limit than can fit in 32-bits"), REJECT_INVALID, "bad-tx-too-much-gas");
 
-                gasAllTxs += qtx.gas();
+                gasAllTxs += qtx.getGas();
                 if(gasAllTxs > dev::u256(blockGasLimit))
                     return state.DoS(1, false, REJECT_INVALID, "bad-txns-gas-exceeds-blockgaslimit");
 

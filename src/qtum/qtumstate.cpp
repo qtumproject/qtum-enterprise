@@ -19,7 +19,7 @@ QtumState::QtumState() : dev::eth::State(dev::Invalid256, dev::OverlayDB(), dev:
     stateUTXO = SecureTrieDB<Address, OverlayDB>(&dbUTXO);
 }
 
-ResultExecute QtumState::execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, QtumTransaction const& _t, Permanence _p, OnOpFunc const& _onOp){
+ResultExecute QtumState::execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, QtumEthTransaction const& _t, Permanence _p, OnOpFunc const& _onOp){
 
     assert(_t.getVersion().toRaw() == VersionVM::GetEVMDefault().toRaw());
 

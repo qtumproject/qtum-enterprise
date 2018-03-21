@@ -49,9 +49,9 @@ extern bool fRecordLogOpcodes;
 extern bool fIsVMlogFile;
 extern bool fGettingValuesDGP;
 
-struct EthTransactionParams;
+struct ContractTransactionParams;
 using valtype = std::vector<unsigned char>;
-using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<EthTransactionParams>>;
+using ExtractQtumTX = std::pair<std::vector<QtumTransaction>, std::vector<ContractTransactionParams>>;
 ///////////////////////////////////////////
 
 class CBlockIndex;
@@ -709,7 +709,7 @@ std::vector<ResultExecute> CallContract(const dev::Address& addrContract, std::v
 
 bool CheckSenderScript(const CCoinsViewCache& view, const CTransaction& tx);
 
-bool CheckMinGasPrice(std::vector<EthTransactionParams>& etps, const uint64_t& minGasPrice);
+bool CheckMinGasPrice(std::vector<ContractTransactionParams>& etps, const uint64_t& minGasPrice);
 
 struct ByteCodeExecResult;
 
@@ -718,14 +718,14 @@ void EnforceContractVoutLimit(ByteCodeExecResult& bcer, ByteCodeExecResult& bcer
 
 void writeVMlog(const std::vector<ResultExecute>& res, const CTransaction& tx = CTransaction(), const CBlock& block = CBlock());
 
-struct EthTransactionParams{
+struct ContractTransactionParams{
     VersionVM version;
-    dev::u256 gasLimit;
-    dev::u256 gasPrice;
+    uint64_t gasLimit;
+    uint64_t gasPrice;
     valtype code;
     dev::Address receiveAddress;
 
-    bool operator!=(EthTransactionParams etp){
+    bool operator!=(ContractTransactionParams etp){
         if(this->version.toRaw() != etp.version.toRaw() || this->gasLimit != etp.gasLimit ||
         this->gasPrice != etp.gasPrice || this->code != etp.code ||
         this->receiveAddress != etp.receiveAddress)
@@ -753,9 +753,9 @@ private:
 
     bool receiveStack(const CScript& scriptPubKey);
 
-    bool parseEthTXParams(EthTransactionParams& params);
+    bool parseEthTXParams(ContractTransactionParams& params);
 
-    QtumTransaction createEthTX(const EthTransactionParams& etp, const uint32_t nOut);
+    QtumTransaction createEthTX(const ContractTransactionParams& etp, const uint32_t nOut);
 
     const CTransaction txBit;
     const CCoinsViewCache* view;
@@ -769,7 +769,7 @@ class ByteCodeExec {
 
 public:
 
-    ByteCodeExec(const CBlock& _block, std::vector<QtumTransaction> _txs, const uint64_t _blockGasLimit) : txs(_txs), block(_block), blockGasLimit(_blockGasLimit) {}
+    ByteCodeExec(const CBlock& _block, std::vector<QtumEthTransaction> _txs, const uint64_t _blockGasLimit) : txs(_txs), block(_block), blockGasLimit(_blockGasLimit) {}
 
     bool performByteCode(dev::eth::Permanence type = dev::eth::Permanence::Committed);
 
@@ -783,7 +783,7 @@ private:
 
     dev::Address EthAddrFromScript(const CScript& scriptIn);
 
-    std::vector<QtumTransaction> txs;
+    std::vector<QtumEthTransaction> txs;
 
     std::vector<ResultExecute> result;
 

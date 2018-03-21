@@ -53,6 +53,10 @@ public:
         EXT_PUBLIC_KEY,
         EXT_SECRET_KEY,
 
+        //contract types
+        EVM_CONTRACT_ADDRESS,
+        X86_CONTRACT_ADDRESS,
+
         MAX_BASE58_TYPES
     };
 

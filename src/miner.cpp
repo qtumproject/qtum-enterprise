@@ -556,23 +556,27 @@ bool BlockAssembler::AttemptToAddContractToBlock(CTxMemPool::txiter iter, uint64
     std::vector<QtumTransaction> qtumTransactions = resultConverter.first;
     dev::u256 txGas = 0;
     for(QtumTransaction qtumTransaction : qtumTransactions){
-        txGas += qtumTransaction.gas();
+        txGas += qtumTransaction.getGas();
         if(txGas > txGasLimit) {
             // Limit the tx gas limit by the soft limit if such a limit has been specified.
             return false;
         }
 
-        if(bceResult.usedGas + qtumTransaction.gas() > softBlockGasLimit){
+        if(bceResult.usedGas + qtumTransaction.getGas() > softBlockGasLimit){
             //if this transaction's gasLimit could cause block gas limit to be exceeded, then don't add it
             return false;
         }
-        if(qtumTransaction.gasPrice() < minGasPrice){
+        if(qtumTransaction.getGasPrice() < minGasPrice){
             //if this transaction's gasPrice is less than the current DGP minGasPrice don't add it
             return false;
         }
     }
+    std::vector<QtumEthTransaction> qtumEth;
+    for(QtumTransaction qtumTransaction : qtumTransactions) {
+        qtumEth.push_back(qtumTransaction.getEthTx());
+    }
     // We need to pass the DGP's block gas limit (not the soft limit) since it is consensus critical.
-    ByteCodeExec exec(*pblock, qtumTransactions, hardBlockGasLimit);
+    ByteCodeExec exec(*pblock, qtumEth, hardBlockGasLimit);
     if(!exec.performByteCode()){
         //error, don't add contract
         globalState->setRoot(oldHashStateRoot);
