@@ -14,6 +14,7 @@ const std::string CBaseChainParams::MAIN = "main";
 const std::string CBaseChainParams::TESTNET = "test";
 const std::string CBaseChainParams::REGTEST = "regtest";
 const std::string CBaseChainParams::UNITTEST = "unittest";
+const std::string CBaseChainParams::POA = "poa";
 
 void AppendParamsHelpMessages(std::string& strUsage, bool debugHelp)
 {
@@ -22,6 +23,8 @@ void AppendParamsHelpMessages(std::string& strUsage, bool debugHelp)
     if (debugHelp) {
         strUsage += HelpMessageOpt("-regtest", "Enter regression test mode, which uses a special chain in which blocks can be solved instantly. "
                                    "This is intended for regression testing tools and app development.");
+        strUsage += HelpMessageOpt("-poa", "Enter the proof-of-authority mode, which uses -poa-miner-list, -poa-miner, -poa-period and -poa-timeout to configure the consensus algorithm. "
+                                   "This is intended for a proof-of-authority blockchain.");
     }
 }
 
@@ -63,6 +66,19 @@ public:
     }
 };
 
+/*
+ * Proof of Authority
+ */
+class CBasePoaParams : public CBaseChainParams
+{
+public:
+    CBasePoaParams()
+    {
+        nRPCPort = 13889;
+        strDataDir = "poa";
+    }
+};
+
 static std::unique_ptr<CBaseChainParams> globalChainBaseParams;
 
 const CBaseChainParams& BaseParams()
@@ -81,6 +97,8 @@ std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain
         return std::unique_ptr<CBaseChainParams>(new CBaseRegTestParams());
     else if (chain == CBaseChainParams::UNITTEST)
         return std::unique_ptr<CBaseChainParams>(new CBaseRegTestParams());
+    else if (chain == CBaseChainParams::POA)
+        return std::unique_ptr<CBaseChainParams>(new CBasePoaParams());
     else
         throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }
@@ -94,6 +112,7 @@ std::string ChainNameFromCommandLine()
 {
     bool fRegTest = gArgs.GetBoolArg("-regtest", false);
     bool fTestNet = gArgs.GetBoolArg("-testnet", false);
+    bool fPoa = gArgs.GetBoolArg("-poa", false);
 
     if (fTestNet && fRegTest)
         throw std::runtime_error("Invalid combination of -regtest and -testnet.");
@@ -101,5 +120,7 @@ std::string ChainNameFromCommandLine()
         return CBaseChainParams::REGTEST;
     if (fTestNet)
         return CBaseChainParams::TESTNET;
+    if (fPoa)
+        return CBaseChainParams::POA;
     return CBaseChainParams::MAIN;
 }

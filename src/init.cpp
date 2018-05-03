@@ -25,6 +25,7 @@
 #include "netbase.h"
 #include "net.h"
 #include "net_processing.h"
+#include "poa.h"
 #include "policy/feerate.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
@@ -251,6 +252,7 @@ void Shutdown()
         pstorageresult = nullptr;
         delete globalState.release();
         globalSealEngine.reset();
+        Poa::BasicPoa::delInstance();
     }
 #ifdef ENABLE_WALLET
     for (CWalletRef pwallet : vpwallets) {
@@ -1176,6 +1178,12 @@ bool AppInitParameterInteraction()
             }
         }
     }
+
+    // process PoA params
+    if (chainparams.NetworkIDString() == "poa" && !Poa::BasicPoa::getInstance()->initParams()) {
+    	return InitError("PoA parameters init error");
+    }
+
     return true;
 }
 
@@ -1812,10 +1820,14 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         LogPrintf("Staking disabled\n");
     }
     else {
-        for (CWalletRef pwallet : vpwallets) {
-            if (pwallet)
-                StakeQtums(true, pwallet);
-        }
+    	if (chainparams.NetworkIDString() == "poa") {
+    		threadGroup.create_thread(&Poa::ThreadPoaMiner);
+    	} else {
+            for (CWalletRef pwallet : vpwallets) {
+                if (pwallet)
+                    StakeQtums(true, pwallet);
+            }
+    	}
     }
 #endif
 

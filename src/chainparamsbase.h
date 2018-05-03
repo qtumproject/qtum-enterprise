@@ -21,6 +21,7 @@ public:
     static const std::string TESTNET;
     static const std::string REGTEST;
     static const std::string UNITTEST;
+    static const std::string POA;
 
     const std::string& DataDir() const { return strDataDir; }
     int RPCPort() const { return nRPCPort; }

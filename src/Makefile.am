@@ -127,6 +127,7 @@ BITCOIN_CORE_H = \
   policy/rbf.h \
   pow.h \
   pos.h \
+  poa.h \
   protocol.h \
   random.h \
   reverse_iterator.h \
@@ -212,6 +213,7 @@ libbitcoin_server_a_SOURCES = \
   policy/rbf.cpp \
   pow.cpp \
   pos.cpp \
+  poa.cpp \
   rest.cpp \
   rpc/blockchain.cpp \
   rpc/mining.cpp \

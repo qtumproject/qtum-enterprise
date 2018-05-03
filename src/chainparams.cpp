@@ -372,6 +372,26 @@ public:
     }
 };
 
+/**
+ * Proof of Authority
+ */
+class CPoaParams : public CRegTestParams
+{
+public:
+	CPoaParams()
+    {
+		CRegTestParams();
+
+		// change id, magic num, port
+		strNetworkID = "poa";
+        pchMessageStart[0] = 0xfd;
+        pchMessageStart[1] = 0xdd;
+        pchMessageStart[2] = 0xc6;
+        pchMessageStart[3] = 0x79;
+        nDefaultPort = 33888;
+    }
+};
+
 static std::unique_ptr<CChainParams> globalChainParams;
 
 const CChainParams &Params() {
@@ -389,6 +409,8 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain)
         return std::unique_ptr<CChainParams>(new CRegTestParams());
     else if (chain == CBaseChainParams::UNITTEST)
         return std::unique_ptr<CChainParams>(new CUnitTestParams());
+    else if (chain == CBaseChainParams::POA)
+        return std::unique_ptr<CChainParams>(new CPoaParams());
     throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }
 
