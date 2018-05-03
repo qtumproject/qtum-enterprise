@@ -17,12 +17,12 @@ private:
 	CKeyID _miner;
 	uint32_t _period;
 	uint32_t _timeout;
-
-	CKey _miner_key;
-	CScript _reward_script;
+	CScript _reward_script;  // a p2pkh script to the miner
 
 	CDBWrapper _block_miner_cache;
 	CDBWrapper _next_block_miner_list_cache;
+
+	CKey _miner_key;
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
@@ -52,11 +52,11 @@ public:
 		}
 	}
 
-	bool initParams();
-	bool hasMiner() {
+	bool initParams();  // parse params from cmd line
+	bool hasMiner() {  // determine if the miner is specified
 		return !_miner.IsNull();
 	}
-	bool initMinerKey();
+	bool initMinerKey();  // try to get the miner's key from wallet
 	bool getRewardScript(CScript& script) {
 		if (_reward_script.IsPayToPubkeyHash()) {
 			script = _reward_script;
@@ -64,13 +64,18 @@ public:
 		}
 		return false;
 	}
-	CScript getRewardScript() {
-		return _reward_script;
-	}
+
+	// determine if the miner can produce the next block
+	// if true then return the next_block_time
 	bool minerCanProduceNextBlock(
 			const CBlockIndex* p_current_index,
 			uint32_t& next_block_time);
 
+	// sign the block in a recoverable way
+	bool sign(std::shared_ptr<CBlock> pblock);
+	// get the miner of the block from the sig
+	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CPubKey& pubkey);
+	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CKeyID& keyid);
 };
 
 }  // namespace Poa

@@ -65,8 +65,21 @@ void ThreadPoaMiner() {
 				next_block_time,
 				0));
         std::shared_ptr<CBlock> pblockfilled = std::make_shared<CBlock>(pblocktemplatefilled->block);
+        if (!p_basic_poa->sign(pblockfilled)) {
+			LogPrint(BCLog::COINSTAKE, "ThreadPoaMiner(): unable to sign the new block, continue\n",
+					p_current_index->GetBlockHash().GetHex());
+			MilliSleep(minerSleepInterval);
+			continue;
+        }
 
 		LogPrintf("ThreadPoaMiner(): new block created\n%s\n", pblockfilled->ToString().c_str());
+
+		CKeyID keyid;
+		if (!p_basic_poa->getBlockMiner(pblockfilled, keyid)) {
+			LogPrintf("ThreadPoaMiner(): new block get miner fail\n");
+		} else {
+			LogPrintf("ThreadPoaMiner(): block miner is %s\n", CBitcoinAddress(keyid).ToString().c_str());
+		}
 
 		MilliSleep(10000);
 	}
@@ -146,6 +159,10 @@ bool BasicPoa::initMinerKey() {
 
 bool BasicPoa::minerCanProduceNextBlock(const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
+	if (p_current_index == nullptr) {
+		return false;
+	}
+
 	// TODO: add next_block_miner_list
 
 	next_block_time = (uint32_t)(p_current_index->nTime) + _period;
@@ -156,6 +173,43 @@ bool BasicPoa::minerCanProduceNextBlock(const CBlockIndex* p_current_index,
 	}
 
 	// TODO: add n*timeout
+
+	return true;
+}
+
+bool BasicPoa::sign(std::shared_ptr<CBlock> pblock) {LogPrintf("ThreadPoaMiner(): sign in %s", _miner_key.GetPubKey().GetHash().GetHex().c_str());
+	if (!pblock) {
+		return false;
+	}
+
+	if (!_miner_key.SignCompact(pblock->GetHashWithoutSign(), pblock->vchBlockSig)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool BasicPoa::getBlockMiner(const std::shared_ptr<CBlock> pblock, CPubKey& pubkey) {
+	if (!pblock) {
+		return false;
+	}
+
+	return pubkey.RecoverCompact(pblock->GetHashWithoutSign(), pblock->vchBlockSig);
+}
+
+bool BasicPoa::getBlockMiner(const std::shared_ptr<CBlock> pblock, CKeyID& keyid) {
+	if (!pblock) {
+		return false;
+	}
+
+	// TODO: cache
+
+	CPubKey pubkey;
+	if (!getBlockMiner(pblock, pubkey)) {  // time consuming, so use cache
+		return false;
+	}
+
+	keyid = pubkey.GetID();
 
 	return true;
 }
