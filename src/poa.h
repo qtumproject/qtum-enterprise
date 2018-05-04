@@ -1,8 +1,11 @@
 #ifndef QTUM_POA_H
 #define QTUM_POA_H
 
-#include <map>
+#include <vector>
+#include <set>
+#include "miner.h"
 #include "dbwrapper.h"
+#include "chainparams.h"
 #include "wallet/wallet.h"
 
 namespace Poa {
@@ -17,6 +20,8 @@ private:
 	CKeyID _miner;
 	uint32_t _period;
 	uint32_t _timeout;
+
+	std::set<CKeyID> _miner_set;  // for the calculation of the next block miner
 	CScript _reward_script;  // a p2pkh script to the miner
 
 	CDBWrapper _block_miner_cache;
@@ -24,10 +29,13 @@ private:
 
 	CKey _miner_key;
 
+	BlockAssembler _block_assembler;
+
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
 	BasicPoa():
 		_period(0), _timeout(0),
+		_block_assembler(Params()),
 		_block_miner_cache(
 				GetDataDir() / "poa_block_miner_cache",
 				BLOCK_MINER_CACHE_SIZE,
@@ -65,15 +73,30 @@ public:
 		return false;
 	}
 
-	// determine if the miner can produce the next block
+	// determine if the miner can mine the next block
 	// if true then return the next_block_time
-	bool minerCanProduceNextBlock(
+	bool canMineNextBlock(
 			const CBlockIndex* p_current_index,
 			uint32_t& next_block_time);
+	bool createNextBlock(
+			const CBlockIndex* p_current_index,
+			uint32_t next_block_time,
+			std::shared_ptr<CBlock>& pblock);
+
+	// determine the miners who can mine the next block
+	// first get the miner set, then get their order and use cache
+	bool getNextBlockMinerSet(
+			const CBlockIndex* p_current_index,
+			std::set<CKeyID>& next_block_miner_set);
+	bool getNextBlockMinerList(
+			const CBlockIndex* p_current_index,
+			std::vector<CKeyID>& next_block_miner_list);
 
 	// sign the block in a recoverable way
 	bool sign(std::shared_ptr<CBlock> pblock);
-	// get the miner of the block from the sig
+
+	// recover the miner of the block from the sig
+    // first get pubkey, then get keyid and use cache
 	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CPubKey& pubkey);
 	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CKeyID& keyid);
 };
