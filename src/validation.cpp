@@ -23,6 +23,7 @@
 #include "policy/rbf.h"
 #include "pow.h"
 #include "pos.h"
+#include "poa.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "random.h"
@@ -1130,6 +1131,9 @@ bool CheckHeaderPoS(const CBlockHeader& block, const Consensus::Params& consensu
 }
 
 bool CheckHeaderProof(const CBlockHeader& block, const Consensus::Params& consensusParams){
+	if (Poa::isPoaChain()) {
+		return Poa::BasicPoa::getInstance()->checkBlock(block);
+	}
     if(block.IsProofOfWork()){
         return CheckHeaderPoW(block, consensusParams);
     }
@@ -1141,6 +1145,9 @@ bool CheckHeaderProof(const CBlockHeader& block, const Consensus::Params& consen
 
 bool CheckIndexProof(const CBlockIndex& block, const Consensus::Params& consensusParams)
 {
+	// PoA does not need PoW check
+	if (Poa::isPoaChain())
+		return true;
     // Get the hash of the proof
     // After validating the PoS block the computed hash proof is saved in the block index, which is used to check the index
     uint256 hashProof = block.IsProofOfWork() ? block.GetBlockHash() : block.hashProof;
@@ -3894,6 +3901,9 @@ bool GetBlockPublicKey(const CBlock& block, std::vector<unsigned char>& vchPubKe
 
 bool CheckBlockSignature(const CBlock& block)
 {
+	// PoA does not need PoS sig check
+	if (Poa::isPoaChain())
+		return true;
     if (block.IsProofOfWork())
         return block.vchBlockSig.empty();
 
@@ -3908,6 +3918,9 @@ bool CheckBlockSignature(const CBlock& block)
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
+	// PoA does not need PoW check
+	if (Poa::isPoaChain())
+		return true;
     // Check proof of work matches claimed amount
     if (fCheckPOW && block.IsProofOfWork() && !CheckHeaderPoW(block, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
@@ -3992,6 +4005,10 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     // Check proof-of-stake block signature
     if (fCheckSig && !CheckBlockSignature(block))
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-signature", false, "bad proof-of-stake block signature");
+
+    // PoA validity Check. Reuse the fCheckPOW flag to activate it
+    if (fCheckPOW && Poa::isPoaChain() && !Poa::BasicPoa::getInstance()->checkBlock(block))
+    	return state.DoS(100, false, REJECT_INVALID, "bad-blk-signature", false, "bad proof-of-authority block signature");
 
     bool lastWasContract=false;
     // Check transactions

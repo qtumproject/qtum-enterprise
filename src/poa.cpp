@@ -63,7 +63,7 @@ void ThreadPoaMiner() {
 			MilliSleep(minerSleepInterval);
 			continue;
 		} else {
-			LogPrint(BCLog::COINSTAKE, "%s: new block created\n%s\n", __func__, pblock->ToString().c_str());
+			LogPrint(BCLog::COINSTAKE, "%s: new block is created\n%s\n", __func__, pblock->ToString().c_str());
 		}
 
 		CKeyID keyid;
@@ -74,7 +74,7 @@ void ThreadPoaMiner() {
 		}
 
 		// TODO: wait and add the block, if new block is mined during wait
-		MilliSleep(3000);
+		MilliSleep(5000);
 		if (chainActive.Tip() != p_current_index) {
 			continue;
 		}
@@ -89,8 +89,8 @@ void ThreadPoaMiner() {
 BasicPoa* BasicPoa::_instance = nullptr;
 
 bool BasicPoa::initParams() {
-	const uint32_t DEFAULT_POA_PERIOD = 10000;
-	const uint32_t DEFAULT_POA_TIMEOUT = 3000;
+	const uint32_t DEFAULT_POA_PERIOD = 10;
+	const uint32_t DEFAULT_POA_TIMEOUT = 3;
 
 	// extract the miner list which cannot be empty for PoA, so return false if fail
 	std::string minerListArg = gArgs.GetArg("-poa-miner-list", "");
@@ -174,6 +174,7 @@ bool BasicPoa::canMineNextBlock(const CBlockIndex* p_current_index,
 	}
 
 	// TODO: add n*timeout
+	next_block_time = current_time;
 
 	return true;
 }
@@ -182,6 +183,7 @@ bool BasicPoa::createNextBlock(
 		const CBlockIndex* p_current_index,
 		uint32_t next_block_time,
 		std::shared_ptr<CBlock>& pblock) {
+
 	// TODO: fixed nBit related to miner index
 	int64_t nTotalFees = 0;
 	std::unique_ptr<CBlockTemplate> pblocktemplate(_block_assembler.CreateNewBlock(
@@ -199,9 +201,16 @@ bool BasicPoa::createNextBlock(
     }
 
     pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
+
     if (!sign(pblock)) {
     	return false;
     }
+
+	return true;
+}
+
+bool BasicPoa::checkBlock(const CBlock& block) {
+	// TODO
 
 	return true;
 }

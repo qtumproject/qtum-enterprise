@@ -1180,7 +1180,7 @@ bool AppInitParameterInteraction()
     }
 
     // process PoA params
-    if (chainparams.NetworkIDString() == "poa" && !Poa::BasicPoa::getInstance()->initParams()) {
+    if (Poa::isPoaChain() && !Poa::BasicPoa::getInstance()->initParams()) {
     	return InitError("PoA parameters init error");
     }
 
@@ -1820,7 +1820,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         LogPrintf("Staking disabled\n");
     }
     else {
-    	if (chainparams.NetworkIDString() == "poa") {
+    	if (Poa::isPoaChain()) {
     		threadGroup.create_thread(&Poa::ThreadPoaMiner);
     	} else {
             for (CWalletRef pwallet : vpwallets) {

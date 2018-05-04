@@ -12,6 +12,10 @@ namespace Poa {
 const size_t BLOCK_MINER_CACHE_SIZE = 1 << 10;  // 1kB
 const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 10;  // 3kB
 
+bool isPoaChain() {
+	static bool isPoaChain = (Params().NetworkIDString() == "poa");
+	return isPoaChain;
+}
 void ThreadPoaMiner();
 
 class BasicPoa {
@@ -24,12 +28,11 @@ private:
 	std::set<CKeyID> _miner_set;  // for the calculation of the next block miner
 	CScript _reward_script;  // a p2pkh script to the miner
 
+	CKey _miner_key;
+	BlockAssembler _block_assembler;
+
 	CDBWrapper _block_miner_cache;
 	CDBWrapper _next_block_miner_list_cache;
-
-	CKey _miner_key;
-
-	BlockAssembler _block_assembler;
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
@@ -82,6 +85,7 @@ public:
 			const CBlockIndex* p_current_index,
 			uint32_t next_block_time,
 			std::shared_ptr<CBlock>& pblock);
+	bool checkBlock(const CBlock& block);
 
 	// determine the miners who can mine the next block
 	// first get the miner set, then get their order and use cache
