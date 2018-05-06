@@ -33,6 +33,23 @@ private:
 
 	CDBWrapper _block_miner_cache;
 	CDBWrapper _next_block_miner_list_cache;
+	bool readBlockMinerFromCache(const uint256& hash, CKeyID& keyid) {
+		return _block_miner_cache.Read(hash, keyid);
+	}
+	bool writeBlockMinerToCache(const uint256& hash, const CKeyID& keyid) {
+		return _block_miner_cache.Write(hash, keyid, true);
+	}
+	bool readNextBlockMinerListFromCache(
+			const uint256& hash,
+			std::vector<CKeyID>& next_block_miner_list) {
+		return _next_block_miner_list_cache.Read(hash, next_block_miner_list);
+	}
+	bool writeNextBlockMinerListToCache(
+			const uint256& hash,
+			const std::vector<CKeyID>& next_block_miner_list) {
+		return _next_block_miner_list_cache.Write(hash, next_block_miner_list, true);
+	}
+
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
@@ -79,13 +96,17 @@ public:
 	// determine if the miner can mine the next block
 	// if true then return the next_block_time
 	bool canMineNextBlock(
+			const CKeyID& keyid,
 			const CBlockIndex* p_current_index,
-			uint32_t& next_block_time);
+			uint32_t& next_block_time);  // for validation
+	bool canMineNextBlock(
+			const CBlockIndex* p_current_index,
+			uint32_t& next_block_time);  // for mining
+
 	bool createNextBlock(
-			const CBlockIndex* p_current_index,
 			uint32_t next_block_time,
 			std::shared_ptr<CBlock>& pblock);
-	bool checkBlock(const CBlock& block);
+	bool checkBlock(const CBlockHeader& block);
 
 	// determine the miners who can mine the next block
 	// first get the miner set, then get their order and use cache
@@ -101,8 +122,8 @@ public:
 
 	// recover the miner of the block from the sig
     // first get pubkey, then get keyid and use cache
-	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CPubKey& pubkey);
-	bool getBlockMiner(const std::shared_ptr<CBlock> pblock, CKeyID& keyid);
+	bool getBlockMiner(const CBlockHeader& block, CPubKey& pubkey);
+	bool getBlockMiner(const CBlockHeader& block, CKeyID& keyid);
 };
 
 }  // namespace Poa
