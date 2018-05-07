@@ -16,7 +16,7 @@ namespace Poa {
 
 void ThreadPoaMiner() {
 	int64_t keySleepInterval = 3000;
-	int64_t minerSleepInterval = 100;
+	int64_t minerSleepInterval = 500;
 
 	BasicPoa* p_basic_poa = BasicPoa::getInstance();
 
@@ -73,6 +73,7 @@ void ThreadPoaMiner() {
 
 		// TODO: wait and add the block, if new block is mined during wait
 		while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
+			LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
 			MilliSleep(minerSleepInterval);
 		}
 		if (chainActive.Tip() != p_current_index) {
@@ -366,7 +367,8 @@ bool BasicPoa::getNextBlockMinerList(
 	if (current_it == _miner_list.end()) {
 		return false;
 	}
-	for (std::vector<CKeyID>::iterator it = current_it; it != current_it;) {
+	std::vector<CKeyID>::iterator it = current_it;
+	do {
 		if (++it == _miner_list.end()) {
 			it = _miner_list.begin();
 		}
@@ -374,7 +376,7 @@ bool BasicPoa::getNextBlockMinerList(
 		if (next_block_miner_set.count(*it) != 0) {
 			next_block_miner_list.push_back(*it);
 		}
-	}
+	} while (it != current_it);
 	// debug log
 	std::string next_block_miner_list_str;
 	for (const CKeyID& keyid: next_block_miner_list) {

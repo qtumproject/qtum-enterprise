@@ -4462,6 +4462,11 @@ static bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidation
 
 bool static IsCanonicalBlockSignature(const std::shared_ptr<const CBlock> pblock, bool checkLowS)
 {
+	// PoA has specific signature
+	if (Poa::isPoaChain()) {
+		return pblock->vchBlockSig.size() == 65? true: false;
+	}
+
     if (pblock->IsProofOfWork()) {
         return pblock->vchBlockSig.empty();
     }
