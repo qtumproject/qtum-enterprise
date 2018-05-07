@@ -27,6 +27,7 @@
 #include "hash.h"
 #include "libdevcore/CommonData.h"
 #include "pos.h"
+#include "poa.h"
 #include "txdb.h"
 
 #include <stdint.h>
@@ -162,6 +163,13 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.push_back(Pair("proofhash", blockindex->hashProof.GetHex()));
     result.push_back(Pair("modifier", blockindex->nStakeModifier.GetHex()));
 
+    if (Poa::isPoaChain()) {
+    	CKeyID miner;
+    	if (Poa::BasicPoa::getInstance()->getBlockMiner(blockindex, miner)) {
+    		result.push_back(Pair("miner", CBitcoinAddress(miner).ToString()));
+    	}
+    }
+
     return result;
 }
 
@@ -215,6 +223,14 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
 
     if (block.IsProofOfStake())
         result.push_back(Pair("signature", HexStr(block.vchBlockSig.begin(), block.vchBlockSig.end())));	
+
+    if (Poa::isPoaChain()) {
+    	CKeyID miner;
+    	if (Poa::BasicPoa::getInstance()->getBlockMiner(block, miner)) {
+    		result.push_back(Pair("miner", CBitcoinAddress(miner).ToString()));
+    	}
+    }
+
     return result;
 }
 
