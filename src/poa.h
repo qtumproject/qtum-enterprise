@@ -96,7 +96,7 @@ public:
 	// determine if the miner can mine the next block
 	// if true then return the next_block_time
 	bool canMineNextBlock(
-			const CKeyID& keyid,
+			const CKeyID& miner,
 			const CBlockIndex* p_current_index,
 			uint32_t& next_block_time);  // for validation
 	bool canMineNextBlock(
@@ -124,6 +124,7 @@ public:
     // first get pubkey, then get keyid and use cache
 	bool getBlockMiner(const CBlockHeader& block, CPubKey& pubkey);
 	bool getBlockMiner(const CBlockHeader& block, CKeyID& keyid);
+	bool getBlockMiner(const CBlockIndex* p_index, CKeyID& keyid);
 };
 
 }  // namespace Poa

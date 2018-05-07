@@ -8,6 +8,7 @@
 #include "script/standard.h"
 #include "consensus/merkle.h"
 
+#include <algorithm>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
@@ -71,14 +72,18 @@ void ThreadPoaMiner() {
 		LogPrint(BCLog::COINSTAKE, "%s: new block is created\n%s\n", __func__, pblock->ToString().c_str());
 
 		// TODO: wait and add the block, if new block is mined during wait
-		MilliSleep(5000);
+		while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
+			MilliSleep(minerSleepInterval);
+		}
 		if (chainActive.Tip() != p_current_index) {
+			LogPrint(BCLog::COINSTAKE, "%s: the chain tip changes during block time waiting, continue\n", __func__);
 			continue;
 		}
 
         bool fNewBlock = false;
-        if (!ProcessNewBlock(Params(), pblock, true, &fNewBlock)) {  // TODO: fail here
+        if (!ProcessNewBlock(Params(), pblock, true, &fNewBlock)) {
         	LogPrint(BCLog::COINSTAKE, "ERROR: %s: process new block fail\n", __func__);
+        	continue;
         }
 	}
 }
@@ -156,17 +161,35 @@ bool BasicPoa::initMinerKey() {
 }
 
 bool BasicPoa::canMineNextBlock(
-		const CKeyID& keyid,
+		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
 	if (p_current_index == nullptr) {
 		return false;
 	}
 
-	// TODO: add next_block_miner_list
+	// get next_block_miner_list
+	std::vector<CKeyID> next_block_miner_list;
+	if (!getNextBlockMinerList(p_current_index, next_block_miner_list)) {
+		LogPrintf("%s: getNextBlockMinerList fail\n", __func__);
+		return false;
+	}
 
-	next_block_time = (uint32_t)(p_current_index->nTime) + _period;
-	// TODO: add n*timeout
+	std::vector<CKeyID>::iterator it = std::find(
+			next_block_miner_list.begin(),
+			next_block_miner_list.end(),
+			miner);
+	if (it == next_block_miner_list.end()) {
+		LogPrint(BCLog::COINSTAKE, "%s: miner %s is not in next_block_miner_list\n",
+				__func__, CBitcoinAddress(miner).ToString().c_str());
+		return false;
+	}
+
+	// get block time
+	uint32_t miner_index = std::distance(next_block_miner_list.begin(), it);
+	next_block_time = (uint32_t)(p_current_index->nTime) + _period + miner_index * _timeout;
+	LogPrint(BCLog::COINSTAKE, "%s: next_block_time = %s + %s + %s * %s\n",
+					__func__, p_current_index->nTime, _period, miner_index, _timeout);
 
 	return true;
 }
@@ -220,13 +243,43 @@ bool BasicPoa::createNextBlock(
 }
 
 bool BasicPoa::checkBlock(const CBlockHeader& block) {
-	CKeyID keyid;
-	if (!getBlockMiner(block, keyid)) {
-		LogPrintf("%s: new block get miner fail\n", __func__);
-	} else {
-		LogPrintf("%s: block miner is %s\n", __func__, CBitcoinAddress(keyid).ToString().c_str());
+	if (block.IsNull()) {
+		return false;
 	}
-	getBlockMiner(block, keyid);
+
+	uint256 hash = block.GetHash();
+	if (hash == Params().GetConsensus().hashGenesisBlock) {  // genesis block
+		return true;
+	}
+
+	// get prev block index
+	uint256 hash_prev = block.hashPrevBlock;
+	BlockMap::iterator it_prev = mapBlockIndex.find(hash_prev);
+	if (it_prev == mapBlockIndex.end()) {
+		LogPrint(BCLog::COINSTAKE, "%s: fail to get prev block index of block %s\n", __func__, hash.ToString().c_str());
+		return false;
+	}
+
+	// get block miner
+	CKeyID miner;
+	if (!getBlockMiner(block, miner)) {
+		LogPrintf("%s: fail to get miner of block %s\n", __func__, hash.ToString().c_str());
+		return false;
+	}
+
+	// determine the miner can mine this block
+	uint32_t assigned_block_time;
+	if (!canMineNextBlock(miner, it_prev->second, assigned_block_time)) {
+		LogPrintf("%s: miner %s is not authorized to mine block %s\n", __func__, CBitcoinAddress(miner).ToString(), hash.ToString().c_str());
+		return false;
+	}
+
+	// block time should be later than the assigned time
+	if (block.nTime < assigned_block_time) {
+		LogPrintf("%s: block %s time %d is earlier than assigned time %d\n",
+				__func__, hash.ToString().c_str(), block.nTime, assigned_block_time);
+		return false;
+	}
 
 	return true;
 }
@@ -237,10 +290,36 @@ bool BasicPoa::getNextBlockMinerSet(
 	if (p_current_index == nullptr) {
 		return false;
 	}
+	if (p_current_index->pprev == nullptr) {  // genesis block
+		next_block_miner_set = _miner_set;
+		return true;
+	}
+	next_block_miner_set.clear();
 
-	// TODO: get recent n/2 block miner
+	// get recent n/2 block miners
+	std::set<CKeyID> recent_block_miner_set;
+	size_t miner_num = _miner_list.size();
+	size_t recent_block_num = miner_num / 2;
+	const CBlockIndex* p_index_tmp = p_current_index;
 
-	// TODO: subtract these miners from miner set
+	while (recent_block_num != 0 && p_index_tmp->pprev != nullptr) {
+		CKeyID keyid;
+		if (!getBlockMiner(p_index_tmp, keyid)) {
+			return false;
+		}
+		recent_block_miner_set.insert(keyid);
+
+		p_index_tmp = p_index_tmp->pprev;
+		recent_block_num--;
+	}
+
+	// subtract recent miners from miner set
+	std::vector<CKeyID> next_block_miner_vec(miner_num);
+	std::vector<CKeyID>::iterator it = std::set_difference(
+			_miner_set.begin(), _miner_set.end(),
+			recent_block_miner_set.begin(), recent_block_miner_set.end(),
+			next_block_miner_vec.begin());
+	next_block_miner_set.insert(next_block_miner_vec.begin(), it);
 
 	return true;
 }
@@ -248,26 +327,75 @@ bool BasicPoa::getNextBlockMinerSet(
 bool BasicPoa::getNextBlockMinerList(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& next_block_miner_list) {
-	if (p_current_index == nullptr) {
+	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
+	if (p_current_index->pprev == nullptr) {  // genesis block
+		next_block_miner_list = _miner_list;
+		return true;
+	}
+	next_block_miner_list.clear();
 
-	// TODO: read cache
+	// read cache
+	uint256 hash = *(p_current_index->phashBlock);
+	if (readNextBlockMinerListFromCache(hash, next_block_miner_list)) {
+		return true;
+	}
 
+	// get next_block_miner_set
 	std::set<CKeyID> next_block_miner_set;
 	if (!getNextBlockMinerSet(p_current_index, next_block_miner_set)) {
 		return false;
 	}
+	// debug log
+	std::string next_block_miner_set_str;
+	for (const CKeyID& keyid: next_block_miner_set) {
+		next_block_miner_set_str += CBitcoinAddress(keyid).ToString() + ",";
+	}
+	if (next_block_miner_set_str.size() != 0) {
+		next_block_miner_set_str.pop_back();
+	}
+	LogPrint(BCLog::COINSTAKE, "%s: next_block_miner_set is {%s}\n", __func__, next_block_miner_set_str.c_str());
 
-	// TODO: determine their order
+	// determine their order
+	CKeyID current_miner;
+	if (!getBlockMiner(p_current_index, current_miner)) {
+		return false;
+	}
+	std::vector<CKeyID>::iterator current_it = std::find(_miner_list.begin(), _miner_list.end(), current_miner);
+	if (current_it == _miner_list.end()) {
+		return false;
+	}
+	for (std::vector<CKeyID>::iterator it = current_it; it != current_it;) {
+		if (++it == _miner_list.end()) {
+			it = _miner_list.begin();
+		}
 
-	// TODO: write cache
+		if (next_block_miner_set.count(*it) != 0) {
+			next_block_miner_list.push_back(*it);
+		}
+	}
+	// debug log
+	std::string next_block_miner_list_str;
+	for (const CKeyID& keyid: next_block_miner_list) {
+		next_block_miner_list_str += CBitcoinAddress(keyid).ToString() + ",";
+	}
+	if (next_block_miner_list_str.size() != 0) {
+		next_block_miner_list_str.pop_back();
+	}
+	LogPrint(BCLog::COINSTAKE, "%s: next_block_miner_list is [%s]\n", __func__, next_block_miner_list_str.c_str());
+
+	// write cache
+	if (!writeNextBlockMinerListToCache(hash, next_block_miner_list)) {
+		LogPrintf("ERROR: %s: fail to write block %s miner list [%s] to cache\n",
+				__func__, hash.GetHex().c_str(), next_block_miner_list_str.c_str());
+	}
 
 	return true;
 }
 
 bool BasicPoa::sign(std::shared_ptr<CBlock> pblock) {
-	if (!pblock) {
+	if (!pblock || pblock->IsNull()) {
 		return false;
 	}
 
@@ -291,6 +419,7 @@ bool BasicPoa::getBlockMiner(const CBlockHeader& block, CKeyID& keyid) {
 		return false;
 	}
 
+	// read cache
 	uint256 hash = block.GetHash();
 	if (readBlockMinerFromCache(hash, keyid)) {
 		return true;
@@ -300,8 +429,37 @@ bool BasicPoa::getBlockMiner(const CBlockHeader& block, CKeyID& keyid) {
 	if (!getBlockMiner(block, pubkey)) {  // time consuming, so use cache
 		return false;
 	}
-
 	keyid = pubkey.GetID();
+
+	// write cache
+	if (!writeBlockMinerToCache(hash, keyid)) {
+		LogPrintf("ERROR: %s: fail to write block %s miner %s to cache\n",
+				__func__, hash.GetHex().c_str(), CBitcoinAddress(keyid).ToString().c_str());
+	}
+
+	return true;
+}
+
+bool BasicPoa::getBlockMiner(const CBlockIndex* p_index, CKeyID& keyid) {
+	if (p_index == nullptr
+			|| p_index->phashBlock == nullptr
+			|| p_index->vchBlockSig.size() == 0) {
+		return false;
+	}
+
+	// read cache
+	uint256 hash = *(p_index->phashBlock);
+	if (readBlockMinerFromCache(hash, keyid)) {
+		return true;
+	}
+
+	CPubKey pubkey;
+	if (!getBlockMiner(p_index->GetBlockHeader(), pubkey)) {  // time consuming, so use cache
+		return false;
+	}
+	keyid = pubkey.GetID();
+
+	// write cache
 	if (!writeBlockMinerToCache(hash, keyid)) {
 		LogPrintf("ERROR: %s: fail to write block %s miner %s to cache\n",
 				__func__, hash.GetHex().c_str(), CBitcoinAddress(keyid).ToString().c_str());
