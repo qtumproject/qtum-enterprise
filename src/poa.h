@@ -12,10 +12,7 @@ namespace Poa {
 const size_t BLOCK_MINER_CACHE_SIZE = 1 << 10;  // 1kB
 const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 10;  // 3kB
 
-bool isPoaChain() {
-	static bool isPoaChain = (Params().NetworkIDString() == "poa");
-	return isPoaChain;
-}
+bool isPoaChain();
 void ThreadPoaMiner();
 
 class BasicPoa {

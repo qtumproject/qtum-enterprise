@@ -14,6 +14,11 @@
 
 namespace Poa {
 
+bool isPoaChain() {
+	static bool isPoaChain = (Params().NetworkIDString() == "poa");
+	return isPoaChain;
+}
+
 void ThreadPoaMiner() {
 	int64_t keySleepInterval = 3000;
 	int64_t minerSleepInterval = 500;
