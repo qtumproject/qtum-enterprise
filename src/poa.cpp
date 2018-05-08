@@ -20,8 +20,8 @@ bool isPoaChain() {
 }
 
 void ThreadPoaMiner() {
-	int64_t keySleepInterval = 3000;
-	int64_t minerSleepInterval = 500;
+	int64_t keySleepInterval = 3000;  // wait for the user to import the miner's private key
+	int64_t minerSleepInterval = 100;  // the miner loop interval
 
 	BasicPoa* p_basic_poa = BasicPoa::getInstance();
 
@@ -37,6 +37,7 @@ void ThreadPoaMiner() {
 
 	RenameThread("qtum-poa-miner");
 
+	// get the miner's key from wallet
 	while (!p_basic_poa->initMinerKey()) {
 		LogPrintf("%s: fail to get the miner's key, wait\n", __func__);
 		MilliSleep(keySleepInterval);
@@ -67,7 +68,7 @@ void ThreadPoaMiner() {
 		// generate new block
 		std::shared_ptr<CBlock> pblock;
 		if (!p_basic_poa->createNextBlock(next_block_time, pblock)) {
-			LogPrint(BCLog::COINSTAKE, "ERROR: %s: fail to create a new block next to the chain tip, continue\n", __func__);
+			LogPrintf("ERROR: %s: fail to create a new block next to the chain tip, continue\n", __func__);
 			continue;
 		}
 		if (p_current_index != chainActive.Tip()) {
@@ -88,7 +89,7 @@ void ThreadPoaMiner() {
 
         bool fNewBlock = false;
         if (!ProcessNewBlock(Params(), pblock, true, &fNewBlock)) {
-        	LogPrint(BCLog::COINSTAKE, "ERROR: %s: process new block fail\n", __func__);
+        	LogPrintf("ERROR: %s: process new block fail %s\n", __func__, pblock->ToString().c_str());
         	continue;
         }
 	}
@@ -116,16 +117,19 @@ bool BasicPoa::initParams() {
 		CBitcoinAddress address(strAddress);
 		CKeyID keyID;
 		if (!address.GetKeyID(keyID)) {
+			LogPrintf("ERROR: %s: wrong address in the miner list arg\n", __func__);
 			return false;
 		}
 		auto ret = _miner_set.insert(keyID);
 		if (!ret.second) {  // duplicate miner
+			LogPrintf("ERROR: %s: duplicate miner in the miner list arg\n", __func__);
 			return false;
 		}
 		_miner_list.push_back(keyID);
 		strMinerList += address.ToString() + ",";
 	}
 	if (_miner_list.size() == 0) {
+		LogPrintf("ERROR: %s: the miner list is empty\n", __func__);
 		return false;
 	}
 
@@ -138,9 +142,11 @@ bool BasicPoa::initParams() {
 		if (address.GetKeyID(keyid) && _miner_set.count(keyid) != 0) {
 			_miner = keyid;
 			strMiner = address.ToString();
+			_reward_script = GetScriptForDestination(_miner);
+		} else {
+			LogPrintf("ERROR: %s: wrong address in the miner arg\n", __func__);
 		}
 	}
-	_reward_script = GetScriptForDestination(_miner);
 
 	// extract period & timeout
 	if (!ParseUInt32(gArgs.GetArg("-poa-period", ""), &_period)) {
@@ -170,14 +176,16 @@ bool BasicPoa::canMineNextBlock(
 		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
-	if (p_current_index == nullptr) {
+	if (miner.IsNull()
+			|| p_current_index == nullptr
+			|| p_current_index->phashBlock == nullptr) {
 		return false;
 	}
 
 	// get next_block_miner_list
 	std::vector<CKeyID> next_block_miner_list;
 	if (!getNextBlockMinerList(p_current_index, next_block_miner_list)) {
-		LogPrintf("%s: getNextBlockMinerList fail\n", __func__);
+		LogPrintf("ERROR: %s: getNextBlockMinerList fail\n", __func__);
 		return false;
 	}
 
@@ -186,7 +194,7 @@ bool BasicPoa::canMineNextBlock(
 			next_block_miner_list.end(),
 			miner);
 	if (it == next_block_miner_list.end()) {
-		LogPrint(BCLog::COINSTAKE, "%s: miner %s is not in next_block_miner_list\n",
+		LogPrint(BCLog::COINSTAKE, "%s: miner %s is not in next_block_miner_list, so can not mine\n",
 				__func__, CBitcoinAddress(miner).ToString().c_str());
 		return false;
 	}
@@ -203,7 +211,7 @@ bool BasicPoa::canMineNextBlock(
 bool BasicPoa::canMineNextBlock(
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
-	if (p_current_index == nullptr) {
+	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
 
@@ -211,10 +219,12 @@ bool BasicPoa::canMineNextBlock(
 		return false;
 	}
 
-	// TODO: time adjustment, for long time no block
+	// time adjustment, for the case of long time no block
 	uint32_t current_time = GetAdjustedTime();
-	if (next_block_time < current_time) {  // no block for a long time
+	if (next_block_time < current_time) {
 		next_block_time = current_time;
+		LogPrint(BCLog::COINSTAKE, "%s: adjust the next_block_time from %d to %d\n",
+				__func__, next_block_time, current_time);
 	}
 
 	return true;
@@ -223,7 +233,7 @@ bool BasicPoa::canMineNextBlock(
 bool BasicPoa::createNextBlock(
 		uint32_t next_block_time,
 		std::shared_ptr<CBlock>& pblock) {
-
+	// create a block next to the chain tip
 	int64_t nTotalFees = 0;
 	std::unique_ptr<CBlockTemplate> pblocktemplate(_block_assembler.CreateNewBlock(
 			_reward_script,
@@ -232,16 +242,18 @@ bool BasicPoa::createNextBlock(
 			&nTotalFees,
 			next_block_time,
 			0));
-
 	pblock = std::make_shared<CBlock>(pblocktemplate->block);
-
     if (!pblock) {
+    	LogPrintf("ERROR: %s: fail to generate a new block\n", __func__);
 		return false;
     }
 
+    // set the merkle root
     pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
 
+    // sign the block
     if (!sign(pblock)) {
+    	LogPrintf("ERROR: %s: fail to sign the new block\n", __func__);
     	return false;
     }
 
@@ -262,21 +274,21 @@ bool BasicPoa::checkBlock(const CBlockHeader& block) {
 	uint256 hash_prev = block.hashPrevBlock;
 	BlockMap::iterator it_prev = mapBlockIndex.find(hash_prev);
 	if (it_prev == mapBlockIndex.end()) {
-		LogPrint(BCLog::COINSTAKE, "%s: fail to get prev block index of block %s\n", __func__, hash.ToString().c_str());
+		LogPrintf("ERROR: %s: fail to get prev block index of block %s\n", __func__, hash.ToString().c_str());
 		return false;
 	}
 
 	// get block miner
 	CKeyID miner;
 	if (!getBlockMiner(block, miner)) {
-		LogPrintf("%s: fail to get miner of block %s\n", __func__, hash.ToString().c_str());
+		LogPrintf("WARNING: %s: fail to get miner of block %s\n", __func__, hash.ToString().c_str());
 		return false;
 	}
 
 	// determine the miner can mine this block
 	uint32_t assigned_block_time;
 	if (!canMineNextBlock(miner, it_prev->second, assigned_block_time)) {
-		LogPrintf("%s: miner %s is not authorized to mine block %s\n", __func__, CBitcoinAddress(miner).ToString(), hash.ToString().c_str());
+		LogPrintf("WARNING: %s: miner %s is not authorized to mine block %s\n", __func__, CBitcoinAddress(miner).ToString(), hash.ToString().c_str());
 		return false;
 	}
 
@@ -293,13 +305,15 @@ bool BasicPoa::checkBlock(const CBlockHeader& block) {
 bool BasicPoa::getNextBlockMinerSet(
 		const CBlockIndex* p_current_index,
 		std::set<CKeyID>& next_block_miner_set) {
-	if (p_current_index == nullptr) {
+	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
+
 	if (p_current_index->pprev == nullptr) {  // genesis block
 		next_block_miner_set = _miner_set;
 		return true;
 	}
+
 	next_block_miner_set.clear();
 
 	// get recent n/2 block miners
@@ -311,6 +325,8 @@ bool BasicPoa::getNextBlockMinerSet(
 	while (recent_block_num != 0 && p_index_tmp->pprev != nullptr) {
 		CKeyID keyid;
 		if (!getBlockMiner(p_index_tmp, keyid)) {
+			LogPrintf("ERROR: %s: fail to get the miner of block %s\n",
+					__func__, p_index_tmp->phashBlock->ToString().c_str());
 			return false;
 		}
 		recent_block_miner_set.insert(keyid);
@@ -319,7 +335,7 @@ bool BasicPoa::getNextBlockMinerSet(
 		recent_block_num--;
 	}
 
-	// subtract recent miners from miner set
+	// subtract recent miners from miner set to get the result
 	std::vector<CKeyID> next_block_miner_vec(miner_num);
 	std::vector<CKeyID>::iterator it = std::set_difference(
 			_miner_set.begin(), _miner_set.end(),
@@ -345,12 +361,16 @@ bool BasicPoa::getNextBlockMinerList(
 	// read cache
 	uint256 hash = *(p_current_index->phashBlock);
 	if (readNextBlockMinerListFromCache(hash, next_block_miner_list)) {
+		LogPrint(BCLog::COINSTAKE, "%s: readNextBlockMinerListFromCache for block %s\n",
+				__func__, hash.GetHex().c_str());
 		return true;
 	}
 
 	// get next_block_miner_set
 	std::set<CKeyID> next_block_miner_set;
 	if (!getNextBlockMinerSet(p_current_index, next_block_miner_set)) {
+		LogPrintf("ERROR: %s: fail to get the miner set of block %s\n",
+				__func__, hash.GetHex().c_str());
 		return false;
 	}
 	// debug log
@@ -429,11 +449,15 @@ bool BasicPoa::getBlockMiner(const CBlockHeader& block, CKeyID& keyid) {
 	// read cache
 	uint256 hash = block.GetHash();
 	if (readBlockMinerFromCache(hash, keyid)) {
+		LogPrint(BCLog::COINSTAKE, "%s: readBlockMinerFromCache for block %s\n",
+				__func__, hash.GetHex().c_str());
 		return true;
 	}
 
 	CPubKey pubkey;
 	if (!getBlockMiner(block, pubkey)) {  // time consuming, so use cache
+		LogPrintf("ERROR: %s: fail to get the miner from block %s\n",
+						__func__, hash.GetHex().c_str());
 		return false;
 	}
 	keyid = pubkey.GetID();
@@ -457,6 +481,8 @@ bool BasicPoa::getBlockMiner(const CBlockIndex* p_index, CKeyID& keyid) {
 	// read cache
 	uint256 hash = *(p_index->phashBlock);
 	if (readBlockMinerFromCache(hash, keyid)) {
+		LogPrint(BCLog::COINSTAKE, "%s: readBlockMinerFromCache for block %s\n",
+				__func__, hash.GetHex().c_str());
 		return true;
 	}
 
