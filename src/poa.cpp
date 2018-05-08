@@ -77,7 +77,7 @@ void ThreadPoaMiner() {
 		}
 		LogPrint(BCLog::COINSTAKE, "%s: new block is created\n%s\n", __func__, pblock->ToString().c_str());
 
-		// TODO: wait and add the block, if new block is mined during wait
+		// wait and add the block, if new block is mined during wait
 		while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
 			LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
 			MilliSleep(minerSleepInterval);
