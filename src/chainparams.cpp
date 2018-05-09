@@ -375,20 +375,21 @@ public:
 /**
  * Proof of Authority
  */
-class CPoaParams : public CRegTestParams
+class CPoaParams : public CMainParams
 {
 public:
 	CPoaParams()
     {
-		CRegTestParams();
+		CMainParams();
 
-		// change id, magic num, port
 		strNetworkID = "poa";
-        pchMessageStart[0] = 0xfd;
-        pchMessageStart[1] = 0xdd;
-        pchMessageStart[2] = 0xc6;
         pchMessageStart[3] = 0x79;
-        nDefaultPort = 33888;
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        consensus.fPoSNoRetargeting = true;
+        consensus.nMinimumChainWork = uint256S("0x00");
+        consensus.defaultAssumeValid = uint256S("0x00");
+        consensus.nLastPOWBlock = 0x7fffffff;
     }
 };
 
