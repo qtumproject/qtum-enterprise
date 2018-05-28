@@ -19,7 +19,7 @@ class BasicPoa {
 private:
 	std::vector<CKeyID> _miner_list;
 	CKeyID _miner;
-	uint32_t _period;
+	uint32_t _interval;
 	uint32_t _timeout;
 
 	std::set<CKeyID> _miner_set;  // for the calculation of the next block miner
@@ -51,7 +51,7 @@ private:
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
 	BasicPoa():
-		_period(0), _timeout(0),
+		_interval(0), _timeout(0),
 		_block_assembler(Params()),
 		_block_miner_cache(
 				GetDataDir() / "poa_block_miner_cache",

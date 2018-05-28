@@ -98,7 +98,7 @@ void ThreadPoaMiner() {
 BasicPoa* BasicPoa::_instance = nullptr;
 
 bool BasicPoa::initParams() {
-	const uint32_t DEFAULT_POA_PERIOD = 10;
+	const uint32_t DEFAULT_POA_INTERVAL = 10;
 	const uint32_t DEFAULT_POA_TIMEOUT = 3;
 
 	// extract the miner list which cannot be empty for PoA, so return false if fail
@@ -148,16 +148,16 @@ bool BasicPoa::initParams() {
 		}
 	}
 
-	// extract period & timeout
-	if (!ParseUInt32(gArgs.GetArg("-poa-period", ""), &_period)) {
-		_period = DEFAULT_POA_PERIOD;
+	// extract interval & timeout
+	if (!ParseUInt32(gArgs.GetArg("-poa-interval", ""), &_interval)) {
+		_interval = DEFAULT_POA_INTERVAL;
 	}
 	if (!ParseUInt32(gArgs.GetArg("-poa-timeout", ""), &_timeout)) {
 		_timeout = DEFAULT_POA_TIMEOUT;
 	}
 
-	LogPrintf("%s: PoA parameters init sucess, miner_list=%s miner=%s, period=%d, timeout=%d\n",
-			__func__, strMinerList.c_str(), strMiner.c_str(), _period, _timeout);
+	LogPrintf("%s: PoA parameters init sucess, miner_list=%s miner=%s, interval=%d, timeout=%d\n",
+			__func__, strMinerList.c_str(), strMiner.c_str(), _interval, _timeout);
 
 	return true;
 }
@@ -201,9 +201,9 @@ bool BasicPoa::canMineNextBlock(
 
 	// get block time
 	uint32_t miner_index = std::distance(next_block_miner_list.begin(), it);
-	next_block_time = (uint32_t)(p_current_index->nTime) + _period + miner_index * _timeout;
+	next_block_time = (uint32_t)(p_current_index->nTime) + _interval + miner_index * _timeout;
 	LogPrint(BCLog::COINSTAKE, "%s: next_block_time = %s + %s + %s * %s\n",
-					__func__, p_current_index->nTime, _period, miner_index, _timeout);
+					__func__, p_current_index->nTime, _interval, miner_index, _timeout);
 
 	return true;
 }
