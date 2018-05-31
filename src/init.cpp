@@ -1565,7 +1565,13 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 const dev::h256 hashDB(dev::sha3(dev::rlp("")));
                 dev::eth::BaseState existsQtumstate = fStatus ? dev::eth::BaseState::PreExisting : dev::eth::BaseState::Empty;
                 globalState = std::unique_ptr<QtumState>(new QtumState(dev::u256(0), QtumState::openDB(dirQtum, hashDB, dev::WithExisting::Trust), dirQtum, existsQtumstate));
-                dev::eth::ChainParams cp((dev::eth::genesisInfo(dev::eth::Network::qtumMainNetwork)));
+                std::string genesis_info;
+                if (Poa::isPoaChain()) {
+                	genesis_info = Poa::genesisInfo();
+                } else {
+                	genesis_info = dev::eth::genesisInfo(dev::eth::Network::qtumMainNetwork);
+                }
+                dev::eth::ChainParams cp(genesis_info);
                 globalSealEngine = std::unique_ptr<dev::eth::SealEngineFace>(cp.createSealEngine());
 
                 pstorageresult = new StorageResults(qtumStateDir.string());

@@ -390,6 +390,11 @@ public:
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("0x00");
         consensus.nLastPOWBlock = 0x7fffffff;
+
+        genesis.hashStateRoot = uint256(h256Touint(dev::h256("831c8f57fabdd57f92d9aa02ae817d58036d6895c91f58654688c4df56ab0fb2")));
+        consensus.hashGenesisBlock = genesis.GetHash();
+		assert(consensus.hashGenesisBlock == uint256S("0xd72c01294565f90ff78d7c199cfa88ae4a3530911e091746a498d13eaa9c5dee"));
+		assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
     }
 };
 
