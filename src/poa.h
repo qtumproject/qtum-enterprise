@@ -48,6 +48,21 @@ private:
 		return _next_block_miner_list_cache.Write(hash, next_block_miner_list, true);
 	}
 
+	// calculate the miners who can mine the next block
+	// first get the miner set, then get their order and use cache
+	bool calNextBlockMinerSet(
+			const CBlockIndex* p_current_index,
+			const std::set<CKeyID>& authorized_miner_set,
+			int activation_height,
+			std::set<CKeyID>& next_block_miner_set);
+	bool calNextBlockMinerList(
+			const CBlockIndex* p_current_index,
+			std::vector<CKeyID>& next_block_miner_list);
+	bool getNextBlockAuthorizedMiners(
+			const CBlockIndex* p_current_index,
+			std::vector<CKeyID>& miner_list,
+			std::set<CKeyID>& miner_set,
+			int& activation_height);
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
@@ -106,11 +121,7 @@ public:
 			std::shared_ptr<CBlock>& pblock);
 	bool checkBlock(const CBlockHeader& block);
 
-	// determine the miners who can mine the next block
-	// first get the miner set, then get their order and use cache
-	bool getNextBlockMinerSet(
-			const CBlockIndex* p_current_index,
-			std::set<CKeyID>& next_block_miner_set);
+	// get the miners who can mine the next block, with cache
 	bool getNextBlockMinerList(
 			const CBlockIndex* p_current_index,
 			std::vector<CKeyID>& next_block_miner_list);

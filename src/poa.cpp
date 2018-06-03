@@ -241,6 +241,8 @@ bool BasicPoa::canMineNextBlock(
 		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
+	AssertLockHeld(cs_main);
+
 	if (miner.IsNull()
 			|| p_current_index == nullptr
 			|| p_current_index->phashBlock == nullptr) {
@@ -326,6 +328,8 @@ bool BasicPoa::createNextBlock(
 }
 
 bool BasicPoa::checkBlock(const CBlockHeader& block) {
+	AssertLockHeld(cs_main);
+
 	if (block.IsNull()) {
 		return false;
 	}
@@ -367,27 +371,41 @@ bool BasicPoa::checkBlock(const CBlockHeader& block) {
 	return true;
 }
 
-bool BasicPoa::getNextBlockMinerSet(
+bool BasicPoa::getNextBlockAuthorizedMiners(
 		const CBlockIndex* p_current_index,
-		std::set<CKeyID>& next_block_miner_set) {
+		std::vector<CKeyID>& miner_list,
+		std::set<CKeyID>& miner_set,
+		int& activation_height) {
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
 
-	if (p_current_index->pprev == nullptr) {  // genesis block
-		next_block_miner_set = _miner_set;
-		return true;
+	miner_list = _miner_list;
+	miner_set = _miner_set;
+
+	activation_height = 1;
+
+	return true;
+}
+
+bool BasicPoa::calNextBlockMinerSet(
+		const CBlockIndex* p_current_index,
+		const std::set<CKeyID>& authorized_miner_set,
+		int activation_height,
+		std::set<CKeyID>& next_block_miner_set) {
+	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
+		return false;
 	}
 
 	next_block_miner_set.clear();
 
 	// get recent n/2 block miners
 	std::set<CKeyID> recent_block_miner_set;
-	size_t miner_num = _miner_list.size();
+	size_t miner_num = authorized_miner_set.size();
 	size_t recent_block_num = miner_num / 2;
 	const CBlockIndex* p_index_tmp = p_current_index;
 
-	while (recent_block_num != 0 && p_index_tmp->pprev != nullptr) {
+	while (recent_block_num != 0) {
 		CKeyID keyid;
 		if (!getBlockMiner(p_index_tmp, keyid)) {
 			LogPrintf("ERROR: %s: fail to get the miner of block %s\n",
@@ -396,6 +414,10 @@ bool BasicPoa::getNextBlockMinerSet(
 		}
 		recent_block_miner_set.insert(keyid);
 
+		if (p_index_tmp->nHeight == activation_height) {
+			break;
+		}
+
 		p_index_tmp = p_index_tmp->pprev;
 		recent_block_num--;
 	}
@@ -403,7 +425,7 @@ bool BasicPoa::getNextBlockMinerSet(
 	// subtract recent miners from miner set to get the result
 	std::vector<CKeyID> next_block_miner_vec(miner_num);
 	std::vector<CKeyID>::iterator it = std::set_difference(
-			_miner_set.begin(), _miner_set.end(),
+			authorized_miner_set.begin(), authorized_miner_set.end(),
 			recent_block_miner_set.begin(), recent_block_miner_set.end(),
 			next_block_miner_vec.begin());
 	next_block_miner_set.insert(next_block_miner_vec.begin(), it);
@@ -411,16 +433,71 @@ bool BasicPoa::getNextBlockMinerSet(
 	return true;
 }
 
-bool BasicPoa::getNextBlockMinerList(
+bool BasicPoa::calNextBlockMinerList(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& next_block_miner_list) {
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
-	if (p_current_index->pprev == nullptr) {  // genesis block
-		next_block_miner_list = _miner_list;
+
+	// get next block authorized miners
+	int activation_height;
+	std::vector<CKeyID> authorized_miner_list;
+	std::set<CKeyID> authorized_miner_set;
+	if (!getNextBlockAuthorizedMiners(p_current_index, authorized_miner_list, authorized_miner_set, activation_height)) {
+		LogPrintf("ERROR: %s: fail to getAuthorizedMiners of block %s\n",
+				__func__, p_current_index->phashBlock->GetHex().c_str());
+		return false;
+	}
+
+	// new miner list activation block
+	if ((p_current_index->nHeight + 1) == activation_height) {
+		next_block_miner_list = authorized_miner_list;
 		return true;
 	}
+
+	next_block_miner_list.clear();
+
+	// get next_block_miner_set
+	std::set<CKeyID> next_block_miner_set;
+	if (!calNextBlockMinerSet(p_current_index, authorized_miner_set, activation_height, next_block_miner_set)) {
+		LogPrintf("ERROR: %s: fail to get the miner set of block %s\n",
+				__func__, p_current_index->phashBlock->GetHex().c_str());
+		return false;
+	}
+
+	// determine their order
+	CKeyID current_miner;
+	if (!getBlockMiner(p_current_index, current_miner)) {
+		return false;
+	}
+	std::vector<CKeyID>::iterator current_it = std::find(authorized_miner_list.begin(), authorized_miner_list.end(), current_miner);
+	if (current_it == authorized_miner_list.end()) {
+		return false;
+	}
+	std::vector<CKeyID>::iterator it = current_it;
+	do {
+		if (++it == authorized_miner_list.end()) {
+			it = authorized_miner_list.begin();
+		}
+
+		if (next_block_miner_set.count(*it) != 0) {
+			next_block_miner_list.push_back(*it);
+		}
+	} while (it != current_it);
+
+	return true;
+}
+
+bool BasicPoa::getNextBlockMinerList(
+		const CBlockIndex* p_current_index,
+		std::vector<CKeyID>& next_block_miner_list) {
+	AssertLockHeld(cs_main);
+
+	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
+		return false;
+	}
+
 	next_block_miner_list.clear();
 
 	// read cache
@@ -431,42 +508,13 @@ bool BasicPoa::getNextBlockMinerList(
 		return true;
 	}
 
-	// get next_block_miner_set
-	std::set<CKeyID> next_block_miner_set;
-	if (!getNextBlockMinerSet(p_current_index, next_block_miner_set)) {
-		LogPrintf("ERROR: %s: fail to get the miner set of block %s\n",
+	// calculate next_block_miner_list
+	if (!calNextBlockMinerList(p_current_index, next_block_miner_list)) {
+		LogPrintf("ERROR: %s: fail to calculate the next_block_miner_list of block %s\n",
 				__func__, hash.GetHex().c_str());
 		return false;
 	}
-	// debug log
-	std::string next_block_miner_set_str;
-	for (const CKeyID& keyid: next_block_miner_set) {
-		next_block_miner_set_str += CBitcoinAddress(keyid).ToString() + ",";
-	}
-	if (next_block_miner_set_str.size() != 0) {
-		next_block_miner_set_str.pop_back();
-	}
-	LogPrint(BCLog::COINSTAKE, "%s: next_block_miner_set is {%s}\n", __func__, next_block_miner_set_str.c_str());
 
-	// determine their order
-	CKeyID current_miner;
-	if (!getBlockMiner(p_current_index, current_miner)) {
-		return false;
-	}
-	std::vector<CKeyID>::iterator current_it = std::find(_miner_list.begin(), _miner_list.end(), current_miner);
-	if (current_it == _miner_list.end()) {
-		return false;
-	}
-	std::vector<CKeyID>::iterator it = current_it;
-	do {
-		if (++it == _miner_list.end()) {
-			it = _miner_list.begin();
-		}
-
-		if (next_block_miner_set.count(*it) != 0) {
-			next_block_miner_list.push_back(*it);
-		}
-	} while (it != current_it);
 	// debug log
 	std::string next_block_miner_list_str;
 	for (const CKeyID& keyid: next_block_miner_list) {
