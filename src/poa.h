@@ -7,23 +7,58 @@
 #include "dbwrapper.h"
 #include "chainparams.h"
 #include "wallet/wallet.h"
+#include "qtum/qtumDGP.h"
 
 namespace Poa {
-const size_t BLOCK_MINER_CACHE_SIZE = 1 << 10;  // 1kB
-const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 10;  // 3kB
+const size_t BLOCK_MINER_CACHE_SIZE = 1 << 13;  // 1MB
+const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 13;  // 3MB
+const size_t MAX_MINER_NUM = 1000;
+const dev::Address MINER_LIST_DGP_ADDR = dev::Address("0000000000000000000000000000000000000085");
 
-bool isPoaChain();
-std::string const& genesisInfo();
-void ThreadPoaMiner();
+bool isPoaChain();  // call this function after the chainparams is initiated
+std::string const& genesisInfo();  // genesis state for poa, add a dgp for miner list
+void ThreadPoaMiner();  // mining thread
+
+// get miner list from dgp
+class MinerListDGP{
+private:
+	std::vector<std::pair<unsigned int, dev::Address>> paramsInstance;
+
+	bool getMinerInstanceForBlockHeight(
+			unsigned int block_height,
+			unsigned int& activation_height,
+			dev::Address& contract_address);
+	bool parseContractOutput(
+			const std::vector<unsigned char>& contract_output,
+			std::vector<CKeyID>& miner_list);
+
+public:
+	MinerListDGP(QtumState* state);
+	bool getMinerList(
+			unsigned int blockHeight,
+			std::vector<CKeyID>& miner_list,
+			unsigned int& activation_height);
+};
+
+class MinerList {
+private:
+	std::vector<CKeyID> _initial_miner_list;
+public:
+	MinerList() {}
+	bool init();
+	bool getNextBlockAuthorizedMiners(
+			const CBlockIndex* p_current_index,
+			std::vector<CKeyID>& miner_list,
+			int& activation_height);
+};
 
 class BasicPoa {
 private:
-	std::vector<CKeyID> _miner_list;
+	MinerList _miner_list;
 	CKeyID _miner;
 	uint32_t _interval;
 	uint32_t _timeout;
 
-	std::set<CKeyID> _miner_set;  // for the calculation of the next block miner
 	CScript _reward_script;  // a p2pkh script to the miner
 
 	CKey _miner_key;
@@ -58,11 +93,6 @@ private:
 	bool calNextBlockMinerList(
 			const CBlockIndex* p_current_index,
 			std::vector<CKeyID>& next_block_miner_list);
-	bool getNextBlockAuthorizedMiners(
-			const CBlockIndex* p_current_index,
-			std::vector<CKeyID>& miner_list,
-			std::set<CKeyID>& miner_set,
-			int& activation_height);
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
