@@ -14,6 +14,9 @@ const size_t BLOCK_MINER_CACHE_SIZE = 1 << 13;  // 1MB
 const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 13;  // 3MB
 const size_t MAX_MINER_NUM = 1000;
 const dev::Address MINER_LIST_DGP_ADDR = dev::Address("0000000000000000000000000000000000000085");
+const std::string DEFAULT_POA_MINER_LIST = "QT65fYRCwq5tctNsVNVPNnHkwajArLFjo1";
+const uint32_t DEFAULT_POA_INTERVAL = 10;
+const uint32_t DEFAULT_POA_TIMEOUT = 3;
 
 bool isPoaChain();  // call this function after the chainparams is initiated
 std::string const& genesisInfo();  // genesis state for poa, add a dgp for miner list
@@ -154,7 +157,7 @@ public:
 			uint32_t next_block_time,
 			std::shared_ptr<CBlock>& pblock);
 
-	// for the validator
+	// for the validation
 	bool checkBlock(const CBlockHeader& block);
 
 	// recover the miner of the block from the sig

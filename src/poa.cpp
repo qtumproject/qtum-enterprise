@@ -105,7 +105,7 @@ void ThreadPoaMiner() {
 	}
 
 	CBlockIndex* p_last_index = nullptr;
-	while (true) {
+	while (true) {  // mining loop
 		CBlockIndex* p_current_index = chainActive.Tip();
 		if (p_last_index == p_current_index) {
 			LogPrint(BCLog::COINSTAKE, "%s: the chain tip not change, continue\n", __func__);
@@ -114,6 +114,7 @@ void ThreadPoaMiner() {
 		}
 		p_last_index = p_current_index;
 
+		// determine if the miner can mine the next block, and get the block time
 		uint32_t next_block_time;
 		if (!p_basic_poa->canMineNextBlock(p_current_index, next_block_time)) {
 			LogPrint(BCLog::COINSTAKE, "%s: the miner is not able to mine a block next to the chain tip, continue\n",
@@ -177,6 +178,7 @@ bool MinerListDGP::getMinerInstanceForBlockHeight(
 		unsigned int block_height,
 		unsigned int& activation_height,
 		dev::Address& contract_address) {
+	// get the active paramsInstance at height block_height
     for(auto i = paramsInstance.rbegin(); i != paramsInstance.rend(); i++){
     	activation_height = i->first + MAX_MINER_NUM / 2;  // active after it's signed by enough miners
 
@@ -195,6 +197,7 @@ bool MinerListDGP::getMinerInstanceForBlockHeight(
 bool MinerListDGP::parseContractOutput(
 		const std::vector<unsigned char>& contract_output,
 		std::vector<CKeyID>& miner_list) {
+	// get the miner list for the call contract output
 	if (contract_output.size() % 32 != 0) {
 		return false;
 	}
@@ -237,7 +240,7 @@ bool MinerListDGP::getMinerList(
 
 bool MinerList::init() {
 	// extract the miner list which cannot be empty for PoA, so return false if fail
-	std::string minerListArg = gArgs.GetArg("-poa-miner-list", "");
+	std::string minerListArg = gArgs.GetArg("-poa-miner-list", DEFAULT_POA_MINER_LIST);
 	if (minerListArg.size() == 0) {
 		return false;
 	}
@@ -314,9 +317,6 @@ bool MinerList::getNextBlockAuthorizedMiners(
 BasicPoa* BasicPoa::_instance = nullptr;
 
 bool BasicPoa::initParams() {
-	const uint32_t DEFAULT_POA_INTERVAL = 10;
-	const uint32_t DEFAULT_POA_TIMEOUT = 3;
-
 	// extract the miner list
 	if (!_miner_list.init()) {
 		LogPrintf("ERROR: %s: _miner_list init fail\n", __func__);
@@ -327,7 +327,6 @@ bool BasicPoa::initParams() {
 	std::string minerArg = gArgs.GetArg("-poa-miner", "");
 	if (!initMiner(minerArg)) {
 		LogPrintf("%s: miner is not initiated, you can set it later\n", __func__);
-		return false;
 	}
 
 	// extract interval & timeout
@@ -345,6 +344,7 @@ bool BasicPoa::initParams() {
 }
 
 bool BasicPoa::initMiner(const std::string str_miner) {
+	// init the miner address and its reward script
 	if (str_miner.size() == 0) {
 		return false;
 	}
@@ -428,6 +428,7 @@ bool BasicPoa::canMineNextBlock(
 	return true;
 }
 
+// for mining
 bool BasicPoa::canMineNextBlock(
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
@@ -531,6 +532,7 @@ bool BasicPoa::calNextBlockMinerSet(
 		const std::set<CKeyID>& authorized_miner_set,
 		int activation_height,
 		std::set<CKeyID>& next_block_miner_set) {
+
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
@@ -574,6 +576,7 @@ bool BasicPoa::calNextBlockMinerSet(
 bool BasicPoa::calNextBlockMinerList(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& next_block_miner_list) {
+
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}

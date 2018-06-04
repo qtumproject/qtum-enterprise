@@ -384,8 +384,6 @@ public:
 
 		strNetworkID = "poa";
         pchMessageStart[3] = 0x79;
-        vFixedSeeds.clear();
-        vSeeds.clear();
         consensus.fPoSNoRetargeting = true;
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("0x00");
@@ -395,6 +393,11 @@ public:
         consensus.hashGenesisBlock = genesis.GetHash();
 		assert(consensus.hashGenesisBlock == uint256S("0xd72c01294565f90ff78d7c199cfa88ae4a3530911e091746a498d13eaa9c5dee"));
 		assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        vSeeds.emplace_back("alpha.qtumx.net", false);
+        nDefaultPort = 13777;
     }
 };
 
