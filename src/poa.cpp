@@ -85,21 +85,22 @@ R"E(
 }
 
 void ThreadPoaMiner() {
-	int64_t keySleepInterval = 3000;  // wait for the user to set the miner
+	int64_t keySleepInterval = 10000;  // wait for the user to set the miner
 	int64_t minerSleepInterval = 100;  // the miner loop interval
 
 	BasicPoa* p_basic_poa = BasicPoa::getInstance();
 
-	if (!p_basic_poa->hasMiner()) {
-		LogPrintf("%s: no PoA miner specified, exist miner thread\n", __func__);
-		return;
+	while (!p_basic_poa->hasMiner()) {
+		LogPrintf("%s: no PoA miner specified, the mining process is halted\n", __func__);
+		MilliSleep(keySleepInterval);
+		continue;
 	}
 
 	RenameThread("qtum-poa-miner");
 
 	// get the miner's key from wallet
 	while (!p_basic_poa->initMinerKey()) {
-		LogPrintf("%s: fail to get the miner's key, wait\n", __func__);
+		LogPrintf("%s: fail to get the miner's private key from wallet, wait for the import\n", __func__);
 		MilliSleep(keySleepInterval);
 		continue;
 	}

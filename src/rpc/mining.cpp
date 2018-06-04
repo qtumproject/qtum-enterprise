@@ -18,6 +18,7 @@
 #include "policy/fees.h"
 #include "pow.h"
 #include "pos.h"
+#include "poa.h"
 #include "rpc/blockchain.h"
 #include "rpc/mining.h"
 #include "rpc/server.h"
@@ -309,6 +310,35 @@ UniValue getstakinginfo(const JSONRPCRequest& request)
     obj.push_back(Pair("expectedtime", nExpectedTime));
 
     return obj;
+}
+
+
+UniValue setpoaminer(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 1)
+        throw std::runtime_error(
+                "setpoaminer \"address\"\n"
+
+                        "\nset the miner for the poa consensus.\n"
+
+                        "\nArguments:\n"
+                        "1. \"address\"      (string, required) The base58 address\n"
+
+                        "\nNote: The miner's private key should be imported to the wallet.\n"
+
+                        "\nExamples:\n"
+                + HelpExampleCli("setpoaminer", "\"address\"")
+                + HelpExampleRpc("setpoaminer", "\"address\"")
+        );
+
+    if (!Poa::isPoaChain()) {
+    	throw JSONRPCError(RPC_INTERNAL_ERROR, "System is not working with PoA consensus");
+    }
+
+    if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str())) {
+    	throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+    }
+
+    return NullUniValue;
 }
 
 // NOTE: Unlike wallet RPC (which use BTC values), mining RPCs follow GBT (BIP 22) in using satoshi amounts
@@ -1061,6 +1091,7 @@ static const CRPCCommand commands[] =
     { "mining",             "submitblock",            &submitblock,            true,  {"hexdata","dummy"} },
     { "mining",             "getsubsidy",             &getsubsidy,             true,  {"height"} },
     { "mining",             "getstakinginfo",         &getstakinginfo,         true,  {} },
+	{ "mining",             "setpoaminer",            &setpoaminer,            true,  {"address"} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      true,  {"nblocks","address","maxtries"} },
 

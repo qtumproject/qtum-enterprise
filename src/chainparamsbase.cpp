@@ -122,5 +122,5 @@ std::string ChainNameFromCommandLine()
         return CBaseChainParams::TESTNET;
     if (fPoa)
         return CBaseChainParams::POA;
-    return CBaseChainParams::MAIN;
+    return CBaseChainParams::POA;
 }
