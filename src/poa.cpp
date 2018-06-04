@@ -85,18 +85,13 @@ R"E(
 }
 
 void ThreadPoaMiner() {
-	int64_t keySleepInterval = 3000;  // wait for the user to import the miner's private key
+	int64_t keySleepInterval = 3000;  // wait for the user to set the miner
 	int64_t minerSleepInterval = 100;  // the miner loop interval
 
 	BasicPoa* p_basic_poa = BasicPoa::getInstance();
 
 	if (!p_basic_poa->hasMiner()) {
 		LogPrintf("%s: no PoA miner specified, exist miner thread\n", __func__);
-		return;
-	}
-	CScript reward_script;
-	if (!p_basic_poa->getRewardScript(reward_script)) {
-		LogPrintf("ERROR: %s: fail to get reward script, exist miner thread\n", __func__);
 		return;
 	}
 
@@ -161,6 +156,7 @@ void ThreadPoaMiner() {
 }
 
 MinerListDGP::MinerListDGP(QtumState* state) {
+	// get the paramsHistory param in DGP
 	std::map<dev::h256, std::pair<dev::u256, dev::u256>> storageDGP = state->storage(MINER_LIST_DGP_ADDR);
 
     dev::h256 paramsInstanceHash = sha3(dev::h256("0000000000000000000000000000000000000000000000000000000000000000"));
@@ -189,7 +185,7 @@ bool MinerListDGP::getMinerInstanceForBlockHeight(
         	return true;
         }
 
-        LogPrintf("%s: DGP authorized miner list will be activated at height %d, now %d\n",
+        LogPrintf("%s: new DGP authorized miner list will be activated at height %d, now %d\n",
         		__func__, activation_height, block_height);
     }
 
@@ -224,11 +220,13 @@ bool MinerListDGP::getMinerList(
 		unsigned int blockHeight,
 		std::vector<CKeyID>& miner_list,
 		unsigned int& activation_height) {
+	// get miner list instance, including the contract_address and activation_height
 	dev::Address contract_address;
 	if (!getMinerInstanceForBlockHeight(blockHeight, activation_height, contract_address)) {
 		return false;
 	}
 
+	// call the contract and parse the result
 	std::vector<unsigned char> output = CallContract(contract_address, ParseHex("c06ad7e7"))[0].execRes.output;
 	if (!parseContractOutput(output, miner_list)) {
 		return false;
@@ -295,7 +293,7 @@ bool MinerList::getNextBlockAuthorizedMiners(
 	if (miner_list_dgp.getMinerList(p_current_index->nHeight + 1, miner_list, dgp_activation_height)) {
 		activation_height = dgp_activation_height;
 	} else {
-		// dgp is not set
+		// dgp is not set, use _initial_miner_list
 		miner_list = _initial_miner_list;
 		activation_height = 1;
 	}
@@ -327,17 +325,9 @@ bool BasicPoa::initParams() {
 
 	// extract the miner
 	std::string minerArg = gArgs.GetArg("-poa-miner", "");
-	std::string strMiner;
-	if (minerArg.size() != 0) {
-		CBitcoinAddress address(minerArg);
-		CKeyID keyid;
-		if (address.GetKeyID(keyid)) {
-			_miner = keyid;
-			strMiner = address.ToString();
-			_reward_script = GetScriptForDestination(_miner);
-		} else {
-			LogPrintf("ERROR: %s: wrong address in the miner arg\n", __func__);
-		}
+	if (!initMiner(minerArg)) {
+		LogPrintf("%s: miner is not initiated, you can set it later\n", __func__);
+		return false;
 	}
 
 	// extract interval & timeout
@@ -349,9 +339,44 @@ bool BasicPoa::initParams() {
 	}
 
 	LogPrintf("%s: PoA parameters init sucess, miner=%s, interval=%d, timeout=%d\n",
-			__func__, strMiner.c_str(), _interval, _timeout);
+			__func__, minerArg.c_str(), _interval, _timeout);
 
 	return true;
+}
+
+bool BasicPoa::initMiner(const std::string str_miner) {
+	if (str_miner.size() == 0) {
+		return false;
+	}
+	if (!_miner.IsNull()) {
+		return false;
+	}
+
+	CBitcoinAddress address(str_miner);
+	CKeyID keyid;
+	if (!address.GetKeyID(keyid)) {
+		LogPrintf("ERROR: %s: wrong miner address format %s\n", __func__, str_miner.c_str());
+		return false;
+	}
+
+	_miner = keyid;
+	if (!getRewardScript()) {
+		return false;
+	}
+
+	return true;
+}
+
+bool BasicPoa::getRewardScript() {
+	if (_reward_script.empty() && !_miner.IsNull()) {
+		_reward_script = GetScriptForDestination(_miner);
+	}
+
+	if (_reward_script.IsPayToPubkeyHash()) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool BasicPoa::initMinerKey() {
@@ -364,10 +389,13 @@ bool BasicPoa::initMinerKey() {
 	return false;
 }
 
+// for validation
 bool BasicPoa::canMineNextBlock(
 		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
+	AssertLockHeld(cs_main);
+
 	if (miner.IsNull()
 			|| p_current_index == nullptr
 			|| p_current_index->phashBlock == nullptr) {
@@ -403,6 +431,8 @@ bool BasicPoa::canMineNextBlock(
 bool BasicPoa::canMineNextBlock(
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
+	LOCK(cs_main);
+
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
@@ -411,7 +441,7 @@ bool BasicPoa::canMineNextBlock(
 		return false;
 	}
 
-	// time adjustment, for the case of long time no block
+	// time adjustment for miner, for the case of long time no block
 	uint32_t current_time = GetAdjustedTime();
 	if (next_block_time < current_time) {
 		next_block_time = current_time;
@@ -544,8 +574,6 @@ bool BasicPoa::calNextBlockMinerSet(
 bool BasicPoa::calNextBlockMinerList(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& next_block_miner_list) {
-	AssertLockHeld(cs_main);
-
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}

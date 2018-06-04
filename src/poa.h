@@ -83,6 +83,9 @@ private:
 		return _next_block_miner_list_cache.Write(hash, next_block_miner_list, true);
 	}
 
+	// get miner's reward script for building the coinbase
+	bool getRewardScript();
+
 	// calculate the miners who can mine the next block
 	// first get the miner set, then get their order and use cache
 	bool calNextBlockMinerSet(
@@ -93,6 +96,12 @@ private:
 	bool calNextBlockMinerList(
 			const CBlockIndex* p_current_index,
 			std::vector<CKeyID>& next_block_miner_list);
+	bool getNextBlockMinerList(
+			const CBlockIndex* p_current_index,
+			std::vector<CKeyID>& next_block_miner_list);
+
+	// sign the block in a recoverable way
+	bool sign(std::shared_ptr<CBlock> pblock);
 
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
@@ -124,17 +133,11 @@ public:
 	}
 
 	bool initParams();  // parse params from cmd line
+	bool initMiner(const std::string str_miner);
 	bool hasMiner() {  // determine if the miner is specified
 		return !_miner.IsNull();
 	}
 	bool initMinerKey();  // try to get the miner's key from wallet
-	bool getRewardScript(CScript& script) {
-		if (_reward_script.IsPayToPubkeyHash()) {
-			script = _reward_script;
-			return true;
-		}
-		return false;
-	}
 
 	// determine if the miner can mine the next block
 	// if true then return the next_block_time
@@ -146,18 +149,13 @@ public:
 			const CBlockIndex* p_current_index,
 			uint32_t& next_block_time);  // for mining
 
+	// create a new block for the miner
 	bool createNextBlock(
 			uint32_t next_block_time,
 			std::shared_ptr<CBlock>& pblock);
+
+	// for the validator
 	bool checkBlock(const CBlockHeader& block);
-
-	// get the miners who can mine the next block, with cache
-	bool getNextBlockMinerList(
-			const CBlockIndex* p_current_index,
-			std::vector<CKeyID>& next_block_miner_list);
-
-	// sign the block in a recoverable way
-	bool sign(std::shared_ptr<CBlock> pblock);
 
 	// recover the miner of the block from the sig
     // first get pubkey, then get keyid and use cache
