@@ -331,7 +331,11 @@ UniValue setpoaminer(const JSONRPCRequest& request) {
         );
 
     if (!Poa::isPoaChain()) {
-    	throw JSONRPCError(RPC_INTERNAL_ERROR, "System is not working with PoA consensus");
+    	throw JSONRPCError(RPC_INTERNAL_ERROR, "System is not working in PoA consensus mode");
+    }
+
+    if (Poa::BasicPoa::getInstance()->hasMiner()) {
+    	throw JSONRPCError(RPC_INTERNAL_ERROR, "The PoA miner has been set before, please restart to set a new miner");
     }
 
     if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str())) {
