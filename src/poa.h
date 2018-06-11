@@ -65,7 +65,6 @@ private:
 	CScript _reward_script;  // a p2pkh script to the miner
 
 	CKey _miner_key;
-	BlockAssembler _block_assembler;
 
 	CDBWrapper _block_miner_cache;
 	CDBWrapper _next_block_miner_list_cache;
@@ -110,7 +109,6 @@ private:
 	static BasicPoa* _instance;
 	BasicPoa():
 		_interval(0), _timeout(0),
-		_block_assembler(Params()),
 		_block_miner_cache(
 				GetDataDir() / "poa_block_miner_cache",
 				BLOCK_MINER_CACHE_SIZE,

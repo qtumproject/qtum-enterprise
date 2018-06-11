@@ -459,7 +459,8 @@ bool BasicPoa::createNextBlock(
 		std::shared_ptr<CBlock>& pblock) {
 	// create a block next to the chain tip
 	int64_t nTotalFees = 0;
-	std::unique_ptr<CBlockTemplate> pblocktemplate(_block_assembler.CreateNewBlock(
+	BlockAssembler block_assembler(Params());
+	std::unique_ptr<CBlockTemplate> pblocktemplate(block_assembler.CreateNewBlock(
 			_reward_script,
 			true,
 			false,
