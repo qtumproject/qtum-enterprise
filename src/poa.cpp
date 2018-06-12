@@ -285,7 +285,7 @@ bool MinerList::getNextBlockAuthorizedMiners(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& miner_list,
 		int& activation_height) {
-	AssertLockHeld(cs_main);
+	LOCK(cs_main);
 
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
@@ -395,7 +395,6 @@ bool BasicPoa::canMineNextBlock(
 		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
-	AssertLockHeld(cs_main);
 
 	if (miner.IsNull()
 			|| p_current_index == nullptr
@@ -433,7 +432,6 @@ bool BasicPoa::canMineNextBlock(
 bool BasicPoa::canMineNextBlock(
 		const CBlockIndex* p_current_index,
 		uint32_t& next_block_time) {
-	LOCK(cs_main);
 
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
@@ -486,7 +484,6 @@ bool BasicPoa::createNextBlock(
 }
 
 bool BasicPoa::checkBlock(const CBlockHeader& block) {
-	AssertLockHeld(cs_main);
 
 	if (block.IsNull()) {
 		return false;
