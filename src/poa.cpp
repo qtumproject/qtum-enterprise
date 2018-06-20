@@ -15,7 +15,7 @@
 namespace Poa {
 
 bool isPoaChain() {
-	static bool isPoaChain = (Params().NetworkIDString() == "poa");
+	static bool isPoaChain = gArgs.GetBoolArg("-poa", false);
 	return isPoaChain;
 }
 
@@ -241,7 +241,7 @@ bool MinerListDGP::getMinerList(
 
 bool MinerList::init() {
 	// extract the miner list which cannot be empty for PoA, so return false if fail
-	std::string minerListArg = gArgs.GetArg("-poa-miner-list", DEFAULT_POA_MINER_LIST);
+	std::string minerListArg = gArgs.GetArg("-poa-miner-list", "");
 	if (minerListArg.size() == 0) {
 		return false;
 	}

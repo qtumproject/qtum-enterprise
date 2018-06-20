@@ -14,7 +14,6 @@ const size_t BLOCK_MINER_CACHE_SIZE = 1 << 13;  // 1MB
 const size_t NEXT_BLOCK_MINER_LIST_CACHE_SIZE = 3 << 13;  // 3MB
 const size_t MAX_MINER_NUM = 1000;
 const dev::Address MINER_LIST_DGP_ADDR = dev::Address("0000000000000000000000000000000000000085");
-const std::string DEFAULT_POA_MINER_LIST = "QT65fYRCwq5tctNsVNVPNnHkwajArLFjo1";
 const uint32_t DEFAULT_POA_INTERVAL = 10;
 const uint32_t DEFAULT_POA_TIMEOUT = 3;
 

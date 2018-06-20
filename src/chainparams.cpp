@@ -382,7 +382,7 @@ public:
     {
 		CMainParams();
 
-		strNetworkID = "poa";
+		strNetworkID = gArgs.GetArg("-chainid", "qtumx");
         pchMessageStart[3] = 0x79;
         consensus.fPoSNoRetargeting = true;
         consensus.nMinimumChainWork = uint256S("0x00");

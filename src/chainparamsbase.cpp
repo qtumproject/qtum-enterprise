@@ -75,7 +75,7 @@ public:
     CBasePoaParams()
     {
         nRPCPort = 13889;
-        strDataDir = "poa";
+        strDataDir = "qtumx_" + gArgs.GetArg("-chainid", "qtumx");
     }
 };
 
@@ -122,5 +122,5 @@ std::string ChainNameFromCommandLine()
         return CBaseChainParams::TESTNET;
     if (fPoa)
         return CBaseChainParams::POA;
-    return CBaseChainParams::POA;
+    return CBaseChainParams::MAIN;
 }
