@@ -57,9 +57,9 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy";
+	std::string pszTimestamp = gArgs.GetArg("-genesis-quote", "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy");
     const CScript genesisOutputScript = CScript() << ParseHex("040d61d8653448c98731ee5fffd303c15e71ec2057b77f11ab3601979728cdaff2d68afbba14e4fa0bc44f2072b0b23ef63717f8cdfbe58dcd33f32b6afe98741a") << OP_CHECKSIG;
-    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+    return CreateGenesisBlock(pszTimestamp.c_str(), genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
 void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
@@ -283,8 +283,8 @@ public:
         consensus.BIP34Hash = uint256S("0x665ed5b402ac0b44efc37d8926332994363e8a7278b7ee9a58fb972efadae943");
         consensus.BIP65Height = 0; // BIP65 activated on regtest (Used in rpc activation tests)
         consensus.BIP66Height = 0; // BIP66 activated on regtest (Used in rpc activation tests)
-        consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.posLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 16 * 60; // 16 minutes
         consensus.nPowTargetSpacing = 2 * 64;
         consensus.fPowAllowMinDifficultyBlocks = true;
@@ -375,28 +375,74 @@ public:
 /**
  * Proof of Authority
  */
-class CPoaParams : public CMainParams
+class CPoaParams : public CChainParams
 {
 public:
 	CPoaParams()
     {
-		CMainParams();
-
-		strNetworkID = gArgs.GetArg("-chainid", "qtumx");
-        pchMessageStart[3] = 0x79;
+        strNetworkID = gArgs.GetArg("-chainid", "");
+        assert(strNetworkID.size() != 0);
+        consensus.nSubsidyHalvingInterval = atoi(gArgs.GetArg("-subsidy-halving-interval", "985500"));
+        consensus.BIP34Height = 0;
+        consensus.BIP65Height = 0;
+        consensus.BIP66Height = 0;
+        consensus.powLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nPowTargetTimespan = 16 * 60; // 16 minutes
+        consensus.nPowTargetSpacing = 2 * 64;
+        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowNoRetargeting = true;
         consensus.fPoSNoRetargeting = true;
+        consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
+        consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
+
+        // Deployment of BIP68, BIP112, and BIP113.
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 999999999999ULL;
+
+        // Deployment of SegWit (BIP141, BIP143, and BIP147)
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].bit = 1;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 999999999999ULL;
+
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("0x00");
 
-        consensus.nLastPOWBlock = 0x7fffffff;
-        consensus.nMPoSRewardRecipients = 1;
-        consensus.nFirstMPoSBlock = 0x7fffffff;
-        consensus.nFixUTXOCacheHFHeight=0;
+        std::vector<unsigned char> msgstart = ParseHex(gArgs.GetArg("-msgstart", ""));
+        assert(msgstart.size() == 4);
+        for (size_t i = 0; i != 4; ++i) {
+        	pchMessageStart[i] = msgstart[i];
+        }
 
+        nDefaultPort = 13777;
+        nPruneAfterHeight = 100000;
+
+        genesis = CreateGenesisBlock(1504695029, 8026361, 0x1f00ffff, 1, 50 * COIN);
         genesis.hashStateRoot = uint256(h256Touint(dev::h256("831c8f57fabdd57f92d9aa02ae817d58036d6895c91f58654688c4df56ab0fb2")));
         consensus.hashGenesisBlock = genesis.GetHash();
-		assert(consensus.hashGenesisBlock == uint256S("0xd72c01294565f90ff78d7c199cfa88ae4a3530911e091746a498d13eaa9c5dee"));
-		assert(genesis.hashMerkleRoot == uint256S("0xed34050eb5909ee535fcb07af292ea55f3d2f291187617b44d3282231405b96d"));
+        consensus.BIP34Hash = consensus.hashGenesisBlock;
+
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        std::vector<std::string> dnsseed = gArgs.GetArgs("-adddnsseed");
+        for (const std::string& host: dnsseed) {
+        	vSeeds.emplace_back(host, false);
+        }
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,58);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,50);
+        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+
+        fDefaultConsistencyChecks = false;
+        fRequireStandard = true;
+        fMineBlocksOnDemand = false;
+
 
         checkpointData = (CCheckpointData) {{}};
         chainTxData = ChainTxData{
@@ -405,10 +451,10 @@ public:
             0
         };
 
-        vFixedSeeds.clear();
-        vSeeds.clear();
-        vSeeds.emplace_back("alpha.qtumx.net", false);
-        nDefaultPort = 13777;
+        consensus.nLastPOWBlock = 0x7fffffff;
+        consensus.nMPoSRewardRecipients = 1;
+        consensus.nFirstMPoSBlock = 0x7fffffff;
+        consensus.nFixUTXOCacheHFHeight = 0;
     }
 };
 
