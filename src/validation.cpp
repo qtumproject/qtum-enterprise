@@ -1266,6 +1266,22 @@ bool ReadFromDisk(CMutableTransaction& tx, CDiskTxPos& txindex, CBlockTreeDB& tx
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
+	if (Poa::isPoaChain()) {
+		CAmount nSubsidy = consensusParams.nSubsidyInit * COIN;
+
+		if (consensusParams.nSubsidyHalvingInterval == 0) {
+			return nSubsidy;
+		}
+
+		int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+	    if (halvings >= consensusParams.nSubsidyHalvingTime) {
+	    	return 0;
+	    }
+
+	    nSubsidy >>= halvings;
+	    return nSubsidy;
+	}
+
     if(nHeight <= consensusParams.nLastPOWBlock)
         return 20000 * COIN;
 
