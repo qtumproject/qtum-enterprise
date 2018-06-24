@@ -188,7 +188,7 @@ bool MinerListDGP::getMinerInstanceForBlockHeight(
         	return true;
         }
 
-        LogPrintf("%s: new DGP authorized miner list will be activated at height %d, now %d\n",
+        LogPrint(BCLog::COINSTAKE, "%s: new DGP authorized miner list will be activated at height %d, now %d\n",
         		__func__, activation_height, block_height);
     }
 
