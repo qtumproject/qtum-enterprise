@@ -18,7 +18,7 @@ static const struct {
     {"main", QAPP_APP_NAME_DEFAULT, 0, 0, ""},
     {"test", QAPP_APP_NAME_TESTNET, 70, 30, QT_TRANSLATE_NOOP("SplashScreen", "[testnet]")},
     {"regtest", QAPP_APP_NAME_TESTNET, 160, 30, "[regtest]"},
-	{"poa", QAPP_APP_NAME_DEFAULT, 0, 0, "[enterprise]"}
+	{"qtumx", QAPP_APP_NAME_DEFAULT, 0, 0, "[qtumx]"}
 };
 static const unsigned network_styles_count = sizeof(network_styles)/sizeof(*network_styles);
 
@@ -93,5 +93,10 @@ const NetworkStyle *NetworkStyle::instantiate(const QString &networkId)
                     network_styles[x].titleAddText);
         }
     }
-    return 0;
+
+    return new NetworkStyle(
+            network_styles[3].appName,
+            network_styles[3].iconColorHueShift,
+            network_styles[3].iconColorSaturationReduction,
+            network_styles[3].titleAddText);
 }

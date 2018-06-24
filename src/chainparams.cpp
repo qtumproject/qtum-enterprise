@@ -450,7 +450,7 @@ public:
         chainTxData = ChainTxData{
             0,
             0,
-            0
+            0.1
         };
 
         consensus.nLastPOWBlock = 0x7fffffff;
