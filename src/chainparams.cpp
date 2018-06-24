@@ -57,7 +57,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-	std::string pszTimestamp = gArgs.GetArg("-genesis-quote", "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy");
+	std::string pszTimestamp = gArgs.GetArg("-genesis-input", "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy");
     const CScript genesisOutputScript = CScript() << ParseHex("040d61d8653448c98731ee5fffd303c15e71ec2057b77f11ab3601979728cdaff2d68afbba14e4fa0bc44f2072b0b23ef63717f8cdfbe58dcd33f32b6afe98741a") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp.c_str(), genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
