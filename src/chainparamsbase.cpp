@@ -75,7 +75,7 @@ public:
     CBasePoaParams()
     {
         nRPCPort = 13889;
-        strDataDir = "qtumx_" + gArgs.GetArg("-chainid", "qtumx");
+        strDataDir = "x_" + gArgs.GetArg("-chainid", "");
     }
 };
 
