@@ -731,7 +731,7 @@ void ArgsManager::ReadConfigFile(const std::string& confPath)
 {
     ParseConfigFile(GetConfigFile(confPath));
 
-    if (gArgs.IsArgSet("-chain")) {  // read qtumx chain conf file from remote server
+    if (gArgs.IsArgSet("-chain")) {  // get chain conf file from remote server
         std::string chain = gArgs.GetArg("-chain", "");
         assert(CheckChainId(chain));
         ParseConfigFile(GetRemoteConfigFile(chain));
