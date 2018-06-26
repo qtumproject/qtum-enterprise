@@ -80,6 +80,11 @@
 #include <boost/algorithm/string/predicate.hpp> // for startswith() and endswith()
 #include <boost/program_options/detail/config_file.hpp>
 #include <boost/thread.hpp>
+
+#include <boost/beast.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+
 #include <openssl/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/conf.h>
@@ -624,13 +629,98 @@ fs::path GetConfigFile(const std::string& confPath)
     return pathConfigFile;
 }
 
+void ArgsManager::ReadXConfigFile(const std::string& xId) {
+    using boost::asio::ip::tcp;
+    namespace ssl = boost::asio::ssl;
+    namespace http = boost::beast::http;
+    typedef ssl::stream<tcp::socket> ssl_socket;
+
+    // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
+    static const std::string host = "chain.qtumx.net";
+    std::string target = "/" + xId + "/qtum.conf";
+
+    // Create a context that uses the default paths for finding CA certificates.
+    ssl::context ctx(ssl::context::sslv23_client);
+    ctx.set_default_verify_paths();
+
+    // Open a socket and connect it to the remote host.
+    boost::asio::io_context io_context;
+    ssl_socket sock(io_context, ctx);
+
+    // Set SNI Hostname (many hosts need this to handshake successfully)
+    if (!SSL_set_tlsext_host_name(sock.native_handle(), host.c_str())) {
+        boost::system::error_code ec {static_cast<int>(::ERR_get_error()),
+                boost::asio::error::get_ssl_category()};
+        throw boost::system::system_error { ec };
+    }
+
+    tcp::resolver resolver(io_context);
+    tcp::resolver::query query(host, "https");
+    boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
+    sock.lowest_layer().set_option(tcp::no_delay(true));
+
+    // Perform SSL handshake and verify the remote host's certificate.
+    sock.set_verify_mode(ssl::verify_peer);
+    sock.set_verify_callback(ssl::rfc2818_verification(host));
+    sock.handshake(ssl_socket::client);
+
+    // Set up an HTTP GET request message
+    http::request<http::string_body> req { http::verb::get, target, 11 };
+    req.set(http::field::host, host);
+    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    // Send the HTTP request to the remote host
+    http::write(sock, req);
+
+    // This buffer is used for reading and must be persisted
+    boost::beast::flat_buffer buffer;
+
+    // Declare a container to hold the response
+    http::response<http::string_body> res;
+
+    // Receive the HTTP response
+    http::read(sock, buffer, res);
+    if (res.result_int() != 200) {
+        boost::system::error_code ec {static_cast<int>(::ERR_get_error()),
+                        boost::asio::error::get_ssl_category()};
+        throw boost::system::system_error { ec };
+    }
+
+    // Write the message to log
+    LogPrintf("%s: get config file from https://%s%s\n%s",
+            __func__,
+            host,
+            target,
+            res.body());
+
+    // Gracefully close the stream
+    boost::system::error_code ec;
+    sock.shutdown(ec);
+
+    std::istringstream streamConfig (res.body());
+    if (streamConfig.good()) {
+        LOCK(cs_args);
+
+        std::set<std::string> setOptions;
+        setOptions.insert("*");
+
+        for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
+        {
+            // Don't overwrite existing settings so command line settings override bitcoin.conf
+            std::string strKey = std::string("-") + it->string_key;
+            std::string strValue = it->value[0];
+            InterpretNegativeSetting(strKey, strValue);
+            if (mapArgs.count(strKey) == 0)
+                mapArgs[strKey] = strValue;
+            mapMultiArgs[strKey].push_back(strValue);
+        }
+    }
+}
+
 void ArgsManager::ReadConfigFile(const std::string& confPath)
 {
     fs::ifstream streamConfig(GetConfigFile(confPath));
-    if (!streamConfig.good())
-        return; // No bitcoin.conf file is OK
-
-    {
+    if (streamConfig.good()) {
         LOCK(cs_args);
         std::set<std::string> setOptions;
         setOptions.insert("*");
@@ -646,6 +736,11 @@ void ArgsManager::ReadConfigFile(const std::string& confPath)
             mapMultiArgs[strKey].push_back(strValue);
         }
     }
+
+    if (gArgs.IsArgSet("-x")) {  // read qtumx chain conf file from remote server
+    	ReadXConfigFile(gArgs.GetArg("-x", ""));
+    }
+
     // If datadir is changed in .conf file:
     ClearDatadirCache();
 }

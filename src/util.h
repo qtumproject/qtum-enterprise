@@ -209,6 +209,7 @@ protected:
 public:
     void ParseParameters(int argc, const char*const argv[]);
     void ReadConfigFile(const std::string& confPath);
+    void ReadXConfigFile(const std::string& xId);
     std::vector<std::string> GetArgs(const std::string& strArg);
 
     /**
