@@ -17,6 +17,7 @@
 #include "utiltime.h"
 
 #include <stdarg.h>
+#include <ctype.h>
 
 #if (defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__))
 #include <pthread.h>
@@ -84,6 +85,8 @@
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
+
+#include <boost/filesystem.hpp>
 
 #include <openssl/crypto.h>
 #include <openssl/rand.h>
@@ -629,7 +632,15 @@ fs::path GetConfigFile(const std::string& confPath)
     return pathConfigFile;
 }
 
-void ArgsManager::ReadXConfigFile(const std::string& xId) {
+fs::path GetRemoteConfigFile(const std::string& chain) {
+    // check default download path
+    fs::path localDir = GetDataDir(false) / ("chain_" + chain);
+    fs::path localPath = localDir / "qtum.conf";
+    if (fs::is_regular_file(localPath) && !fs::is_empty(localPath)) {
+        return localPath;
+    }
+
+    // download the config file from remote server
     using boost::asio::ip::tcp;
     namespace ssl = boost::asio::ssl;
     namespace http = boost::beast::http;
@@ -637,7 +648,7 @@ void ArgsManager::ReadXConfigFile(const std::string& xId) {
 
     // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
     static const std::string host = "chain.qtumx.net";
-    std::string target = "/" + xId + "/qtum.conf";
+    std::string target = "/" + chain + "/qtum.conf";
 
     // Create a context that uses the default paths for finding CA certificates.
     ssl::context ctx(ssl::context::sslv23_client);
@@ -686,41 +697,56 @@ void ArgsManager::ReadXConfigFile(const std::string& xId) {
         throw boost::system::system_error { ec };
     }
 
-    // Write the message to log
+    // Gracefully close the stream
+    boost::system::error_code ec;
+    sock.shutdown(ec);
+
+    // Write the message to log and the default download path
     LogPrintf("%s: get config file from https://%s%s\n%s",
             __func__,
             host,
             target,
             res.body());
+    fs::create_directories(localDir);
+    fs::ofstream ofs (localPath);
+    ofs << res.body();
+    ofs.close();
 
-    // Gracefully close the stream
-    boost::system::error_code ec;
-    sock.shutdown(ec);
+    return localPath;
+}
 
-    std::istringstream streamConfig (res.body());
-    if (streamConfig.good()) {
-        LOCK(cs_args);
-
-        std::set<std::string> setOptions;
-        setOptions.insert("*");
-
-        for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
-        {
-            // Don't overwrite existing settings so command line settings override bitcoin.conf
-            std::string strKey = std::string("-") + it->string_key;
-            std::string strValue = it->value[0];
-            InterpretNegativeSetting(strKey, strValue);
-            if (mapArgs.count(strKey) == 0)
-                mapArgs[strKey] = strValue;
-            mapMultiArgs[strKey].push_back(strValue);
+bool CheckChainId(const std::string& chain) {
+    if (chain.size() == 0) {
+        return false;
+    }
+    for (size_t i = 0; i != chain.size(); ++i) {
+        if (!islower(chain[i]) && !isdigit(chain[i])) {
+            return false;
         }
     }
+    return true;
 }
 
 void ArgsManager::ReadConfigFile(const std::string& confPath)
 {
-    fs::ifstream streamConfig(GetConfigFile(confPath));
-    if (streamConfig.good()) {
+    ParseConfigFile(GetConfigFile(confPath));
+
+    if (gArgs.IsArgSet("-chain")) {  // read qtumx chain conf file from remote server
+        std::string chain = gArgs.GetArg("-chain", "");
+        assert(CheckChainId(chain));
+        ParseConfigFile(GetRemoteConfigFile(chain));
+    }
+
+    // If datadir is changed in .conf file:
+    ClearDatadirCache();
+}
+
+void ArgsManager::ParseConfigFile(const fs::path& path) {
+    fs::ifstream streamConfig(path);
+    if (!streamConfig.good())
+        return; // No bitcoin.conf file is OK
+
+    {
         LOCK(cs_args);
         std::set<std::string> setOptions;
         setOptions.insert("*");
@@ -736,13 +762,6 @@ void ArgsManager::ReadConfigFile(const std::string& confPath)
             mapMultiArgs[strKey].push_back(strValue);
         }
     }
-
-    if (gArgs.IsArgSet("-x")) {  // read qtumx chain conf file from remote server
-    	ReadXConfigFile(gArgs.GetArg("-x", ""));
-    }
-
-    // If datadir is changed in .conf file:
-    ClearDatadirCache();
 }
 
 #ifndef WIN32

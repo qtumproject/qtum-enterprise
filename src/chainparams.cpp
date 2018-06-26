@@ -380,7 +380,7 @@ class CPoaParams : public CChainParams
 public:
 	CPoaParams()
     {
-        strNetworkID = gArgs.GetArg("-chainid", "");
+        strNetworkID = gArgs.GetArg("-chain", "");
         assert(strNetworkID.size() != 0);
         consensus.nSubsidyInit = atoi(gArgs.GetArg("-subsidy-init", "0"));
         consensus.nSubsidyHalvingInterval = atoi(gArgs.GetArg("-subsidy-halving-interval", "0"));

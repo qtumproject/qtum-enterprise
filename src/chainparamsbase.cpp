@@ -75,7 +75,7 @@ public:
     CBasePoaParams()
     {
         nRPCPort = 13889;
-        strDataDir = "x_" + gArgs.GetArg("-chainid", "");
+        strDataDir = "chain_" + gArgs.GetArg("-chain", "");
     }
 };
 
