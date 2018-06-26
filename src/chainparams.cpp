@@ -55,11 +55,13 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
  *   vMerkleTree: 4a5e1e
  */
-static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward, const char* pszTimestamp = nullptr)
 {
-	std::string pszTimestamp = gArgs.GetArg("-genesis-input", "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy");
+    if (pszTimestamp == nullptr) {
+        pszTimestamp = "Sep 02, 2017 Bitcoin breaks $5,000 in latest price frenzy";
+    }
     const CScript genesisOutputScript = CScript() << ParseHex("040d61d8653448c98731ee5fffd303c15e71ec2057b77f11ab3601979728cdaff2d68afbba14e4fa0bc44f2072b0b23ef63717f8cdfbe58dcd33f32b6afe98741a") << OP_CHECKSIG;
-    return CreateGenesisBlock(pszTimestamp.c_str(), genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
 void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
@@ -424,7 +426,12 @@ public:
         assert(nDefaultPort > 0);
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1504695029, 8026361, 0x1f00ffff, 1, 50 * COIN);
+        const char* pszTimestamp = nullptr;
+        std::string genesisInput = gArgs.GetArg("-genesis-input", "");
+        if (gArgs.IsArgSet("-genesis-input")) {
+            pszTimestamp = genesisInput.c_str();
+        }
+        genesis = CreateGenesisBlock(1504695029, 8026361, 0x1f00ffff, 1, 50 * COIN, pszTimestamp);
         genesis.hashStateRoot = uint256(h256Touint(dev::h256("831c8f57fabdd57f92d9aa02ae817d58036d6895c91f58654688c4df56ab0fb2")));
         consensus.hashGenesisBlock = genesis.GetHash();
         consensus.BIP34Hash = consensus.hashGenesisBlock;

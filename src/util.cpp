@@ -701,12 +701,11 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
     boost::system::error_code ec;
     sock.shutdown(ec);
 
-    // Write the message to log and the default download path
-    LogPrintf("%s: get config file from https://%s%s\n%s",
-            __func__,
-            host,
-            target,
-            res.body());
+    // Write the message to stdout and the default download path
+    fprintf(stdout, "download config file from https://%s%s\n%s",
+            host.c_str(),
+            target.c_str(),
+            res.body().c_str());
     fs::create_directories(localDir);
     fs::ofstream ofs (localPath);
     ofs << res.body();
