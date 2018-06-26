@@ -420,7 +420,8 @@ public:
         	pchMessageStart[i] = msgstart[i];
         }
 
-        nDefaultPort = 13777;
+        nDefaultPort = gArgs.GetArg("-default-port", 0);
+        assert(nDefaultPort > 0);
         nPruneAfterHeight = 100000;
 
         genesis = CreateGenesisBlock(1504695029, 8026361, 0x1f00ffff, 1, 50 * COIN);
