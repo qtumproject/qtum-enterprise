@@ -719,6 +719,7 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
         ss << &response;
     }
     std::string body = ss.str();
+    assert(body.size() != 0);
 
     // Write the message to stdout and the default download path
     fprintf(stdout, "download config file from https://%s%s\n%s",
