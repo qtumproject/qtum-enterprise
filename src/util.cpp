@@ -82,7 +82,6 @@
 #include <boost/program_options/detail/config_file.hpp>
 #include <boost/thread.hpp>
 
-#include <boost/beast.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 
@@ -640,32 +639,31 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
         return localPath;
     }
 
-    // download the config file from remote server
-    using boost::asio::ip::tcp;
-    namespace ssl = boost::asio::ssl;
-    namespace http = boost::beast::http;
-    typedef ssl::stream<tcp::socket> ssl_socket;
-
     // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
     static const std::string host = "chain.qtumx.net";
-    std::string target = "/" + chain + "/qtum.conf";
+    std::string path = "/" + chain + "/qtum.conf";
+    using boost::asio::ip::tcp;
+    namespace ssl = boost::asio::ssl;
+    typedef ssl::stream<tcp::socket> ssl_socket;
 
     // Create a context that uses the default paths for finding CA certificates.
-    ssl::context ctx(ssl::context::sslv23_client);
+    ssl::context ctx(ssl::context::sslv23);
     ctx.set_default_verify_paths();
 
     // Open a socket and connect it to the remote host.
-    boost::asio::io_context io_context;
-    ssl_socket sock(io_context, ctx);
+    boost::asio::io_service io_service;
+    ssl_socket sock(io_service, ctx);
 
     // Set SNI Hostname (many hosts need this to handshake successfully)
     if (!SSL_set_tlsext_host_name(sock.native_handle(), host.c_str())) {
-        boost::system::error_code ec {static_cast<int>(::ERR_get_error()),
-                boost::asio::error::get_ssl_category()};
-        throw boost::system::system_error { ec };
+        boost::system::error_code ec { };
+        throw boost::system::system_error(
+                boost::system::error_code(static_cast<int>(::ERR_get_error()),
+                        boost::asio::error::get_ssl_category()));
     }
 
-    tcp::resolver resolver(io_context);
+    // Get a list of endpoints corresponding to the server name.
+    tcp::resolver resolver(io_service);
     tcp::resolver::query query(host, "https");
     boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
     sock.lowest_layer().set_option(tcp::no_delay(true));
@@ -676,39 +674,60 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
     sock.handshake(ssl_socket::client);
 
     // Set up an HTTP GET request message
-    http::request<http::string_body> req { http::verb::get, target, 11 };
-    req.set(http::field::host, host);
-    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    boost::asio::streambuf request;
+    std::ostream request_stream(&request);
+    request_stream << "GET " << path << " HTTP/1.0\r\n";
+    request_stream << "Host: " << host << "\r\n";
+    request_stream << "Accept: */*\r\n";
+    request_stream << "Connection: close\r\n\r\n";
 
     // Send the HTTP request to the remote host
-    http::write(sock, req);
+    boost::asio::write(sock, request);
 
-    // This buffer is used for reading and must be persisted
-    boost::beast::flat_buffer buffer;
+    // Read the response
+    boost::asio::streambuf response;
+    std::istream response_stream(&response);
 
-    // Declare a container to hold the response
-    http::response<http::string_body> res;
-
-    // Receive the HTTP response
-    http::read(sock, buffer, res);
-    if (res.result_int() != 200) {
-        boost::system::error_code ec {static_cast<int>(::ERR_get_error()),
-                        boost::asio::error::get_ssl_category()};
-        throw boost::system::system_error { ec };
+    // Check that response is OK
+    boost::asio::read_until(sock, response, "\r\n\r\n");
+    std::string http_version;
+    response_stream >> http_version;
+    std::string status_code;
+    response_stream >> status_code;
+    if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Invalid http version response: " + http_version);
+    }
+    if (status_code != "200") {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Response status code: " + status_code);
     }
 
-    // Gracefully close the stream
-    boost::system::error_code ec;
-    sock.shutdown(ec);
+    // Read the head
+    std::string header;
+    while (std::getline(response_stream, header) && header != "\r");
+
+    // Read the body
+    std::stringstream ss;
+    if (response.size() > 0) {
+        ss << &response;
+    }
+    boost::system::error_code error;
+    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), error)) {
+        ss << &response;
+    }
+    std::string body = ss.str();
 
     // Write the message to stdout and the default download path
     fprintf(stdout, "download config file from https://%s%s\n%s",
             host.c_str(),
-            target.c_str(),
-            res.body().c_str());
+            path.c_str(),
+            body.c_str());
     fs::create_directories(localDir);
     fs::ofstream ofs (localPath);
-    ofs << res.body();
+    ofs << body;
     ofs.close();
 
     return localPath;
