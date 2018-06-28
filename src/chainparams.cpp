@@ -465,6 +465,8 @@ public:
         consensus.nMPoSRewardRecipients = 1;
         consensus.nFirstMPoSBlock = 0x7fffffff;
         consensus.nFixUTXOCacheHFHeight = 0;
+
+        COINBASE_MATURITY = 0;
     }
 };
 

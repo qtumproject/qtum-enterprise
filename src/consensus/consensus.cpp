@@ -16,6 +16,8 @@ unsigned int dgpMaxProtoMsgLength = 8000000;
 
 unsigned int dgpMaxTxSigOps = 16000;
 
+int COINBASE_MATURITY = 500;
+
 void updateBlockSizeParams(unsigned int newBlockSize){
     unsigned int newSizeForParams=WITNESS_SCALE_FACTOR*newBlockSize;
     dgpMaxBlockSerSize=newSizeForParams;
