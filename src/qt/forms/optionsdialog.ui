@@ -209,6 +209,30 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4_Main">
+         <item row="0" column="0">
+          <widget class="QLabel" name="chainLabel">
+           <property name="toolTip">
+            <string>Connect to a QtumX blochchain</string>
+           </property>
+           <property name="text">
+            <string>QtumX chain:</string>
+           </property>
+           <property name="buddy">
+            <cstring>chainId</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="chainId">
+           <property name="toolTip">
+            <string>Input the chain id here to start a QtumX blockchain</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <spacer name="verticalSpacer_Main">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

@@ -92,6 +92,9 @@ void OptionsModel::Init(bool resetSettings)
     // by command-line and show this in the UI.
 
     // Main
+    if (!settings.contains("chain"))
+        settings.setValue("chain", "");
+
     if (!settings.contains("nDatabaseCache"))
         settings.setValue("nDatabaseCache", (qint64)nDefaultDbCache);
     if (!gArgs.SoftSetArg("-dbcache", settings.value("nDatabaseCache").toString().toStdString()))
@@ -238,6 +241,8 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
         {
         case StartAtStartup:
             return GUIUtil::GetStartOnSystemStartup();
+        case ChainId:
+            return settings.value("chain");
         case HideTrayIcon:
             return fHideTrayIcon;
         case MinimizeToTray:
@@ -325,6 +330,12 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
         {
         case StartAtStartup:
             successful = GUIUtil::SetStartOnSystemStartup(value.toBool());
+            break;
+        case ChainId:
+            if (settings.value("chain") != value) {
+                settings.setValue("chain", value);
+                setRestartRequired(true);
+            }
             break;
         case HideTrayIcon:
             fHideTrayIcon = value.toBool();
