@@ -642,6 +642,11 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
     static const std::string host = "chain.qtumx.net";
     std::string path = "/" + chainId + "/qtum.conf";
+    fprintf(stdout, "Start blockchain %s\nDownload config file from https://%s%s\n",
+            chainId.c_str(),
+            host.c_str(),
+            path.c_str());
+
     using boost::asio::ip::tcp;
     namespace ssl = boost::asio::ssl;
     typedef ssl::stream<tcp::socket> ssl_socket;
@@ -722,10 +727,7 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     assert(body.size() != 0);
 
     // Write the message to stdout and the default download path
-    fprintf(stdout, "download config file from https://%s%s\n%s",
-            host.c_str(),
-            path.c_str(),
-            body.c_str());
+    fprintf(stdout, "%s\n", body.c_str());
     fs::create_directories(localDir);
     fs::ofstream ofs (localPath);
     ofs << body;

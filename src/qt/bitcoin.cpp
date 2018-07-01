@@ -90,6 +90,22 @@ static void InitMessage(const std::string &message)
     LogPrintf("init message: %s\n", message);
 }
 
+static std::string GetChainId()
+{
+    if (gArgs.IsArgSet("-chain")) {
+        return gArgs.GetArg("-chain", "");
+    }
+    if (gArgs.IsArgSet("-resetguisettings")) {
+        return "";
+    }
+
+    QSettings settings;
+    std::string chain_id = settings.value("chain", "").toString().toStdString();
+    gArgs.SoftSetArg("-chain", chain_id);
+
+    return chain_id;
+}
+
 /*
    Translate string to current locale using Qt.
  */
@@ -687,7 +703,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     try {
-        gArgs.ReadConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+        gArgs.ReadConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME), GetChainId());
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
                               QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
