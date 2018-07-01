@@ -180,8 +180,8 @@ fs::path GetDefaultDataDir();
 const fs::path &GetDataDir(bool fNetSpecific = true);
 void ClearDatadirCache();
 fs::path GetConfigFile(const std::string& confPath);
-bool CheckChainId(const std::string& chain);
-fs::path GetRemoteConfigFile(const std::string& chain);
+bool CheckChainId(const std::string& chainId);
+fs::path GetRemoteConfigFile(const std::string& chainId);
 #ifndef WIN32
 fs::path GetPidFile();
 void CreatePidFile(const fs::path &path, pid_t pid);
@@ -210,7 +210,7 @@ protected:
     std::map<std::string, std::vector<std::string> > mapMultiArgs;
 public:
     void ParseParameters(int argc, const char*const argv[]);
-    void ReadConfigFile(const std::string& confPath);
+    void ReadConfigFile(const std::string& confPath, const std::string& chainId);
     void ParseConfigFile(const fs::path& path);
     std::vector<std::string> GetArgs(const std::string& strArg);
 

@@ -631,9 +631,9 @@ fs::path GetConfigFile(const std::string& confPath)
     return pathConfigFile;
 }
 
-fs::path GetRemoteConfigFile(const std::string& chain) {
+fs::path GetRemoteConfigFile(const std::string& chainId) {
     // check default download path
-    fs::path localDir = GetDataDir(false) / ("chain_" + chain);
+    fs::path localDir = GetDataDir(false) / ("chain_" + chainId);
     fs::path localPath = localDir / "qtum.conf";
     if (fs::is_regular_file(localPath) && !fs::is_empty(localPath)) {
         return localPath;
@@ -641,7 +641,7 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
 
     // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
     static const std::string host = "chain.qtumx.net";
-    std::string path = "/" + chain + "/qtum.conf";
+    std::string path = "/" + chainId + "/qtum.conf";
     using boost::asio::ip::tcp;
     namespace ssl = boost::asio::ssl;
     typedef ssl::stream<tcp::socket> ssl_socket;
@@ -734,26 +734,23 @@ fs::path GetRemoteConfigFile(const std::string& chain) {
     return localPath;
 }
 
-bool CheckChainId(const std::string& chain) {
-    if (chain.size() == 0) {
-        return false;
-    }
-    for (size_t i = 0; i != chain.size(); ++i) {
-        if (!islower(chain[i]) && !isdigit(chain[i])) {
+bool CheckChainId(const std::string& chainId) {
+    for (size_t i = 0; i != chainId.size(); ++i) {
+        if (!islower(chainId[i]) && !isdigit(chainId[i])) {
             return false;
         }
     }
     return true;
 }
 
-void ArgsManager::ReadConfigFile(const std::string& confPath)
+void ArgsManager::ReadConfigFile(const std::string& confPath,
+        const std::string& chainId)
 {
     ParseConfigFile(GetConfigFile(confPath));
 
-    if (gArgs.IsArgSet("-chain")) {  // get chain conf file from remote server
-        std::string chain = gArgs.GetArg("-chain", "");
-        assert(CheckChainId(chain));
-        ParseConfigFile(GetRemoteConfigFile(chain));
+    if (!chainId.empty()) {
+        assert(CheckChainId(chainId));
+        ParseConfigFile(GetRemoteConfigFile(chainId));
     }
 
     // If datadir is changed in .conf file:
