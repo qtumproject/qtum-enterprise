@@ -48,6 +48,10 @@ private:
 public:
 	MinerList() {}
 	bool init();
+	void getAuthorizedMiners(
+	        int blockHeight,
+	        std::vector<CKeyID>& miner_list,
+	        int& activation_height);
 	bool getNextBlockAuthorizedMiners(
 			const CBlockIndex* p_current_index,
 			std::vector<CKeyID>& miner_list,
@@ -162,6 +166,8 @@ public:
 	bool getBlockMiner(const CBlockHeader& block, CPubKey& pubkey);
 	bool getBlockMiner(const CBlockHeader& block, CKeyID& keyid);
 	bool getBlockMiner(const CBlockIndex* p_index, CKeyID& keyid);
+
+	MinerList* minerList() {return &_miner_list;}
 };
 
 }  // namespace Poa

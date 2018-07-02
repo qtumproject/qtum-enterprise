@@ -281,6 +281,22 @@ bool MinerList::init() {
 	return true;
 }
 
+void MinerList::getAuthorizedMiners(
+        int blockHeight,
+        std::vector<CKeyID>& miner_list,
+        int& activation_height) {
+    // get from dgp
+    MinerListDGP miner_list_dgp(globalState.get());
+    unsigned int dgp_activation_height;
+    if (miner_list_dgp.getMinerList(blockHeight, miner_list, dgp_activation_height)) {
+        activation_height = dgp_activation_height;
+    } else {
+        // dgp is not set, use _initial_miner_list
+        miner_list = _initial_miner_list;
+        activation_height = 1;
+    }
+}
+
 bool MinerList::getNextBlockAuthorizedMiners(
 		const CBlockIndex* p_current_index,
 		std::vector<CKeyID>& miner_list,
@@ -291,16 +307,8 @@ bool MinerList::getNextBlockAuthorizedMiners(
 		return false;
 	}
 
-	// get from dgp
-	MinerListDGP miner_list_dgp(globalState.get());
-	unsigned int dgp_activation_height;
-	if (miner_list_dgp.getMinerList(p_current_index->nHeight + 1, miner_list, dgp_activation_height)) {
-		activation_height = dgp_activation_height;
-	} else {
-		// dgp is not set, use _initial_miner_list
-		miner_list = _initial_miner_list;
-		activation_height = 1;
-	}
+	// get miner list
+	getAuthorizedMiners(p_current_index->nHeight + 1, miner_list, activation_height);
 
 	// debug log
 	std::string miner_list_str;
