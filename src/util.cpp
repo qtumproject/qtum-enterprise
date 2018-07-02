@@ -745,24 +745,33 @@ bool CheckChainId(const std::string& chainId) {
     return true;
 }
 
-void ArgsManager::ReadConfigFile(const std::string& confPath,
-        const std::string& chainId)
-{
-    ParseConfigFile(GetConfigFile(confPath));
+void ArgsManager::ReadRemoteConfigFile(const std::string& chainId) {
+    if (chainId.empty()) {
+        return;
+    }
+    if (!CheckChainId(chainId)) {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Illegal chain id: " + chainId);
+    }
 
-    if (!chainId.empty()) {
-        assert(CheckChainId(chainId));
-        ParseConfigFile(GetRemoteConfigFile(chainId));
+    ParseConfigFile(GetRemoteConfigFile(chainId));
+}
+
+void ArgsManager::ReadConfigFile(const std::string& confPath)
+{
+    if (!ParseConfigFile(GetConfigFile(confPath))) {
+        return;
     }
 
     // If datadir is changed in .conf file:
     ClearDatadirCache();
 }
 
-void ArgsManager::ParseConfigFile(const fs::path& path) {
+bool ArgsManager::ParseConfigFile(const fs::path& path) {
     fs::ifstream streamConfig(path);
     if (!streamConfig.good())
-        return; // No bitcoin.conf file is OK
+        return false; // No bitcoin.conf file is OK
 
     {
         LOCK(cs_args);
@@ -780,6 +789,8 @@ void ArgsManager::ParseConfigFile(const fs::path& path) {
             mapMultiArgs[strKey].push_back(strValue);
         }
     }
+
+    return true;
 }
 
 #ifndef WIN32

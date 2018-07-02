@@ -210,8 +210,9 @@ protected:
     std::map<std::string, std::vector<std::string> > mapMultiArgs;
 public:
     void ParseParameters(int argc, const char*const argv[]);
-    void ReadConfigFile(const std::string& confPath, const std::string& chainId);
-    void ParseConfigFile(const fs::path& path);
+    void ReadConfigFile(const std::string& confPath);
+    void ReadRemoteConfigFile(const std::string& chainId);
+    bool ParseConfigFile(const fs::path& path);
     std::vector<std::string> GetArgs(const std::string& strArg);
 
     /**

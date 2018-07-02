@@ -703,11 +703,17 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     try {
-        gArgs.ReadConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME), GetChainId());
+        gArgs.ReadConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
                               QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
         return EXIT_FAILURE;
+    }
+    try {
+        gArgs.ReadRemoteConfigFile(gArgs.GetArg("-chain", GetChainId()));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
+                              QObject::tr("Error: Cannot get remote configuration file: %1. Start without -chain.").arg(e.what()));
     }
 
     /// 7. Determine network (and switch to network specific options)
