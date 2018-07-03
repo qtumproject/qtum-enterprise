@@ -642,20 +642,34 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
     static const std::string host = "chain.qtumx.net";
     std::string path = "/" + chainId + "/qtum.conf";
-    fprintf(stdout, "Start blockchain %s with configuration: https://%s%s\n",
-            chainId.c_str(),
-            host.c_str(),
-            path.c_str());
+    fprintf(stdout, "Start blockchain %s with configuration: https://%s%s\n", chainId.c_str(),
+            host.c_str(), path.c_str());
 
     using boost::asio::ip::tcp;
     namespace ssl = boost::asio::ssl;
     typedef ssl::stream<tcp::socket> ssl_socket;
 
-    // Create a context that uses the default paths for finding CA certificates.
+    // Create a context and load root certificate
     ssl::context ctx(ssl::context::tlsv1_client);
-    ctx.set_default_verify_paths();
+    std::string const cert = "-----BEGIN CERTIFICATE-----\n"
+            "MIICiTCCAfICCQDIKzGNrpgABTANBgkqhkiG9w0BAQsFADCBiDELMAkGA1UEBhMC\n"
+            "WFgxFTATBgNVBAcMDERlZmF1bHQgQ2l0eTEYMBYGA1UECgwPUXR1bSBGb3VuZGF0\n"
+            "aW9uMQ0wCwYDVQQLDARRVFVNMRgwFgYDVQQDDA9jaGFpbi5xdHVteC5uZXQxHzAd\n"
+            "BgkqhkiG9w0BCQEWEHpoZW5neWlAcXR1bS5vcmcwHhcNMTgwNzAzMTMxOTM5WhcN\n"
+            "MjgwNjMwMTMxOTM5WjCBiDELMAkGA1UEBhMCWFgxFTATBgNVBAcMDERlZmF1bHQg\n"
+            "Q2l0eTEYMBYGA1UECgwPUXR1bSBGb3VuZGF0aW9uMQ0wCwYDVQQLDARRVFVNMRgw\n"
+            "FgYDVQQDDA9jaGFpbi5xdHVteC5uZXQxHzAdBgkqhkiG9w0BCQEWEHpoZW5neWlA\n"
+            "cXR1bS5vcmcwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMhyxzeJR1/VG3qF\n"
+            "sjvFkZohMD3dpJCV0YCVVGAyz9LKsTuImt6YppDCzyNSKkBXBdX3lOmhjNAdEnzm\n"
+            "NhWWNYUZTkGNPrYfvlaeBnCmKMtswiA2TboajWxoWYDj6GoV/KWX1eEsj/DVl8gl\n"
+            "jpWH0+n/HhOwV1EHX9tRwuOZ6CzrAgMBAAEwDQYJKoZIhvcNAQELBQADgYEAGFv7\n"
+            "LGMzi9XG/Rbcee+DzBjSEnJ8GKOESnyhTGRYIk0ay/io5e8RAcBQBWWKaxkN7ymJ\n"
+            "EpM5NREyDIEtsJiyGLSwSLydZvpU8Xt1aHZADTNzAZPQYAcAFOchV25gE207UHy6\n"
+            "MC+q6UFSeBy0Zi7ZpCOeyJjLKzucaYHCx1rUloA=\n"
+            "-----END CERTIFICATE-----\n";
+    ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()));
 
-    // Open a socket and connect it to the remote host.
+    // Open a socket and connect it to the remote host
     boost::asio::io_service io_service;
     ssl_socket sock(io_service, ctx);
 
@@ -667,13 +681,14 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
                         boost::asio::error::get_ssl_category()));
     }
 
-    // Get a list of endpoints corresponding to the server name.
+    // Get a list of endpoints corresponding to the server name
     tcp::resolver resolver(io_service);
     tcp::resolver::query query(host, "https");
     boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
     sock.lowest_layer().set_option(tcp::no_delay(true));
 
     // Perform SSL handshake.
+    sock.set_verify_mode(ssl::verify_peer);
     sock.handshake(ssl_socket::client);
 
     // Set up an HTTP GET request message
@@ -687,47 +702,53 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     // Send the HTTP request to the remote host
     boost::asio::write(sock, request);
 
-    // Read the response
+    // Get the response
     boost::asio::streambuf response;
-    std::istream response_stream(&response);
+    std::stringstream ss;
+    boost::system::error_code error;
+    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), error)) {
+        ss << &response;
+    }
+
+    // Gracefully close the stream
+    boost::system::error_code ec;
+    sock.shutdown(ec);
+    if (ec == boost::asio::error::eof) {
+        ec.assign(0, ec.category());
+    }
+    if (ec)
+        throw boost::system::system_error { ec };
 
     // Check that response is OK
-    boost::asio::read_until(sock, response, "\r\n\r\n");
     std::string http_version;
-    response_stream >> http_version;
-    std::string status_code;
-    response_stream >> status_code;
-    if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
+    ss >> http_version;
+    if (!ss || http_version.substr(0, 5) != "HTTP/") {
         throw boost::system::system_error(
                 boost::system::error_code(1, boost::system::system_category()),
                 "Invalid http version response: " + http_version);
     }
+    std::string status_code;
+    ss >> status_code;
     if (status_code != "200") {
         throw boost::system::system_error(
                 boost::system::error_code(1, boost::system::system_category()),
                 "Response status code: " + status_code);
     }
 
-    // Read the head
-    std::string header;
-    while (std::getline(response_stream, header) && header != "\r");
-
-    // Read the body
-    std::stringstream ss;
-    if (response.size() > 0) {
-        ss << &response;
+    // Extract the body
+    std::string res = ss.str();
+    std::size_t pos = res.find("\r\n\r\n");
+    if (pos == std::string::npos || (pos + 4) >= res.size()) {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Error extract body from response");
     }
-    boost::system::error_code error;
-    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), error)) {
-        ss << &response;
-    }
-    std::string body = ss.str();
-    assert(body.size() != 0);
+    std::string body = res.substr(pos + 4);
 
     // Write the message to stdout and the default download path
-    fprintf(stdout, "%s\n", body.c_str());
+    fprintf(stdout, body.c_str());
     fs::create_directories(localDir);
-    fs::ofstream ofs (localPath);
+    fs::ofstream ofs(localPath);
     ofs << body;
     ofs.close();
 
