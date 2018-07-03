@@ -673,9 +673,7 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
     sock.lowest_layer().set_option(tcp::no_delay(true));
 
-    // Perform SSL handshake and verify the remote host's certificate.
-    sock.set_verify_mode(ssl::verify_peer);
-    sock.set_verify_callback(ssl::rfc2818_verification(host));
+    // Perform SSL handshake.
     sock.handshake(ssl_socket::client);
 
     // Set up an HTTP GET request message
