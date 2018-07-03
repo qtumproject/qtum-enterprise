@@ -381,7 +381,7 @@ UniValue getpoaminerlist(const JSONRPCRequest& request) {
         height = chainActive.Height();
     } else {
         height = request.params[0].get_int();
-        if (height < 0 || height > chainActive.Height())
+        if (height < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
     }
 
