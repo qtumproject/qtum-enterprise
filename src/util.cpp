@@ -746,7 +746,7 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     std::string body = res.substr(pos + 4);
 
     // Write the message to stdout and the default download path
-    fprintf(stdout, "%s", body.c_str());
+    fprintf(stdout, "%s\n", body.c_str());
     fs::create_directories(localDir);
     fs::ofstream ofs(localPath);
     ofs << body;
