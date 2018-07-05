@@ -216,7 +216,7 @@
             <string>Connect to a QtumX blochchain</string>
            </property>
            <property name="text">
-            <string>QtumX chain:</string>
+            <string>QtumX chain id:</string>
            </property>
            <property name="buddy">
             <cstring>chainId</cstring>
