@@ -639,9 +639,9 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
         return localPath;
     }
 
-    // download conf file from https://chain.qtumx.net/{xId}/qtum.conf
-    static const std::string host = "chain.qtumx.net";
-    std::string path = "/" + chainId + "/qtum.conf";
+    // download conf file from https://www.qtumx.net/chain/{chainId}.conf
+    static const std::string host = "www.qtumx.net";
+    std::string path = "/chain/" + chainId + ".conf";
     fprintf(stdout, "Start blockchain %s with configuration: https://%s%s\n", chainId.c_str(),
             host.c_str(), path.c_str());
 
@@ -651,23 +651,7 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
 
     // Create a context and load root certificate
     ssl::context ctx(ssl::context::tlsv1_client);
-    std::string const cert = "-----BEGIN CERTIFICATE-----\n"
-            "MIICiTCCAfICCQDIKzGNrpgABTANBgkqhkiG9w0BAQsFADCBiDELMAkGA1UEBhMC\n"
-            "WFgxFTATBgNVBAcMDERlZmF1bHQgQ2l0eTEYMBYGA1UECgwPUXR1bSBGb3VuZGF0\n"
-            "aW9uMQ0wCwYDVQQLDARRVFVNMRgwFgYDVQQDDA9jaGFpbi5xdHVteC5uZXQxHzAd\n"
-            "BgkqhkiG9w0BCQEWEHpoZW5neWlAcXR1bS5vcmcwHhcNMTgwNzAzMTMxOTM5WhcN\n"
-            "MjgwNjMwMTMxOTM5WjCBiDELMAkGA1UEBhMCWFgxFTATBgNVBAcMDERlZmF1bHQg\n"
-            "Q2l0eTEYMBYGA1UECgwPUXR1bSBGb3VuZGF0aW9uMQ0wCwYDVQQLDARRVFVNMRgw\n"
-            "FgYDVQQDDA9jaGFpbi5xdHVteC5uZXQxHzAdBgkqhkiG9w0BCQEWEHpoZW5neWlA\n"
-            "cXR1bS5vcmcwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMhyxzeJR1/VG3qF\n"
-            "sjvFkZohMD3dpJCV0YCVVGAyz9LKsTuImt6YppDCzyNSKkBXBdX3lOmhjNAdEnzm\n"
-            "NhWWNYUZTkGNPrYfvlaeBnCmKMtswiA2TboajWxoWYDj6GoV/KWX1eEsj/DVl8gl\n"
-            "jpWH0+n/HhOwV1EHX9tRwuOZ6CzrAgMBAAEwDQYJKoZIhvcNAQELBQADgYEAGFv7\n"
-            "LGMzi9XG/Rbcee+DzBjSEnJ8GKOESnyhTGRYIk0ay/io5e8RAcBQBWWKaxkN7ymJ\n"
-            "EpM5NREyDIEtsJiyGLSwSLydZvpU8Xt1aHZADTNzAZPQYAcAFOchV25gE207UHy6\n"
-            "MC+q6UFSeBy0Zi7ZpCOeyJjLKzucaYHCx1rUloA=\n"
-            "-----END CERTIFICATE-----\n";
-    ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()));
+    ctx.set_default_verify_paths();
 
     // Open a socket and connect it to the remote host
     boost::asio::io_service io_service;
@@ -689,6 +673,7 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
 
     // Perform SSL handshake.
     sock.set_verify_mode(ssl::verify_peer);
+    sock.set_verify_callback(ssl::rfc2818_verification(host));
     sock.handshake(ssl_socket::client);
 
     // Set up an HTTP GET request message
