@@ -639,31 +639,54 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
         return localPath;
     }
 
-    // download conf file from https://www.qtumx.net/chain/{chainId}.conf
-    static const std::string host = "www.qtumx.net";
+    // download conf file from https://qtumx.net/chain/{chainId}.conf
+    static const std::string host = "qtumx.net";
     std::string path = "/chain/" + chainId + ".conf";
-    fprintf(stdout, "Start blockchain %s with configuration: https://%s%s\n", chainId.c_str(),
-            host.c_str(), path.c_str());
+    std::string url = "https://" + host + path;
+    fprintf(stdout, "Start blockchain %s with configuration: %s\n",
+            chainId.c_str(),
+            url.c_str());
 
     using boost::asio::ip::tcp;
     namespace ssl = boost::asio::ssl;
     typedef ssl::stream<tcp::socket> ssl_socket;
+    boost::system::error_code ec;
 
     // Create a context and load root certificate
     ssl::context ctx(ssl::context::tlsv1_client);
-    ctx.set_default_verify_paths();
+    ctx.set_verify_mode(ssl::verify_peer);
+    ctx.set_verify_callback(ssl::rfc2818_verification(host));
+    std::string const cert =  // COMODO UserTrust / AddTrust External Root
+            "-----BEGIN CERTIFICATE-----\n"
+            "MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU\n"
+            "MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs\n"
+            "IFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290\n"
+            "MB4XDTAwMDUzMDEwNDgzOFoXDTIwMDUzMDEwNDgzOFowbzELMAkGA1UEBhMCU0Ux\n"
+            "FDASBgNVBAoTC0FkZFRydXN0IEFCMSYwJAYDVQQLEx1BZGRUcnVzdCBFeHRlcm5h\n"
+            "bCBUVFAgTmV0d29yazEiMCAGA1UEAxMZQWRkVHJ1c3QgRXh0ZXJuYWwgQ0EgUm9v\n"
+            "dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALf3GjPm8gAELTngTlvt\n"
+            "H7xsD821+iO2zt6bETOXpClMfZOfvUq8k+0DGuOPz+VtUFrWlymUWoCwSXrbLpX9\n"
+            "uMq/NzgtHj6RQa1wVsfwTz/oMp50ysiQVOnGXw94nZpAPA6sYapeFI+eh6FqUNzX\n"
+            "mk6vBbOmcZSccbNQYArHE504B4YCqOmoaSYYkKtMsE8jqzpPhNjfzp/haW+710LX\n"
+            "a0Tkx63ubUFfclpxCDezeWWkWaCUN/cALw3CknLa0Dhy2xSoRcRdKn23tNbE7qzN\n"
+            "E0S3ySvdQwAl+mG5aWpYIxG3pzOPVnVZ9c0p10a3CitlttNCbxWyuHv77+ldU9U0\n"
+            "WicCAwEAAaOB3DCB2TAdBgNVHQ4EFgQUrb2YejS0Jvf6xCZU7wO94CTLVBowCwYD\n"
+            "VR0PBAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wgZkGA1UdIwSBkTCBjoAUrb2YejS0\n"
+            "Jvf6xCZU7wO94CTLVBqhc6RxMG8xCzAJBgNVBAYTAlNFMRQwEgYDVQQKEwtBZGRU\n"
+            "cnVzdCBBQjEmMCQGA1UECxMdQWRkVHJ1c3QgRXh0ZXJuYWwgVFRQIE5ldHdvcmsx\n"
+            "IjAgBgNVBAMTGUFkZFRydXN0IEV4dGVybmFsIENBIFJvb3SCAQEwDQYJKoZIhvcN\n"
+            "AQEFBQADggEBALCb4IUlwtYj4g+WBpKdQZic2YR5gdkeWxQHIzZlj7DYd7usQWxH\n"
+            "YINRsPkyPef89iYTx4AWpb9a/IfPeHmJIZriTAcKhjW88t5RxNKWt9x+Tu5w/Rw5\n"
+            "6wwCURQtjr0W4MHfRnXnJK3s9EK0hZNwEGe6nQY1ShjTK3rMUUKhemPR5ruhxSvC\n"
+            "Nr4TDea9Y355e6cJDUCrat2PisP29owaQgVR1EX1n6diIWgVIEM8med8vSTYqZEX\n"
+            "c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a\n"
+            "mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=\n"
+            "-----END CERTIFICATE-----\n";
+    ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()));
 
     // Open a socket and connect it to the remote host
     boost::asio::io_service io_service;
     ssl_socket sock(io_service, ctx);
-
-    // Set SNI Hostname (many hosts need this to handshake successfully)
-    if (!SSL_set_tlsext_host_name(sock.native_handle(), host.c_str())) {
-        boost::system::error_code ec { };
-        throw boost::system::system_error(
-                boost::system::error_code(static_cast<int>(::ERR_get_error()),
-                        boost::asio::error::get_ssl_category()));
-    }
 
     // Get a list of endpoints corresponding to the server name
     tcp::resolver resolver(io_service);
@@ -671,10 +694,17 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
     sock.lowest_layer().set_option(tcp::no_delay(true));
 
+    // Set SNI Hostname (many hosts need this to handshake successfully)
+    if (!SSL_set_tlsext_host_name(sock.native_handle(), host.c_str())) {
+        throw boost::system::system_error(
+                boost::system::error_code(static_cast<int>(::ERR_get_error()),
+                        boost::asio::error::get_ssl_category()));
+    }
+
     // Perform SSL handshake.
-    sock.set_verify_mode(ssl::verify_peer);
-    sock.set_verify_callback(ssl::rfc2818_verification(host));
-    sock.handshake(ssl_socket::client);
+    sock.handshake(ssl_socket::client, ec);
+    if (ec)
+        throw boost::system::system_error(ec, "Please check your connection to " + url);
 
     // Set up an HTTP GET request message
     boost::asio::streambuf request;
@@ -690,19 +720,17 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
     // Get the response
     boost::asio::streambuf response;
     std::stringstream ss;
-    boost::system::error_code error;
-    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), error)) {
+    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), ec)) {
         ss << &response;
     }
 
     // Gracefully close the stream
-    boost::system::error_code ec;
     sock.shutdown(ec);
     if (ec == boost::asio::error::eof) {
         ec.assign(0, ec.category());
     }
     if (ec)
-        throw boost::system::system_error { ec };
+        throw boost::system::system_error(ec);
 
     // Check that response is OK
     std::string http_version;
