@@ -726,11 +726,6 @@ fs::path GetRemoteConfigFile(const std::string& chainId) {
 
     // Gracefully close the stream
     sock.shutdown(ec);
-    if (ec == boost::asio::error::eof) {
-        ec.assign(0, ec.category());
-    }
-    if (ec)
-        throw boost::system::system_error(ec);
 
     // Check that response is OK
     std::string http_version;
