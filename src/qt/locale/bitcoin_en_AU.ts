@@ -12,7 +12,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Synchronizing with network...</source>
         <translation>Synchronising with network...</translation>
@@ -69,8 +69,8 @@
 <context>
     <name>OverviewPage</name>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Qtum network after a connection is established, but this process has not completed yet.</source>
-        <translation>The displayed information may be out of date. Your wallet automatically synchronises with the Qtum network after a connection is established, but this process has not completed yet.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the QtumX network after a connection is established, but this process has not completed yet.</source>
+        <translation>The displayed information may be out of date. Your wallet automatically synchronises with the QtumX network after a connection is established, but this process has not completed yet.</translation>
     </message>
     </context>
 <context>

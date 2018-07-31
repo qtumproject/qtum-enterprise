@@ -141,7 +141,7 @@ UniValue getnewaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
             "getnewaddress ( \"account\" )\n"
-            "\nReturns a new Qtum address for receiving payments.\n"
+            "\nReturns a new QtumX address for receiving payments.\n"
             "If 'account' is specified (DEPRECATED), it is added to the address book \n"
             "so payments received with the address will be credited to 'account'.\n"
             "\nArguments:\n"
@@ -197,7 +197,7 @@ UniValue getaccountaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getaccountaddress \"account\"\n"
-            "\nDEPRECATED. Returns the current Qtum address for receiving payments to this account.\n"
+            "\nDEPRECATED. Returns the current QtumX address for receiving payments to this account.\n"
             "\nArguments:\n"
             "1. \"account\"       (string, required) The account name for the address. It can also be set to the empty string \"\" to represent the default account. The account does not need to exist, it will be created and a new address created  if there is no account by the given name.\n"
             "\nResult:\n"
@@ -231,7 +231,7 @@ UniValue getrawchangeaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 0)
         throw std::runtime_error(
             "getrawchangeaddress\n"
-            "\nReturns a new Qtum address, for receiving change.\n"
+            "\nReturns a new QtumX address, for receiving change.\n"
             "This is for use with raw transactions, NOT normal use.\n"
             "\nResult:\n"
             "\"address\"    (string) The address\n"
@@ -282,7 +282,7 @@ UniValue setaccount(const JSONRPCRequest& request)
 
     CBitcoinAddress address(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
 
     std::string strAccount;
     if (request.params.size() > 1)
@@ -330,7 +330,7 @@ UniValue getaccount(const JSONRPCRequest& request)
 
     CBitcoinAddress address(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
 
     std::string strAccount;
     std::map<CTxDestination, CAddressBookData>::iterator mi = pwallet->mapAddressBook.find(address.Get());
@@ -468,7 +468,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
 
     CBitcoinAddress address(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
 
     // Amount
     CAmount nAmount = AmountFromValue(request.params[1]);
@@ -508,7 +508,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     if (request.params.size() > 8 && !request.params[8].isNull()){
     senderAddress.SetString(request.params[8].get_str());
         if (!senderAddress.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address to send from");
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address to send from");
         else
             fHasSender=true;
     }
@@ -631,7 +631,7 @@ UniValue createcontract(const JSONRPCRequest& request){
     if (request.params.size() > 3){
     senderAddress.SetString(request.params[3].get_str());
         if (!senderAddress.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address to send from");
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address to send from");
         else
             fHasSender=true;
     }
@@ -786,7 +786,7 @@ UniValue sendtocontract(const JSONRPCRequest& request){
                 "2. \"datahex\"  (string, required) data to send.\n"
                 "3. \"amount\"      (numeric or string, optional) The amount in " + CURRENCY_UNIT + " to send. eg 0.1, default: 0\n"
                 "4. gasLimit  (numeric or string, optional) gasLimit, default: "+i64tostr(DEFAULT_GAS_LIMIT_OP_SEND)+", max: "+i64tostr(blockGasLimit)+"\n"
-                "5. gasPrice  (numeric or string, optional) gasPrice Qtum price per gas unit, default: "+FormatMoney(nGasPrice)+", min:"+FormatMoney(minGasPrice)+"\n"
+                "5. gasPrice  (numeric or string, optional) gasPrice QtumX price per gas unit, default: "+FormatMoney(nGasPrice)+", min:"+FormatMoney(minGasPrice)+"\n"
                 "6. \"senderaddress\" (string, optional) The quantum address that will be used as sender.\n"
                 "7. \"broadcast\" (bool, optional, default=true) Whether to broadcast the transaction or not.\n"
                 "8. \"changeToSender\" (bool, optional, default=true) Return the change to the sender.\n"
@@ -850,7 +850,7 @@ UniValue sendtocontract(const JSONRPCRequest& request){
     if (request.params.size() > 5){
         senderAddress.SetString(request.params[5].get_str());
         if (!senderAddress.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address to send from");
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address to send from");
         else
             fHasSender=true;
     }
@@ -1114,7 +1114,7 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
     // Bitcoin address
     CBitcoinAddress address = CBitcoinAddress(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
     CScript scriptPubKey = GetScriptForDestination(address.Get());
     if (!IsMine(*pwallet, scriptPubKey)) {
         return ValueFromAmount(0);
@@ -1369,7 +1369,7 @@ UniValue sendfrom(const JSONRPCRequest& request)
     std::string strAccount = AccountFromValue(request.params[0]);
     CBitcoinAddress address(request.params[1].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
     CAmount nAmount = AmountFromValue(request.params[2]);
     if (nAmount <= 0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
@@ -1492,7 +1492,7 @@ UniValue sendmany(const JSONRPCRequest& request)
     {
         CBitcoinAddress address(name_);
         if (!address.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Qtum address: ")+name_);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid QtumX address: ")+name_);
 
         if (setAddress.count(address))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ")+name_);
@@ -1610,7 +1610,7 @@ UniValue sendmanywithdupes(const JSONRPCRequest& request)
     {
         CBitcoinAddress address(name_);
         if (!address.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Qtum address: ")+name_);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid QtumX address: ")+name_);
 
         setAddress.insert(address);
 
@@ -1670,7 +1670,7 @@ UniValue addmultisigaddress(const JSONRPCRequest& request)
     {
         std::string msg = "addmultisigaddress nrequired [\"key\",...] ( \"account\" )\n"
             "\nAdd a nrequired-to-sign multisignature address to the wallet.\n"
-            "Each key is a Qtum address or hex-encoded public key.\n"
+            "Each key is a QtumX address or hex-encoded public key.\n"
             "If 'account' is specified (DEPRECATED), assign address to that account.\n"
 
             "\nArguments:\n"
@@ -1796,7 +1796,7 @@ UniValue addwitnessaddress(const JSONRPCRequest& request)
 
     CBitcoinAddress address(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
 
     Witnessifier w(pwallet);
     CTxDestination dest = address.Get();
@@ -2962,7 +2962,7 @@ UniValue encryptwallet(const JSONRPCRequest& request)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; Qtum server stopping, restart to run with encrypted wallet. The keypool has been flushed and a new HD seed was generated (if you are using HD). You need to make a new backup.";
+    return "wallet encrypted; QtumX server stopping, restart to run with encrypted wallet. The keypool has been flushed and a new HD seed was generated (if you are using HD). You need to make a new backup.";
 }
 
 UniValue  reservebalance(const JSONRPCRequest& request)
@@ -3378,7 +3378,7 @@ UniValue listunspent(const JSONRPCRequest& request)
             const UniValue& input = inputs[idx];
             CBitcoinAddress address(input.get_str());
             if (!address.IsValid())
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Qtum address: ")+input.get_str());
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid QtumX address: ")+input.get_str());
             if (setAddress.count(address))
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ")+input.get_str());
            setAddress.insert(address);

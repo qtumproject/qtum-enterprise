@@ -843,7 +843,7 @@ void InitLogging()
     fLogIPs = gArgs.GetBoolArg("-logips", DEFAULT_LOGIPS);
 
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    LogPrintf("Qtum version %s\n", FormatFullVersion());
+    LogPrintf("QtumX version %s\n", FormatFullVersion());
 }
 
 namespace { // Variables internal to initialization process only

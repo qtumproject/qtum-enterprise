@@ -62,12 +62,12 @@
         <translation>Alamat-alamat penerima</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Ini adalah alamat- alamat Qtum Anda untuk mengirimkan pembayaran. Selalu periksa jumlah dan alamat penerima sebelum mengirimkan koin.</translation>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Ini adalah alamat- alamat QtumX Anda untuk mengirimkan pembayaran. Selalu periksa jumlah dan alamat penerima sebelum mengirimkan koin.</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Ini adalah alamat- alamat Qtum Anda untuk menerima pembayaran. Dianjurkan untuk menggunakan alamat penerima yang baru setiap melakukan transaksi.</translation>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Ini adalah alamat- alamat QtumX Anda untuk menerima pembayaran. Dianjurkan untuk menggunakan alamat penerima yang baru setiap melakukan transaksi.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -228,7 +228,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Pesan &amp;penanda...</translation>
@@ -334,8 +334,8 @@
         <translation>Mengindex ulang blok di dalam disk...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Kirim koin ke alamat Qtum</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Kirim koin ke alamat QtumX</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -358,8 +358,8 @@
         <translation>&amp;Verifikasi pesan...</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -386,12 +386,12 @@
         <translation>Enkripsi private key yang dimiliki dompet Anda</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Tanda tangani sebuah pesan menggunakan alamat Qtum Anda untuk membuktikan bahwa Anda adalah pemilik alamat tersebut</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Tanda tangani sebuah pesan menggunakan alamat QtumX Anda untuk membuktikan bahwa Anda adalah pemilik alamat tersebut</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Verifikasi pesan untuk memastikan bahwa pesan tersebut ditanda tangani oleh suatu alamat Qtum tertentu</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Verifikasi pesan untuk memastikan bahwa pesan tersebut ditanda tangani oleh suatu alamat QtumX tertentu</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -430,8 +430,8 @@
         <translation>&amp;pilihan Command-line</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Qtum network</source>
-        <translation><numerusform>%n koneksi aktif ke jaringan Qtum</numerusform></translation>
+        <source>%n active connection(s) to QtumX network</source>
+        <translation><numerusform>%n koneksi aktif ke jaringan QtumX</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -474,8 +474,8 @@
         <translation>Terbaru</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Qtum command-line options</source>
-        <translation>Tampilkan %1 pesan bantuan untuk mendapatkan daftar opsi baris perintah Qtum yang memungkinkan</translation>
+        <source>Show the %1 help message to get a list with possible QtumX command-line options</source>
+        <translation>Tampilkan %1 pesan bantuan untuk mendapatkan daftar opsi baris perintah QtumX yang memungkinkan</translation>
     </message>
     <message>
         <source>%1 client</source>
@@ -544,8 +544,8 @@
         <translation>Dompet saat ini &lt;b&gt;terenkripsi&lt;/b&gt; dan &lt;b&gt;terkunci&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Qtum can no longer continue safely and will quit.</source>
-        <translation>Terjadi Kesalahan Fatal. Qtum Tidak Dapat Melanjutkan Dengan Aman Dan Akan Keluar</translation>
+        <source>A fatal error occurred. QtumX can no longer continue safely and will quit.</source>
+        <translation>Terjadi Kesalahan Fatal. QtumX Tidak Dapat Melanjutkan Dengan Aman Dan Akan Keluar</translation>
     </message>
 </context>
 <context>
@@ -722,8 +722,8 @@
         <translation>Ubah alamat pengirim</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Qtum address.</source>
-        <translation>Alamat yang dimasukkan "%1" bukanlah alamat Qtum yang valid.</translation>
+        <source>The entered address "%1" is not a valid QtumX address.</source>
+        <translation>Alamat yang dimasukkan "%1" bukanlah alamat QtumX yang valid.</translation>
     </message>
     <message>
         <source>The entered address "%1" is already in the address book.</source>
@@ -972,16 +972,16 @@
         <translation>&amp;Perubahan saldo untuk transaksi yang belum dikonfirmasi</translation>
     </message>
     <message>
-        <source>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Otomatis membuka port client Qtum di router. Hanya berjalan apabila router anda mendukung UPnP dan di-enable.</translation>
+        <source>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Otomatis membuka port client QtumX di router. Hanya berjalan apabila router anda mendukung UPnP dan di-enable.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
         <translation>Petakan port dengan &amp;UPnP</translation>
     </message>
     <message>
-        <source>Connect to the Qtum network through a SOCKS5 proxy.</source>
-        <translation>Hubungkan ke jaringan Qtum melalui SOCKS5 proxy.</translation>
+        <source>Connect to the QtumX network through a SOCKS5 proxy.</source>
+        <translation>Hubungkan ke jaringan QtumX melalui SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>Proxy &amp;IP:</source>
@@ -1087,8 +1087,8 @@
         <translation>Formulir</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Qtum network after a connection is established, but this process has not completed yet.</source>
-        <translation>Informasi terlampir mungkin sudah kedaluwarsa. Dompet Anda secara otomatis mensinkronisasi dengan jaringan Qtum ketika sebuah hubungan terbentuk, namun proses ini belum selesai.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the QtumX network after a connection is established, but this process has not completed yet.</source>
+        <translation>Informasi terlampir mungkin sudah kedaluwarsa. Dompet Anda secara otomatis mensinkronisasi dengan jaringan QtumX ketika sebuah hubungan terbentuk, namun proses ini belum selesai.</translation>
     </message>
     <message>
         <source>Available:</source>
@@ -1144,8 +1144,8 @@
         <translation>Nilai</translation>
     </message>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Masukkan alamat Qtum (contoh %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>Masukkan alamat QtumX (contoh %1)</translation>
     </message>
     <message>
         <source>%1 h</source>
@@ -1679,8 +1679,8 @@
         <translation>Salin tanda tangan terpilih ke sistem klipboard</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Qtum address</source>
-        <translation>Tandai pesan untuk menyetujui kamu pemiliki alamat Qtum ini</translation>
+        <source>Sign the message to prove you own this QtumX address</source>
+        <translation>Tandai pesan untuk menyetujui kamu pemiliki alamat QtumX ini</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1820,8 +1820,8 @@
         <translation>Berjalan dibelakang sebagai daemin dan menerima perintah</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</source>

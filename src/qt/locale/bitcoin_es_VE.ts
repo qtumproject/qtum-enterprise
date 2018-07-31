@@ -68,7 +68,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Firmar &amp;mensaje...</translation>
@@ -114,8 +114,8 @@
         <translation>Reindexando bloques en el disco...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Enviar monedas a una dirección Qtum</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Enviar monedas a una dirección QtumX</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -130,8 +130,8 @@
         <translation>Abre la consola de depuración y diágnostico</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -158,12 +158,12 @@
         <translation>Encriptar las llaves privadas que pertenecen a tu billetera</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Firma mensajes con tus direcciones Qtum para probar que eres dueño de ellas</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Firma mensajes con tus direcciones QtumX para probar que eres dueño de ellas</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Verificar mensajes para asegurar que estaban firmados con direcciones Qtum especificas</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Verificar mensajes para asegurar que estaban firmados con direcciones QtumX especificas</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -608,8 +608,8 @@
         <translation>Correr en segundo plano como daemon y aceptar comandos</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>

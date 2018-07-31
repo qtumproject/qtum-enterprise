@@ -80,7 +80,7 @@ UniValue gethexaddress(const JSONRPCRequest& request) {
 
     CBitcoinAddress address(request.params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
 
     if(!address.IsPubKeyHash())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Only pubkeyhash addresses are supported");
@@ -534,7 +534,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
         } else {
             CBitcoinAddress address(name_);
             if (!address.IsValid())
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Qtum address: ")+name_);
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid QtumX address: ")+name_);
 
             if (setAddress.count(address))
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ")+name_);

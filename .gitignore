@@ -112,11 +112,11 @@ contrib/devtools/split-debug.sh
 .cproject
 .project
 .settings/language.settings.xml
-src/qtum-cli
-src/qtum-tx
-src/qtumd
+src/qtumx-cli
+src/qtumx-tx
+src/qtumxd
 src/bench/bench_qtum
-src/qt/qtum-qt
+src/qt/qtumx-qt
 src/qt/test/test_qtum-qt
 src/test/buildenv.py
 src/test/test_qtum

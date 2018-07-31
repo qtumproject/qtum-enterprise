@@ -80,7 +80,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Error</source>
         <translation>نقص</translation>

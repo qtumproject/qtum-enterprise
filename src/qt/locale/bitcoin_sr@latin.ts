@@ -58,12 +58,12 @@
         <translation>Adresa na koju se prima</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Ovo su Vaše Qtum adrese na koju se vrše uplate. Uvek proverite iznos i prijemnu adresu pre slanja novčića</translation>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Ovo su Vaše QtumX adrese na koju se vrše uplate. Uvek proverite iznos i prijemnu adresu pre slanja novčića</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Ovo su Vaše Qtum adrese za primanje uplata. Preporučuje se upotreba nove adrese za svaku transakciju.</translation>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Ovo su Vaše QtumX adrese za primanje uplata. Preporučuje se upotreba nove adrese za svaku transakciju.</translation>
     </message>
     <message>
         <source>Copy &amp;Label</source>
@@ -156,7 +156,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Synchronizing with network...</source>
         <translation>Usklađivanje sa mrežom...</translation>
@@ -198,16 +198,16 @@
         <translation>Otvori &amp;URI...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Pošalji novčiće na Qtum adresu</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Pošalji novčiće na QtumX adresu</translation>
     </message>
     <message>
         <source>&amp;Verify message...</source>
         <translation>&amp;Proveri poruku...</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -446,8 +446,8 @@
 <context>
     <name>qtum-core</name>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>Information</source>

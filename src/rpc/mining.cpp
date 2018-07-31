@@ -339,7 +339,7 @@ UniValue setpoaminer(const JSONRPCRequest& request) {
     }
 
     if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str())) {
-    	throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Qtum address");
+    	throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
     }
 
     return NullUniValue;
@@ -615,10 +615,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
 
     if (g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0)
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Qtum is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "QtumX is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Qtum is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "QtumX is downloading blocks...");
 
     static unsigned int nTransactionsUpdatedLast;
 

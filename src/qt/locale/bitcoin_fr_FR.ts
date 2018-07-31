@@ -148,7 +148,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Signer un &amp;message...</translation>
@@ -238,8 +238,8 @@
         <translation>Réindexer les blocs sur le disque...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Envoyer des pièces à une adresse Qtum</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Envoyer des pièces à une adresse QtumX</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -262,8 +262,8 @@
         <translation>&amp;Vérification du message</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -290,8 +290,8 @@
         <translation>Crypter les clé privées qui appartiennent votre portefeuille</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Signer vos messages avec vos adresses Qtum pour prouver que vous les détenez</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Signer vos messages avec vos adresses QtumX pour prouver que vous les détenez</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -326,8 +326,8 @@
         <translation>&amp;Options de ligne de commande</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Qtum network</source>
-        <translation><numerusform>%n connexion active au réseau Qtum</numerusform><numerusform>%n connexions actives au réseau Qtum</numerusform></translation>
+        <source>%n active connection(s) to QtumX network</source>
+        <translation><numerusform>%n connexion active au réseau QtumX</numerusform><numerusform>%n connexions actives au réseau QtumX</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -712,8 +712,8 @@
         <translation>Expert</translation>
     </message>
     <message>
-        <source>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Ouvrir le port du client Qtum automatiquement sur le routeur. Cela ne fonctionne que si votre routeur supporte l'UPnP et si la fonctionnalité est activée.</translation>
+        <source>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Ouvrir le port du client QtumX automatiquement sur le routeur. Cela ne fonctionne que si votre routeur supporte l'UPnP et si la fonctionnalité est activée.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -872,8 +872,8 @@
         <translation>Montant</translation>
     </message>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Entrer une adresse Qtum (e.g. %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>Entrer une adresse QtumX (e.g. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1734,8 +1734,8 @@
         <translation>Impossible de démarrer le serveur HTTP. Voir le journal de débogage pour plus de détails.</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>&lt;category&gt; can be:</source>

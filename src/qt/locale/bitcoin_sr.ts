@@ -76,7 +76,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Synchronizing with network...</source>
         <translation>Синхронизација са мрежом у току...</translation>
@@ -130,7 +130,7 @@
         <translation>Промени &amp;лозинку...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
+        <source>Send coins to a QtumX address</source>
         <translation>Пошаљите новац на qtum адресу</translation>
     </message>
     <message>

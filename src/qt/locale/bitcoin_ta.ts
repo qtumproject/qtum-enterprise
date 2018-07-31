@@ -52,7 +52,7 @@
     </message>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>&amp;Overview</source>
         <translation>&amp;கண்ணோட்டம்</translation>
@@ -90,8 +90,8 @@
         <translation>&amp;செய்தியை சரிசெய்...</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -708,8 +708,8 @@
 <context>
     <name>qtum-core</name>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum மையம்</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX மையம்</translation>
     </message>
     <message>
         <source>(default: %u)</source>

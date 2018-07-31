@@ -62,12 +62,12 @@
         <translation>Mottager adresser</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Dette er dine Qtum adresser for å sende  å sende betalinger. Husk å sjekke beløp og mottager adresser før du sender mynter.</translation>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Dette er dine QtumX adresser for å sende  å sende betalinger. Husk å sjekke beløp og mottager adresser før du sender mynter.</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Dette er dine Qtum adresse for å motta betalinger. Det er anbefalt å bruke en ny mottager adresse for hver transaksjon.</translation>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Dette er dine QtumX adresse for å motta betalinger. Det er anbefalt å bruke en ny mottager adresse for hver transaksjon.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -232,7 +232,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Signer &amp;melding</translation>
@@ -338,8 +338,8 @@
         <translation>Reindekserer blokker på disken</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Send mynter til en Qtum adresse</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Send mynter til en QtumX adresse</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -362,8 +362,8 @@
         <translation>&amp;Verifiser meldingen...</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -390,12 +390,12 @@
         <translation>Krypter de private nøklene som tilhører lommeboken din</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Signer meldingene med Qtum adresse for å bevise at diu eier dem</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Signer meldingene med QtumX adresse for å bevise at diu eier dem</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Verifiser meldinger for å sikre at de ble signert med en angitt Qtum adresse</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Verifiser meldinger for å sikre at de ble signert med en angitt QtumX adresse</translation>
     </message>
     <message>
         <source>&amp;File</source>
