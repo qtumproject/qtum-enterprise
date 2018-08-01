@@ -88,7 +88,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>&amp;Transactions</source>
         <translation>Transazioni</translation>

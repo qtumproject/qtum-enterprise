@@ -25,6 +25,7 @@
 #include "netbase.h"
 #include "net.h"
 #include "net_processing.h"
+#include "poa.h"
 #include "policy/feerate.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
@@ -251,6 +252,7 @@ void Shutdown()
         pstorageresult = nullptr;
         delete globalState.release();
         globalSealEngine.reset();
+        Poa::BasicPoa::delInstance();
     }
 #ifdef ENABLE_WALLET
     for (CWalletRef pwallet : vpwallets) {
@@ -542,8 +544,8 @@ std::string HelpMessage(HelpMessageMode mode)
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/qtumproject/qtum>";
-    const std::string URL_WEBSITE = "<https://qtum.org>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/qtumproject/qtum-enterprise>";
+    const std::string URL_WEBSITE = "<https://qtumx.net>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i"), COPYRIGHT_YEAR) + " ") + "\n" +
            "\n" +
@@ -841,7 +843,7 @@ void InitLogging()
     fLogIPs = gArgs.GetBoolArg("-logips", DEFAULT_LOGIPS);
 
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    LogPrintf("Qtum version %s\n", FormatFullVersion());
+    LogPrintf("QtumX version %s\n", FormatFullVersion());
 }
 
 namespace { // Variables internal to initialization process only
@@ -1176,6 +1178,12 @@ bool AppInitParameterInteraction()
             }
         }
     }
+
+    // process PoA params
+    if (Poa::isPoaChain() && !Poa::BasicPoa::getInstance()->initParams()) {
+    	return InitError("PoA parameters init error");
+    }
+
     return true;
 }
 
@@ -1557,7 +1565,13 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 const dev::h256 hashDB(dev::sha3(dev::rlp("")));
                 dev::eth::BaseState existsQtumstate = fStatus ? dev::eth::BaseState::PreExisting : dev::eth::BaseState::Empty;
                 globalState = std::unique_ptr<QtumState>(new QtumState(dev::u256(0), QtumState::openDB(dirQtum, hashDB, dev::WithExisting::Trust), dirQtum, existsQtumstate));
-                dev::eth::ChainParams cp((dev::eth::genesisInfo(dev::eth::Network::qtumMainNetwork)));
+                std::string genesis_info;
+                if (Poa::isPoaChain()) {
+                	genesis_info = Poa::genesisInfo();
+                } else {
+                	genesis_info = dev::eth::genesisInfo(dev::eth::Network::qtumMainNetwork);
+                }
+                dev::eth::ChainParams cp(genesis_info);
                 globalSealEngine = std::unique_ptr<dev::eth::SealEngineFace>(cp.createSealEngine());
 
                 pstorageresult = new StorageResults(qtumStateDir.string());
@@ -1812,10 +1826,14 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         LogPrintf("Staking disabled\n");
     }
     else {
-        for (CWalletRef pwallet : vpwallets) {
-            if (pwallet)
-                StakeQtums(true, pwallet);
-        }
+    	if (Poa::isPoaChain()) {
+    		threadGroup.create_thread(&Poa::ThreadPoaMiner);
+    	} else {
+            for (CWalletRef pwallet : vpwallets) {
+                if (pwallet)
+                    StakeQtums(true, pwallet);
+            }
+    	}
     }
 #endif
 

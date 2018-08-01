@@ -18,6 +18,7 @@
 #include "policy/fees.h"
 #include "pow.h"
 #include "pos.h"
+#include "poa.h"
 #include "rpc/blockchain.h"
 #include "rpc/mining.h"
 #include "rpc/server.h"
@@ -311,6 +312,95 @@ UniValue getstakinginfo(const JSONRPCRequest& request)
     return obj;
 }
 
+
+UniValue setpoaminer(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 1)
+        throw std::runtime_error(
+                "setpoaminer \"address\"\n"
+
+                        "\nset the miner for the PoA consensus.\n"
+
+                        "\nArguments:\n"
+                        "1. \"address\"      (string, required) The base58 address\n"
+
+                        "\nNote: The miner's private key should be imported to the wallet.\n"
+
+                        "\nExamples:\n"
+                + HelpExampleCli("setpoaminer", "\"address\"")
+                + HelpExampleRpc("setpoaminer", "\"address\"")
+        );
+
+    if (!Poa::isPoaChain()) {
+    	throw JSONRPCError(RPC_INTERNAL_ERROR, "System is not working in PoA consensus mode");
+    }
+
+    if (Poa::BasicPoa::getInstance()->hasMiner()) {
+    	throw JSONRPCError(RPC_INTERNAL_ERROR, "The PoA miner has been set before, please restart to set a new miner");
+    }
+
+    if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str())) {
+    	throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
+    }
+
+    return NullUniValue;
+}
+
+UniValue getpoaminerlist(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+                "getpoaminerlist ( height )\n"
+
+                        "\nReturns the miner list of PoA consensus at height provided.\n"
+
+                        "\nArguments:\n"
+                        "1. height                     (numeric, optional) The height index\n"
+                        "\nResult:\n"
+                        "{\n"
+                        "  \"miner_list\": [           (json array of strings) The miner list\n"
+                        "     \"address_1\"\n"
+                        "     \"address_2\"\n"
+                        "     ...\n"
+                        "  ],\n"
+                        "  \"activation_height\": xxx  (string) current network name as defined in BIP70 (main, test, regtest)\n"
+                        "}\n"
+
+                        "\nExamples:\n"
+                + HelpExampleCli("getpoaminerlist", "")
+                + HelpExampleCli("getpoaminerlist", "100")
+                + HelpExampleRpc("getpoaminerlist", "100")
+        );
+
+    if (!Poa::isPoaChain()) {
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "System is not working in PoA consensus mode");
+    }
+
+    LOCK(cs_main);
+
+    int height = 0;
+    if (request.params[0].isNull()) {
+        height = chainActive.Height();
+    } else {
+        height = request.params[0].get_int();
+        if (height < 0)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
+    }
+
+    std::vector<CKeyID> miner_list;
+    int activation_height;
+    Poa::BasicPoa::getInstance()->minerList()->getAuthorizedMiners(height, miner_list, activation_height);
+
+    UniValue miner_list_arr(UniValue::VARR);
+    for (const CKeyID& keyid: miner_list) {
+        miner_list_arr.push_back(CBitcoinAddress(keyid).ToString());
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.push_back(Pair("miner_list", miner_list_arr));
+    result.push_back(Pair("activation_height", activation_height));
+
+    return result;
+}
+
 // NOTE: Unlike wallet RPC (which use BTC values), mining RPCs follow GBT (BIP 22) in using satoshi amounts
 UniValue prioritisetransaction(const JSONRPCRequest& request)
 {
@@ -525,10 +615,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
 
     if (g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0)
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Qtum is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "QtumX is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Qtum is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "QtumX is downloading blocks...");
 
     static unsigned int nTransactionsUpdatedLast;
 
@@ -1061,6 +1151,8 @@ static const CRPCCommand commands[] =
     { "mining",             "submitblock",            &submitblock,            true,  {"hexdata","dummy"} },
     { "mining",             "getsubsidy",             &getsubsidy,             true,  {"height"} },
     { "mining",             "getstakinginfo",         &getstakinginfo,         true,  {} },
+	{ "mining",             "setpoaminer",            &setpoaminer,            true,  {"address"} },
+	{ "mining",             "getpoaminerlist",        &getpoaminerlist,        true,  {"height"} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      true,  {"nblocks","address","maxtries"} },
 

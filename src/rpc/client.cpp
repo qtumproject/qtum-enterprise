@@ -83,6 +83,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "addmultisigaddress", 0, "nrequired" },
     { "addmultisigaddress", 1, "keys" },
     ////////////////////////////////////////////////// // qtum
+    { "getpoaminerlist", 0, "height" },
     { "getaddresstxids", 0, "addresses"},
     { "getaddressmempool", 0, "addresses"},
     { "getaddressdeltas", 0, "addresses"},

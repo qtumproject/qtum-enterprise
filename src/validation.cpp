@@ -23,6 +23,7 @@
 #include "policy/rbf.h"
 #include "pow.h"
 #include "pos.h"
+#include "poa.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "random.h"
@@ -1130,6 +1131,9 @@ bool CheckHeaderPoS(const CBlockHeader& block, const Consensus::Params& consensu
 }
 
 bool CheckHeaderProof(const CBlockHeader& block, const Consensus::Params& consensusParams){
+	if (Poa::isPoaChain()) {
+		return Poa::BasicPoa::getInstance()->checkBlock(block);
+	}
     if(block.IsProofOfWork()){
         return CheckHeaderPoW(block, consensusParams);
     }
@@ -1141,6 +1145,9 @@ bool CheckHeaderProof(const CBlockHeader& block, const Consensus::Params& consen
 
 bool CheckIndexProof(const CBlockIndex& block, const Consensus::Params& consensusParams)
 {
+	// PoA does not need PoW check
+	if (Poa::isPoaChain())
+		return true;
     // Get the hash of the proof
     // After validating the PoS block the computed hash proof is saved in the block index, which is used to check the index
     uint256 hashProof = block.IsProofOfWork() ? block.GetBlockHash() : block.hashProof;
@@ -1259,6 +1266,22 @@ bool ReadFromDisk(CMutableTransaction& tx, CDiskTxPos& txindex, CBlockTreeDB& tx
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
+	if (Poa::isPoaChain()) {
+		CAmount nSubsidy = consensusParams.nSubsidyInit * COIN;
+
+		if (consensusParams.nSubsidyHalvingInterval == 0) {
+			return nSubsidy;
+		}
+
+		int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+	    if (halvings > consensusParams.nSubsidyHalvingTime) {
+	    	return 0;
+	    }
+
+	    nSubsidy >>= halvings;
+	    return nSubsidy;
+	}
+
     if(nHeight <= consensusParams.nLastPOWBlock)
         return 20000 * COIN;
 
@@ -2640,7 +2663,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
             countCumulativeGasUsed += bcer.usedGas;
             std::vector<TransactionReceiptInfo> tri;
-            if (fLogEvents)
+            if (fLogEvents && !fJustCheck)
             {
                 for(size_t k = 0; k < resultConvertQtumTX.first.size(); k ++){
                     dev::Address key = resultExec[k].execRes.newAddress;
@@ -3894,6 +3917,9 @@ bool GetBlockPublicKey(const CBlock& block, std::vector<unsigned char>& vchPubKe
 
 bool CheckBlockSignature(const CBlock& block)
 {
+	// PoA does not need PoS sig check
+	if (Poa::isPoaChain())
+		return true;
     if (block.IsProofOfWork())
         return block.vchBlockSig.empty();
 
@@ -3908,6 +3934,9 @@ bool CheckBlockSignature(const CBlock& block)
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
+	// PoA does not need PoW check
+	if (Poa::isPoaChain())
+		return true;
     // Check proof of work matches claimed amount
     if (fCheckPOW && block.IsProofOfWork() && !CheckHeaderPoW(block, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
@@ -3992,6 +4021,10 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     // Check proof-of-stake block signature
     if (fCheckSig && !CheckBlockSignature(block))
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-signature", false, "bad proof-of-stake block signature");
+
+    // PoA validity Check. Reuse the fCheckPOW flag to activate it
+    if (fCheckPOW && Poa::isPoaChain() && !Poa::BasicPoa::getInstance()->checkBlock(block))
+    	return state.DoS(100, false, REJECT_INVALID, "bad-blk-signature", false, "bad proof-of-authority block signature");
 
     bool lastWasContract=false;
     // Check transactions
@@ -4445,6 +4478,11 @@ static bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidation
 
 bool static IsCanonicalBlockSignature(const std::shared_ptr<const CBlock> pblock, bool checkLowS)
 {
+	// PoA has specific signature
+	if (Poa::isPoaChain()) {
+		return pblock->vchBlockSig.size() == 65? true: false;
+	}
+
     if (pblock->IsProofOfWork()) {
         return pblock->vchBlockSig.empty();
     }

@@ -28,6 +28,7 @@ public:
 
     enum OptionID {
         StartAtStartup,         // bool
+        ChainId,                // QString
         HideTrayIcon,           // bool
         MinimizeToTray,         // bool
         MapPortUPnP,            // bool

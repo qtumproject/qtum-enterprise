@@ -17,6 +17,7 @@
 #include "utiltime.h"
 
 #include <stdarg.h>
+#include <ctype.h>
 
 #if (defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__))
 #include <pthread.h>
@@ -80,6 +81,12 @@
 #include <boost/algorithm/string/predicate.hpp> // for startswith() and endswith()
 #include <boost/program_options/detail/config_file.hpp>
 #include <boost/thread.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+
+#include <boost/filesystem.hpp>
+
 #include <openssl/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/conf.h>
@@ -87,8 +94,8 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char * const BITCOIN_CONF_FILENAME = "qtum.conf";
-const char * const BITCOIN_PID_FILENAME = "qtumd.pid";
+const char * const BITCOIN_CONF_FILENAME = "qtumx.conf";
+const char * const BITCOIN_PID_FILENAME = "qtumxd.pid";
 
 ArgsManager gArgs;
 bool fPrintToConsole = false;
@@ -550,13 +557,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Qtum
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Qtum
-    // Mac: ~/Library/Application Support/Qtum
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\QtumX
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\QtumX
+    // Mac: ~/Library/Application Support/QtumX
     // Unix: ~/.qtum
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Qtum";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "QtumX";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -566,10 +573,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Qtum";
+    return pathRet / "Library/Application Support/QtumX";
 #else
     // Unix
-    return pathRet / ".qtum";
+    return pathRet / ".qtumx";
 #endif
 #endif
 }
@@ -624,11 +631,174 @@ fs::path GetConfigFile(const std::string& confPath)
     return pathConfigFile;
 }
 
+fs::path GetRemoteConfigFile(const std::string& chainId) {
+    // check default download path
+    fs::path localDir = GetDataDir(false) / ("chain_" + chainId);
+    fs::path localPath = localDir / BITCOIN_CONF_FILENAME;
+    if (fs::is_regular_file(localPath) && !fs::is_empty(localPath)) {
+        return localPath;
+    }
+
+    // download conf file from https://qtumx.net/chain/{chainId}.conf
+    static const std::string host = "qtumx.net";
+    std::string path = "/chain/" + chainId + ".conf";
+    std::string url = "https://" + host + path;
+    fprintf(stdout, "Start blockchain %s with configuration: %s\n",
+            chainId.c_str(),
+            url.c_str());
+
+    using boost::asio::ip::tcp;
+    namespace ssl = boost::asio::ssl;
+    typedef ssl::stream<tcp::socket> ssl_socket;
+    boost::system::error_code ec;
+
+    // Create a context and load root certificate
+    ssl::context ctx(ssl::context::tlsv1_client);
+    ctx.set_verify_mode(ssl::verify_peer);
+    ctx.set_verify_callback(ssl::rfc2818_verification(host));
+    std::string const cert =  // COMODO UserTrust / AddTrust External Root
+            "-----BEGIN CERTIFICATE-----\n"
+            "MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU\n"
+            "MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs\n"
+            "IFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290\n"
+            "MB4XDTAwMDUzMDEwNDgzOFoXDTIwMDUzMDEwNDgzOFowbzELMAkGA1UEBhMCU0Ux\n"
+            "FDASBgNVBAoTC0FkZFRydXN0IEFCMSYwJAYDVQQLEx1BZGRUcnVzdCBFeHRlcm5h\n"
+            "bCBUVFAgTmV0d29yazEiMCAGA1UEAxMZQWRkVHJ1c3QgRXh0ZXJuYWwgQ0EgUm9v\n"
+            "dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALf3GjPm8gAELTngTlvt\n"
+            "H7xsD821+iO2zt6bETOXpClMfZOfvUq8k+0DGuOPz+VtUFrWlymUWoCwSXrbLpX9\n"
+            "uMq/NzgtHj6RQa1wVsfwTz/oMp50ysiQVOnGXw94nZpAPA6sYapeFI+eh6FqUNzX\n"
+            "mk6vBbOmcZSccbNQYArHE504B4YCqOmoaSYYkKtMsE8jqzpPhNjfzp/haW+710LX\n"
+            "a0Tkx63ubUFfclpxCDezeWWkWaCUN/cALw3CknLa0Dhy2xSoRcRdKn23tNbE7qzN\n"
+            "E0S3ySvdQwAl+mG5aWpYIxG3pzOPVnVZ9c0p10a3CitlttNCbxWyuHv77+ldU9U0\n"
+            "WicCAwEAAaOB3DCB2TAdBgNVHQ4EFgQUrb2YejS0Jvf6xCZU7wO94CTLVBowCwYD\n"
+            "VR0PBAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wgZkGA1UdIwSBkTCBjoAUrb2YejS0\n"
+            "Jvf6xCZU7wO94CTLVBqhc6RxMG8xCzAJBgNVBAYTAlNFMRQwEgYDVQQKEwtBZGRU\n"
+            "cnVzdCBBQjEmMCQGA1UECxMdQWRkVHJ1c3QgRXh0ZXJuYWwgVFRQIE5ldHdvcmsx\n"
+            "IjAgBgNVBAMTGUFkZFRydXN0IEV4dGVybmFsIENBIFJvb3SCAQEwDQYJKoZIhvcN\n"
+            "AQEFBQADggEBALCb4IUlwtYj4g+WBpKdQZic2YR5gdkeWxQHIzZlj7DYd7usQWxH\n"
+            "YINRsPkyPef89iYTx4AWpb9a/IfPeHmJIZriTAcKhjW88t5RxNKWt9x+Tu5w/Rw5\n"
+            "6wwCURQtjr0W4MHfRnXnJK3s9EK0hZNwEGe6nQY1ShjTK3rMUUKhemPR5ruhxSvC\n"
+            "Nr4TDea9Y355e6cJDUCrat2PisP29owaQgVR1EX1n6diIWgVIEM8med8vSTYqZEX\n"
+            "c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a\n"
+            "mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=\n"
+            "-----END CERTIFICATE-----\n";
+    ctx.add_certificate_authority(boost::asio::buffer(cert.data(), cert.size()));
+
+    // Open a socket and connect it to the remote host
+    boost::asio::io_service io_service;
+    ssl_socket sock(io_service, ctx);
+
+    // Get a list of endpoints corresponding to the server name
+    tcp::resolver resolver(io_service);
+    tcp::resolver::query query(host, "https");
+    boost::asio::connect(sock.lowest_layer(), resolver.resolve(query));
+    sock.lowest_layer().set_option(tcp::no_delay(true));
+
+    // Set SNI Hostname (many hosts need this to handshake successfully)
+    if (!SSL_set_tlsext_host_name(sock.native_handle(), host.c_str())) {
+        throw boost::system::system_error(
+                boost::system::error_code(static_cast<int>(::ERR_get_error()),
+                        boost::asio::error::get_ssl_category()));
+    }
+
+    // Perform SSL handshake.
+    sock.handshake(ssl_socket::client, ec);
+    if (ec)
+        throw boost::system::system_error(ec, "Please check your connection to " + url);
+
+    // Set up an HTTP GET request message
+    boost::asio::streambuf request;
+    std::ostream request_stream(&request);
+    request_stream << "GET " << path << " HTTP/1.0\r\n";
+    request_stream << "Host: " << host << "\r\n";
+    request_stream << "Accept: */*\r\n";
+    request_stream << "Connection: close\r\n\r\n";
+
+    // Send the HTTP request to the remote host
+    boost::asio::write(sock, request);
+
+    // Get the response
+    boost::asio::streambuf response;
+    std::stringstream ss;
+    while (boost::asio::read(sock, response, boost::asio::transfer_at_least(1), ec)) {
+        ss << &response;
+    }
+
+    // Gracefully close the stream
+    sock.shutdown(ec);
+
+    // Check that response is OK
+    std::string http_version;
+    ss >> http_version;
+    if (!ss || http_version.substr(0, 5) != "HTTP/") {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Invalid http version response: " + http_version);
+    }
+    std::string status_code;
+    ss >> status_code;
+    if (status_code != "200") {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Response status code: " + status_code);
+    }
+
+    // Extract the body
+    std::string res = ss.str();
+    std::size_t pos = res.find("\r\n\r\n");
+    if (pos == std::string::npos || (pos + 4) >= res.size()) {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Error extract body from response");
+    }
+    std::string body = res.substr(pos + 4);
+
+    // Write the message to stdout and the default download path
+    fprintf(stdout, "%s\n", body.c_str());
+    fs::create_directories(localDir);
+    fs::ofstream ofs(localPath);
+    ofs << body;
+    ofs.close();
+
+    return localPath;
+}
+
+bool CheckChainId(const std::string& chainId) {
+    for (size_t i = 0; i != chainId.size(); ++i) {
+        if (!islower(chainId[i]) && !isdigit(chainId[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void ArgsManager::ReadRemoteConfigFile(const std::string& chainId) {
+    if (chainId.empty()) {
+        return;
+    }
+    if (!CheckChainId(chainId)) {
+        throw boost::system::system_error(
+                boost::system::error_code(1, boost::system::system_category()),
+                "Illegal chain id: " + chainId);
+    }
+
+    ParseConfigFile(GetRemoteConfigFile(chainId));
+}
+
 void ArgsManager::ReadConfigFile(const std::string& confPath)
 {
-    fs::ifstream streamConfig(GetConfigFile(confPath));
+    if (!ParseConfigFile(GetConfigFile(confPath))) {
+        return;
+    }
+
+    // If datadir is changed in .conf file:
+    ClearDatadirCache();
+}
+
+bool ArgsManager::ParseConfigFile(const fs::path& path) {
+    fs::ifstream streamConfig(path);
     if (!streamConfig.good())
-        return; // No bitcoin.conf file is OK
+        return false; // No bitcoin.conf file is OK
 
     {
         LOCK(cs_args);
@@ -646,8 +816,8 @@ void ArgsManager::ReadConfigFile(const std::string& confPath)
             mapMultiArgs[strKey].push_back(strValue);
         }
     }
-    // If datadir is changed in .conf file:
-    ClearDatadirCache();
+
+    return true;
 }
 
 #ifndef WIN32
@@ -914,8 +1084,8 @@ std::string CopyrightHolders(const std::string& strPrefix)
     std::string strCopyrightHolders = strPrefix + strprintf(_(COPYRIGHT_HOLDERS), _(COPYRIGHT_HOLDERS_SUBSTITUTION));
 
     // Check for untranslated substitution to make sure Bitcoin Core copyright is not removed by accident
-    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("Qtum Core") == std::string::npos) {
-        strCopyrightHolders += "\n" + strPrefix + "The Qtum Core developers";
+    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("QtumX Core") == std::string::npos) {
+        strCopyrightHolders += "\n" + strPrefix + "The QtumX Core developers";
     }
     return strCopyrightHolders;
 }

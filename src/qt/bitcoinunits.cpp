@@ -4,6 +4,7 @@
 
 #include "bitcoinunits.h"
 
+#include "util.h"
 #include "primitives/transaction.h"
 
 #include <QStringList>
@@ -38,11 +39,12 @@ bool BitcoinUnits::valid(int unit)
 
 QString BitcoinUnits::name(int unit)
 {
+    static std::string tokenName = gArgs.GetArg("-token-name", "QTUM");
     switch(unit)
     {
-    case BTC: return QString("QTUM");
-    case mBTC: return QString("mQTUM");
-    case uBTC: return QString::fromUtf8("μQTUM");
+    case BTC: return QString::fromStdString(tokenName);
+    case mBTC: return QString::fromStdString("m" + tokenName);
+    case uBTC: return QString::fromStdString("μ" + tokenName);
     default: return QString("???");
     }
 }
