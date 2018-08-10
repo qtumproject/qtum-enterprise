@@ -773,16 +773,16 @@ bool CheckChainId(const std::string& chainId) {
 }
 
 void ArgsManager::ReadRemoteConfigFile(const std::string& chainId) {
-    if (chainId.empty()) {
-        return;
-    }
-    if (!CheckChainId(chainId)) {
+    std::string cId = chainId.empty() ? "qtumx" : chainId;
+    gArgs.ForceSetArg("-chain", cId);
+
+    if (!CheckChainId(cId)) {
         throw boost::system::system_error(
                 boost::system::error_code(1, boost::system::system_category()),
-                "Illegal chain id: " + chainId);
+                "Illegal chain id: " + cId);
     }
 
-    ParseConfigFile(GetRemoteConfigFile(chainId));
+    ParseConfigFile(GetRemoteConfigFile(cId));
 }
 
 void ArgsManager::ReadConfigFile(const std::string& confPath)
