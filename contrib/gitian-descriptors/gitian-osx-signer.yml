@@ -10,7 +10,7 @@ remotes:
 - "url": "https://github.com/qtumproject/qtum-detached-sigs.git"
   "dir": "signature"
 files:
-- "qtum-osx-unsigned.tar.gz"
+- "qtumx-osx-unsigned.tar.gz"
 script: |
   WRAP_DIR=$HOME/wrapped
   mkdir -p ${WRAP_DIR}
@@ -27,8 +27,8 @@ script: |
     chmod +x ${WRAP_DIR}/${prog}
   done
 
-  UNSIGNED=qtum-osx-unsigned.tar.gz
-  SIGNED=qtum-osx-signed.dmg
+  UNSIGNED=qtumx-osx-unsigned.tar.gz
+  SIGNED=qtumx-osx-signed.dmg
 
   tar -xf ${UNSIGNED}
   OSX_VOLNAME="$(cat osx_volname)"
