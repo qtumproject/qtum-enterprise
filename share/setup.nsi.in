@@ -50,9 +50,9 @@ Var StartMenuGroup
 # Installer attributes
 OutFile @abs_top_srcdir@/@PACKAGE_TARNAME@-${VERSION}-win@WINDOWS_BITS@-setup.exe
 !if "@WINDOWS_BITS@" == "64"
-InstallDir $PROGRAMFILES64\Qtum
+InstallDir $PROGRAMFILES64\QtumX
 !else
-InstallDir $PROGRAMFILES\Qtum
+InstallDir $PROGRAMFILES\QtumX
 !endif
 CRCCheck on
 XPStyle on
