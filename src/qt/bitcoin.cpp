@@ -93,7 +93,7 @@ static void InitMessage(const std::string &message)
 static std::string GetChainId()
 {
     if (gArgs.IsArgSet("-chain")) {
-        return gArgs.GetArg("-chain", "");
+        return "";
     }
     if (gArgs.IsArgSet("-resetguisettings")) {
         return "";
@@ -101,7 +101,6 @@ static std::string GetChainId()
 
     QSettings settings;
     std::string chain_id = settings.value("chain", "").toString().toStdString();
-    gArgs.SoftSetArg("-chain", chain_id);
 
     return chain_id;
 }
@@ -713,7 +712,7 @@ int main(int argc, char *argv[])
         gArgs.ReadRemoteConfigFile(gArgs.GetArg("-chain", GetChainId()));
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
-                              QObject::tr("Error: Cannot get remote configuration file: %1. Start without -chain.").arg(e.what()));
+                              QObject::tr("Error: Cannot get remote configuration file: %1. Start Qtum mainnet.").arg(e.what()));
     }
 
     /// 7. Determine network (and switch to network specific options)

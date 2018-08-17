@@ -563,7 +563,7 @@ fs::path GetDefaultDataDir()
     // Unix: ~/.qtum
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "QtumX";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "QtumXBeta";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -573,10 +573,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/QtumX";
+    return pathRet / "Library/Application Support/QtumXBeta";
 #else
     // Unix
-    return pathRet / ".qtumx";
+    return pathRet / ".qtumxbeta";
 #endif
 #endif
 }
@@ -773,16 +773,16 @@ bool CheckChainId(const std::string& chainId) {
 }
 
 void ArgsManager::ReadRemoteConfigFile(const std::string& chainId) {
-    if (chainId.empty()) {
-        return;
-    }
-    if (!CheckChainId(chainId)) {
+    std::string cId = chainId.empty() ? "qtumx" : chainId;
+    gArgs.ForceSetArg("-chain", cId);
+
+    if (!CheckChainId(cId)) {
         throw boost::system::system_error(
                 boost::system::error_code(1, boost::system::system_category()),
-                "Illegal chain id: " + chainId);
+                "Illegal chain id: " + cId);
     }
 
-    ParseConfigFile(GetRemoteConfigFile(chainId));
+    ParseConfigFile(GetRemoteConfigFile(cId));
 }
 
 void ArgsManager::ReadConfigFile(const std::string& confPath)
