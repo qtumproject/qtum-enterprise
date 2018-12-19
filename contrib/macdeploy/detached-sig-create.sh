@@ -6,11 +6,11 @@
 set -e
 
 ROOTDIR=dist
-BUNDLE="${ROOTDIR}/Qtum-Qt.app"
+BUNDLE="${ROOTDIR}/QtumX-Qt.app"
 CODESIGN=codesign
 TEMPDIR=sign.temp
 TEMPLIST=${TEMPDIR}/signatures.txt
-OUT=signature.tar.gz
+OUT=signature-osx.tar.gz
 OUTROOT=osx
 
 if [ ! -n "$1" ]; then

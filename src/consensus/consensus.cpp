@@ -6,8 +6,6 @@
 unsigned int dgpMaxBlockSerSize = 8000000;
 /** The maximum allowed weight for a block, see BIP 141 (network rule) */
 unsigned int dgpMaxBlockWeight = 8000000;
-/** The maximum allowed size for a block excluding witness data, in bytes (network rule) */
-unsigned int dgpMaxBlockBaseSize = 2000000;
 
 unsigned int dgpMaxBlockSize = 2000000; // qtum
 
@@ -18,11 +16,12 @@ unsigned int dgpMaxProtoMsgLength = 8000000;
 
 unsigned int dgpMaxTxSigOps = 16000;
 
+int COINBASE_MATURITY = 500;
+
 void updateBlockSizeParams(unsigned int newBlockSize){
     unsigned int newSizeForParams=WITNESS_SCALE_FACTOR*newBlockSize;
     dgpMaxBlockSerSize=newSizeForParams;
     dgpMaxBlockWeight=newSizeForParams;
-    dgpMaxBlockBaseSize=newBlockSize;
     dgpMaxBlockSigOps=(int64_t)(newSizeForParams/100);
     dgpMaxTxSigOps = (unsigned int)(dgpMaxBlockSigOps/5);
     dgpMaxProtoMsgLength=newSizeForParams;

@@ -5,10 +5,9 @@
 
 #include "wallet/wallet.h"
 
-#include <boost/foreach.hpp>
-
 #include <QFont>
 #include <QDebug>
+#include <utility>
 
 struct ContractTableEntry
 {
@@ -53,7 +52,7 @@ public:
         cachedContractTable.clear();
         {
             LOCK(wallet->cs_wallet);
-            BOOST_FOREACH(const PAIRTYPE(std::string, CContractBookData)& item, wallet->mapContractBook)
+            for(const std::pair<std::string, CContractBookData>& item : wallet->mapContractBook)
             {
                 const std::string& address = item.first;
                 const std::string& strName = item.second.name;
@@ -284,7 +283,7 @@ QModelIndex ContractTableModel::index(int row, int column, const QModelIndex &pa
 void ContractTableModel::updateEntry(const QString &address,
         const QString &label, const QString &abi, int status)
 {
-    // Update contract book model from Qtum core
+    // Update contract book model from QtumX core
     priv->updateEntry(address, label, abi, status);
 }
 

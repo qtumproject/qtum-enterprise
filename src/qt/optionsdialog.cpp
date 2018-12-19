@@ -22,8 +22,6 @@
 #include "wallet/wallet.h" // for CWallet::GetRequiredFee()
 #endif
 
-#include <boost/thread.hpp>
-
 #include <QDataWidgetMapper>
 #include <QDir>
 #include <QIntValidator>
@@ -40,6 +38,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     ui->setupUi(this);
 
     SetObjectStyleSheet(ui->resetButton, StyleSheetNames::ButtonWhite);
+    SetObjectStyleSheet(ui->openBitcoinConfButton, StyleSheetNames::ButtonWhite);
     SetObjectStyleSheet(ui->okButton, StyleSheetNames::ButtonBlue);
     SetObjectStyleSheet(ui->cancelButton, StyleSheetNames::ButtonBlue);
 
@@ -95,9 +94,11 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     ui->bitcoinAtStartup->setToolTip(ui->bitcoinAtStartup->toolTip().arg(tr(PACKAGE_NAME)));
     ui->bitcoinAtStartup->setText(ui->bitcoinAtStartup->text().arg(tr(PACKAGE_NAME)));
 
+    ui->openBitcoinConfButton->setToolTip(ui->openBitcoinConfButton->toolTip().arg(tr(PACKAGE_NAME)));
+
     ui->lang->setToolTip(ui->lang->toolTip().arg(tr(PACKAGE_NAME)));
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
-    Q_FOREACH(const QString &langStr, translations.entryList())
+    for (const QString &langStr : translations.entryList())
     {
         QLocale locale(langStr);
 
@@ -125,6 +126,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     }
 #if QT_VERSION >= 0x040700
     ui->thirdPartyTxUrls->setPlaceholderText("https://example.com/tx/%s");
+    ui->chainId->setPlaceholderText("qtumx");
 #endif
 
     ui->unit->setModel(new BitcoinUnits(this));
@@ -173,6 +175,7 @@ void OptionsDialog::setModel(OptionsModel *_model)
     /* warn when one of the following settings changes by user action (placed here so init via mapper doesn't trigger them) */
 
     /* Main */
+    connect(ui->chainId, SIGNAL(textChanged(const QString &)), this, SLOT(showRestartWarning()));
     connect(ui->databaseCache, SIGNAL(valueChanged(int)), this, SLOT(showRestartWarning()));
     connect(ui->logEvents, SIGNAL(clicked(bool)), this, SLOT(showRestartWarning()));
     connect(ui->threadsScriptVerif, SIGNAL(valueChanged(int)), this, SLOT(showRestartWarning()));
@@ -191,6 +194,7 @@ void OptionsDialog::setMapper()
 {
     /* Main */
     mapper->addMapping(ui->bitcoinAtStartup, OptionsModel::StartAtStartup);
+    mapper->addMapping(ui->chainId, OptionsModel::ChainId);
     mapper->addMapping(ui->threadsScriptVerif, OptionsModel::ThreadsScriptVerif);
     mapper->addMapping(ui->databaseCache, OptionsModel::DatabaseCache);
     mapper->addMapping(ui->logEvents, OptionsModel::LogEvents);
@@ -249,6 +253,18 @@ void OptionsDialog::on_resetButton_clicked()
         model->Reset();
         QApplication::quit();
     }
+}
+
+void OptionsDialog::on_openBitcoinConfButton_clicked()
+{
+    /* explain the purpose of the config file */
+    QMessageBox::information(this, tr("Configuration options"),
+        tr("The configuration file is used to specify advanced user options which override GUI settings. "
+           "Additionally, any command-line options will override this configuration file."));
+
+    /* show an error if there was some problem opening the file */
+    if (!GUIUtil::openBitcoinConf())
+        QMessageBox::critical(this, tr("Error"), tr("The configuration file could not be opened."));
 }
 
 void OptionsDialog::on_okButton_clicked()

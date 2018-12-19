@@ -1,8 +1,6 @@
 #include "qtumversionchecker.h"
 #include "../clientversion.h"
 
-#include <boost/foreach.hpp>
-
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -10,7 +8,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatchIterator>
 
-#define paternVersion "qtum-([0-9]+\\.)?([0-9]+\\.)?([0-9]+)-"
+#define paternVersion "qtumx-([0-9]+\\.)?([0-9]+\\.)?([0-9]+)-"
 
 QtumVersionChecker::QtumVersionChecker(QObject *parent) : QObject(parent)
 {
@@ -25,15 +23,7 @@ QtumVersionChecker::~QtumVersionChecker()
 bool QtumVersionChecker::newVersionAvailable()
 {
     Version maxReleaseVersion = getMaxReleaseVersion();
-
-    if(maxReleaseVersion > currentVersion)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return maxReleaseVersion > currentVersion;
 }
 
 QList<Version> QtumVersionChecker::getVersions()

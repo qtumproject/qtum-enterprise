@@ -41,10 +41,78 @@
         <source>&amp;Delete</source>
         <translation>&amp;Forigi</translation>
     </message>
-    </context>
+    <message>
+        <source>Choose the address to send coins to</source>
+        <translation>Elekti la adreson por sendi monerojn</translation>
+    </message>
+    <message>
+        <source>Choose the address to receive coins with</source>
+        <translation>Elekti la adreson ricevi monerojn kun</translation>
+    </message>
+    <message>
+        <source>C&amp;hoose</source>
+        <translation>&amp;Elekti</translation>
+    </message>
+    <message>
+        <source>Sending addresses</source>
+        <translation>Sendaj adresoj</translation>
+    </message>
+    <message>
+        <source>Receiving addresses</source>
+        <translation>Ricevaj adresoj</translation>
+    </message>
+    <message>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Jen viaj QtumX adresoj por sendi pagojn. Zorge kontrolu la sumon kaj la alsendan adreson antaŭ ol sendi.</translation>
+    </message>
+    <message>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Jen viaj QtumX adresoj por ricevi pagojn. Estas konsilinde uzi apartan ricevan adreson por ĉiu transakcio.</translation>
+    </message>
+    <message>
+        <source>&amp;Copy Address</source>
+        <translation>&amp;Kopii Adreson</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Label</source>
+        <translation>Kopii &amp;Etikedon</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Redakti</translation>
+    </message>
+    <message>
+        <source>Export Address List</source>
+        <translation>Eksporti Adresliston</translation>
+    </message>
+    <message>
+        <source>Comma separated file (*.csv)</source>
+        <translation>Perkome disigita dosiero (*.csv)</translation>
+    </message>
+    <message>
+        <source>Exporting Failed</source>
+        <translation>ekspotado malsukcesinta</translation>
+    </message>
+    <message>
+        <source>There was an error trying to save the address list to %1. Please try again.</source>
+        <translation>Okazis eraron dum konservo de adreslisto al %1. Bonvolu provi denove.</translation>
+    </message>
+</context>
 <context>
     <name>AddressTableModel</name>
-    </context>
+    <message>
+        <source>Label</source>
+        <translation>Etikedo</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Adreso</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(neniu etikedo)</translation>
+    </message>
+</context>
 <context>
     <name>AskPassphraseDialog</name>
     <message>
@@ -68,7 +136,7 @@
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Subskribi &amp;mesaĝon...</translation>
@@ -146,7 +214,7 @@
         <translation>Reindeksado de blokoj sur disko...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
+        <source>Send coins to a QtumX address</source>
         <translation>Sendi monon al Bitmon-adreso</translation>
     </message>
     <message>
@@ -170,7 +238,7 @@
         <translation>&amp;Kontroli mesaĝon...</translation>
     </message>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>Bitmono</translation>
     </message>
     <message>
@@ -198,11 +266,11 @@
         <translation>Ĉifri la privatajn ŝlosilojn de via monujo</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
         <translation>Subskribi mesaĝojn per via Bitmon-adresoj por pravigi, ke vi estas la posedanto</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
         <translation>Kontroli mesaĝojn por kontroli ĉu ili estas subskribitaj per specifaj Bitmon-adresoj</translation>
     </message>
     <message>
@@ -386,6 +454,10 @@
         <source>Confirmed</source>
         <translation>Konfirmita</translation>
     </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(neniu etikedo)</translation>
+    </message>
     </context>
 <context>
     <name>EditAddressDialog</name>
@@ -556,7 +628,7 @@
         <translation>Fakulo</translation>
     </message>
     <message>
-        <source>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <source>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</source>
         <translation>Aŭtomate malfermi la kursilan pordon por Bitmono. Tio funkcias nur se via kursilo havas la UPnP-funkcion, kaj se tiu ĉi estas ŝaltita.</translation>
     </message>
     <message>
@@ -651,7 +723,7 @@
         <translation>Formularo</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Qtum network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the QtumX network after a connection is established, but this process has not completed yet.</source>
         <translation>Eblas, ke la informoj videblaj ĉi tie estas eksdataj. Via monujo aŭtomate sinkoniĝas kun la bitmona reto kiam ili konektiĝas, sed tiu procezo ankoraŭ ne finfariĝis.</translation>
     </message>
     <message>
@@ -934,9 +1006,25 @@
         <source>&amp;Save Image...</source>
         <translation>&amp;Konservi Bildon...</translation>
     </message>
+    <message>
+        <source>Address</source>
+        <translation>Adreso</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Etikedo</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
+    <message>
+        <source>Label</source>
+        <translation>Etikedo</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(neniu etikedo)</translation>
+    </message>
     </context>
 <context>
     <name>SendCoinsDialog</name>
@@ -1016,7 +1104,11 @@
         <source>S&amp;end</source>
         <translation>Ŝendi</translation>
     </message>
-    </context>
+    <message>
+        <source>(no label)</source>
+        <translation>(neniu etikedo)</translation>
+    </message>
+</context>
 <context>
     <name>SendCoinsEntry</name>
     <message>
@@ -1121,7 +1213,7 @@
         <translation>Kopii la aktualan subskribon al la tondejo</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Qtum address</source>
+        <source>Sign the message to prove you own this QtumX address</source>
         <translation>Subskribi la mesaĝon por pravigi, ke vi estas la posedanto de tiu Bitmon-adreso</translation>
     </message>
     <message>
@@ -1141,7 +1233,7 @@
         <translation>&amp;Kontroli Mesaĝon</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Qtum address</source>
+        <source>Verify the message to ensure it was signed with the specified QtumX address</source>
         <translation>Kontroli la mesaĝon por pravigi, ke ĝi ja estas subskribita per la specifa Bitmon-adreso</translation>
     </message>
     <message>
@@ -1179,9 +1271,33 @@
     </context>
 <context>
     <name>TransactionTableModel</name>
+    <message>
+        <source>Label</source>
+        <translation>Etikedo</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(neniu etikedo)</translation>
+    </message>
     </context>
 <context>
     <name>TransactionView</name>
+    <message>
+        <source>Comma separated file (*.csv)</source>
+        <translation>Perkome disigita dosiero (*.csv)</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Etikedo</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Adreso</translation>
+    </message>
+    <message>
+        <source>Exporting Failed</source>
+        <translation>ekspotado malsukcesinta</translation>
+    </message>
     </context>
 <context>
     <name>UnitDisplayStatusBarControl</name>
@@ -1222,7 +1338,7 @@
         <translation>Ruli fone kiel demono kaj akcepti komandojn</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
+        <source>QtumX Core</source>
         <translation>Kerno de Bitmono</translation>
     </message>
     <message>

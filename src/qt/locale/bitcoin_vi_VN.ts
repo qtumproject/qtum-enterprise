@@ -41,6 +41,26 @@
         <source>&amp;Delete</source>
         <translation>&amp;Xó&amp;a</translation>
     </message>
+    <message>
+        <source>Choose the address to send coins to</source>
+        <translation>Chọn địa chỉ để gửi coin đến</translation>
+    </message>
+    <message>
+        <source>Choose the address to receive coins with</source>
+        <translation>Chọn địa chỉ để nhận coin</translation>
+    </message>
+    <message>
+        <source>C&amp;hoose</source>
+        <translation>Chọn</translation>
+    </message>
+    <message>
+        <source>Sending addresses</source>
+        <translation>Địa chỉ gửi đến</translation>
+    </message>
+    <message>
+        <source>Receiving addresses</source>
+        <translation>Địa chỉ nhận</translation>
+    </message>
     </context>
 <context>
     <name>AddressTableModel</name>
@@ -76,7 +96,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Chứ ký &amp; Tin nhắn...</translation>
@@ -166,8 +186,8 @@
         <translation>Đánh chỉ số (indexing) lại các khối (blocks) trên ổ đĩa ...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Gửi coins đến tài khoản Qtum</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Gửi coins đến tài khoản QtumX</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -186,8 +206,8 @@
         <translation>&amp;Tin nhắn xác thực</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -214,12 +234,12 @@
         <translation>Mã hoá các khoá bí mật trong Ví của bạn.</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Dùng địa chỉ Qtum của bạn ký các tin nhắn để xác minh những nội dung tin nhắn đó là của bạn.</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Dùng địa chỉ QtumX của bạn ký các tin nhắn để xác minh những nội dung tin nhắn đó là của bạn.</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Kiểm tra các tin nhắn để chắc chắn rằng chúng được ký bằng các địa chỉ Qtum xác định.</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Kiểm tra các tin nhắn để chắc chắn rằng chúng được ký bằng các địa chỉ QtumX xác định.</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -239,7 +259,7 @@
     </message>
     <message>
         <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Yêu cầu thanh toán(tạo mã QR và địa chỉ Qtum: URLs)</translation>
+        <translation>Yêu cầu thanh toán(tạo mã QR và địa chỉ QtumX: URLs)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -516,8 +536,8 @@
         <translation>Ví</translation>
     </message>
     <message>
-        <source>Connect to the Qtum network through a SOCKS5 proxy.</source>
-        <translation>Kết nối đến máy chủ Qtum thông qua SOCKS5 proxy.</translation>
+        <source>Connect to the QtumX network through a SOCKS5 proxy.</source>
+        <translation>Kết nối đến máy chủ QtumX thông qua SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>Proxy &amp;IP:</source>
@@ -998,8 +1018,8 @@
         <translation>Lựa chọn:</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>(default: %u)</source>

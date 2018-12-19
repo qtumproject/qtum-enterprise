@@ -136,7 +136,7 @@
     </message>
 </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Sign &amp;message...</translation>
@@ -226,8 +226,8 @@
         <translation>Reindexing blocks on disk...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Send coins to a Qtum address</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>Send coins to a QtumX address</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -250,8 +250,8 @@
         <translation>&amp;Verify message...</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -278,12 +278,12 @@
         <translation>Encrypt the private keys that belong to your wallet</translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
-        <translation>Sign messages with your Qtum addresses to prove you own them</translation>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
+        <translation>Sign messages with your QtumX addresses to prove you own them</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Verify messages to ensure they were signed with specified Qtum addresses</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Verify messages to ensure they were signed with specified QtumX addresses</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -322,8 +322,8 @@
         <translation>&amp;Command-line options</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Qtum network</source>
-        <translation><numerusform>%n active connection to Qtum network</numerusform><numerusform>%n active connections to Qtum network</numerusform></translation>
+        <source>%n active connection(s) to QtumX network</source>
+        <translation><numerusform>%n active connection to QtumX network</numerusform><numerusform>%n active connections to QtumX network</numerusform></translation>
     </message>
     <message>
         <source>Indexing blocks on disk...</source>
@@ -366,8 +366,8 @@
         <translation>Up to date</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Qtum command-line options</source>
-        <translation>Show the %1 help message to get a list with possible Qtum command-line options</translation>
+        <source>Show the %1 help message to get a list with possible QtumX command-line options</source>
+        <translation>Show the %1 help message to get a list with possible QtumX command-line options</translation>
     </message>
     <message>
         <source>%1 client</source>
@@ -615,8 +615,8 @@
         <translation>As this is the first time the program is launched, you can choose where %1 will store its data.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain. At least %2GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>%1 will download and store a copy of the Qtum block chain. At least %2GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain. At least %2GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>%1 will download and store a copy of the QtumX block chain. At least %2GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -772,16 +772,16 @@
         <translation>&amp;Spend unconfirmed change</translation>
     </message>
     <message>
-        <source>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
+        <source>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
         <translation>Map port using &amp;UPnP</translation>
     </message>
     <message>
-        <source>Connect to the Qtum network through a SOCKS5 proxy.</source>
-        <translation>Connect to the Qtum network through a SOCKS5 proxy.</translation>
+        <source>Connect to the QtumX network through a SOCKS5 proxy.</source>
+        <translation>Connect to the QtumX network through a SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -820,8 +820,8 @@
         <translation>Tor</translation>
     </message>
     <message>
-        <source>Connect to the Qtum network through a separate SOCKS5 proxy for Tor hidden services.</source>
-        <translation>Connect to the Qtum network through a separate SOCKS5 proxy for Tor hidden services.</translation>
+        <source>Connect to the QtumX network through a separate SOCKS5 proxy for Tor hidden services.</source>
+        <translation>Connect to the QtumX network through a separate SOCKS5 proxy for Tor hidden services.</translation>
     </message>
     <message>
         <source>Use separate SOCKS5 proxy to reach peers via Tor hidden services:</source>
@@ -919,8 +919,8 @@
         <translation>Form</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Qtum network after a connection is established, but this process has not completed yet.</source>
-        <translation>The displayed information may be out of date. Your Wallet automatically synchronises with the Qtum Network after a connection is established, but this process has not been completed yet.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the QtumX network after a connection is established, but this process has not completed yet.</source>
+        <translation>The displayed information may be out of date. Your Wallet automatically synchronises with the QtumX Network after a connection is established, but this process has not been completed yet.</translation>
     </message>
     <message>
         <source>Watch-only:</source>
@@ -1008,8 +1008,8 @@
         <translation>Amount</translation>
     </message>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Enter a Qtum address (e.g. %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>Enter a QtumX address (e.g. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1352,8 +1352,8 @@
         <translation>R&amp;euse an existing receiving address (not recommended)</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Qtum network.</source>
-        <translation>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Qtum network.</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the QtumX network.</source>
+        <translation>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the QtumX network.</translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -1608,8 +1608,8 @@
         <translation>This is a normal payment.</translation>
     </message>
     <message>
-        <source>The Qtum address to send the payment to</source>
-        <translation>The Qtum address to send the payment to</translation>
+        <source>The QtumX address to send the payment to</source>
+        <translation>The QtumX address to send the payment to</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -1652,8 +1652,8 @@
         <translation>Enter a label for this address to add it to the list of used addresses</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Qtum network.</source>
-        <translation>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Qtum network.</translation>
+        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -1693,8 +1693,8 @@
         <translation>You can sign messages/agreements with your addresses to prove you can receive qtums sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</translation>
     </message>
     <message>
-        <source>The Qtum address to sign the message with</source>
-        <translation>The Qtum address to sign the message with</translation>
+        <source>The QtumX address to sign the message with</source>
+        <translation>The QtumX address to sign the message with</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -1725,8 +1725,8 @@
         <translation>Copy the current signature to the system clipboard</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Qtum address</source>
-        <translation>Sign the message to prove you own this Qtum address</translation>
+        <source>Sign the message to prove you own this QtumX address</source>
+        <translation>Sign the message to prove you own this QtumX address</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1749,12 +1749,12 @@
         <translation>Enter the receiver's address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be careful not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack. Note that this only proves the signing party receives with the address, it cannot prove sendership of any transaction!</translation>
     </message>
     <message>
-        <source>The Qtum address the message was signed with</source>
-        <translation>The Qtum address the message was signed with</translation>
+        <source>The QtumX address the message was signed with</source>
+        <translation>The QtumX address the message was signed with</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Qtum address</source>
-        <translation>Verify the message to ensure it was signed with the specified Qtum address</translation>
+        <source>Verify the message to ensure it was signed with the specified QtumX address</source>
+        <translation>Verify the message to ensure it was signed with the specified QtumX address</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -1894,8 +1894,8 @@
         <translation>Unable to start HTTP server. See debug log for details.</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>The %s developers</source>

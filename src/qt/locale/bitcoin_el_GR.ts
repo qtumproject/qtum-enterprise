@@ -41,10 +41,78 @@
         <source>&amp;Delete</source>
         <translation>&amp;Διαγραφή</translation>
     </message>
-    </context>
+    <message>
+        <source>Choose the address to send coins to</source>
+        <translation>Επιλέξτε διεύθυνση αποστολής των νομισμάτων σας</translation>
+    </message>
+    <message>
+        <source>Choose the address to receive coins with</source>
+        <translation>Επιλέξτε διεύθυνση παραλαβής νομισμάτων</translation>
+    </message>
+    <message>
+        <source>C&amp;hoose</source>
+        <translation>Ε&amp;πιλογή</translation>
+    </message>
+    <message>
+        <source>Sending addresses</source>
+        <translation>Διευθύνσεις αποστολής</translation>
+    </message>
+    <message>
+        <source>Receiving addresses</source>
+        <translation>Διευθύνσεις λήψης</translation>
+    </message>
+    <message>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Αυτές είναι οι QtumX διευθύνσεις σας για να στέλνετε πληρωμές. Να ελέγχετε πάντα το ποσό, καθώς και τη διεύθυνση παραλήπτη πριν στείλετε νομίσματα.</translation>
+    </message>
+    <message>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Αυτές είναι οι QtumX διευθύνσεις σας για να λαμβάνετε πληρωμές. Προτείνετε να χρησιμοποιείτε μια νέα διεύθυνση παραλήπτη για κάθε συναλλαγή.</translation>
+    </message>
+    <message>
+        <source>&amp;Copy Address</source>
+        <translation>&amp;Αντιγραφή Διεύθυνσης</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Label</source>
+        <translation>Αντιγραφή&amp;Ετικέτα</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Διόρθωση</translation>
+    </message>
+    <message>
+        <source>Export Address List</source>
+        <translation>Εξαγωγή Λίστας Διεύθυνσεων</translation>
+    </message>
+    <message>
+        <source>Comma separated file (*.csv)</source>
+        <translation>Αρχείο οριοθετημένο με κόμματα (*.csv)</translation>
+    </message>
+    <message>
+        <source>Exporting Failed</source>
+        <translation>Αποτυχία Εξαγωγής</translation>
+    </message>
+    <message>
+        <source>There was an error trying to save the address list to %1. Please try again.</source>
+        <translation>Σφάλμα κατά την προσπάθεια αποθήκευσης της λίστας διευθύνσεων στο %1. Παρακαλώ δοκιμάστε ξανά.</translation>
+    </message>
+</context>
 <context>
     <name>AddressTableModel</name>
-    </context>
+    <message>
+        <source>Label</source>
+        <translation>Ετικέτα</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Διεύθυνση</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(χωρίς ετικέτα)</translation>
+    </message>
+</context>
 <context>
     <name>AskPassphraseDialog</name>
     <message>
@@ -63,12 +131,32 @@
         <source>Repeat new passphrase</source>
         <translation>Επανέλαβε τον νέο κωδικό πρόσβασης</translation>
     </message>
+    <message>
+        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
+        <translation>Εισάγετε το νέο κωδικό πρόσβασης στο πορτοφόλι. &lt;br/&gt;Παρακαλώ χρησιμοποιείστε έναν κωδικό με &lt;b&gt;δέκα ή περισσότερους τυχαίους χαρακτήρες &lt;/b&gt;, ή &lt;b&gt;οχτώ ή παραπάνω λέξεις &lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>Encrypt wallet</source>
+        <translation>Κρυπτογράφηση πορτοφολιού</translation>
+    </message>
+    <message>
+        <source>Unlock wallet</source>
+        <translation>Ξεκλειδωσε το πορτοφολι</translation>
+    </message>
+    <message>
+        <source>Change passphrase</source>
+        <translation>Αλλάξτε Φράση Πρόσβασης</translation>
+    </message>
+    <message>
+        <source>Wallet unlock failed</source>
+        <translation>Το Ξεκλείδωμα του Πορτοφολιού Απέτυχε</translation>
+    </message>
     </context>
 <context>
     <name>BanTableModel</name>
     </context>
 <context>
-    <name>QtumGUI</name>
+    <name>QtumXGUI</name>
     <message>
         <source>Sign &amp;message...</source>
         <translation>Υπογραφή &amp;Μηνύματος...</translation>
@@ -150,7 +238,7 @@
         <translation>Φόρτωση ευρετηρίου μπλοκ στον σκληρο δισκο...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
+        <source>Send coins to a QtumX address</source>
         <translation>Στείλε νομίσματα σε μια διεύθυνση qtum</translation>
     </message>
     <message>
@@ -174,8 +262,8 @@
         <translation>&amp;Επιβεβαίωση μηνύματος</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -202,12 +290,12 @@
         <translation>Κρυπτογραφήστε τα ιδιωτικά κλειδιά που ανήκουν στο πορτοφόλι σας </translation>
     </message>
     <message>
-        <source>Sign messages with your Qtum addresses to prove you own them</source>
+        <source>Sign messages with your QtumX addresses to prove you own them</source>
         <translation>Υπογράψτε ένα μήνυμα για να βεβαιώσετε πως είστε ο κάτοχος αυτής της διεύθυνσης</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Qtum addresses</source>
-        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως ανήκει μια συγκεκριμένη διεύθυνση Qtum</translation>
+        <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
+        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως ανήκει μια συγκεκριμένη διεύθυνση QtumX</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -394,6 +482,26 @@
         <source>Confirmed</source>
         <translation>Επικυρωμένες</translation>
     </message>
+    <message>
+        <source>Copy address</source>
+        <translation>Αντιγραφή διεύθυνσης</translation>
+    </message>
+    <message>
+        <source>Copy label</source>
+        <translation>Αντιγραφή ετικέτας</translation>
+    </message>
+    <message>
+        <source>Copy amount</source>
+        <translation>Αντιγραφή ποσού</translation>
+    </message>
+    <message>
+        <source>Copy transaction ID</source>
+        <translation>Αντιγραφή ταυτότητας συναλλαγής</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(χωρίς ετικέτα)</translation>
+    </message>
     </context>
 <context>
     <name>EditAddressDialog</name>
@@ -416,6 +524,18 @@
     <message>
         <source>&amp;Address</source>
         <translation>&amp;Διεύθυνση</translation>
+    </message>
+    <message>
+        <source>New receiving address</source>
+        <translation>Νέα Διεύθυνση Λήψης</translation>
+    </message>
+    <message>
+        <source>New sending address</source>
+        <translation>Νέα Διεύθυνση Αποστολής</translation>
+    </message>
+    <message>
+        <source>Edit receiving address</source>
+        <translation>Διόρθωση Διεύθυνσης Λήψης</translation>
     </message>
     </context>
 <context>
@@ -616,16 +736,16 @@
         <translation>&amp;Ξόδεμα μη επικυρωμένων ρέστων</translation>
     </message>
     <message>
-        <source>Automatically open the Qtum client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Αυτόματο άνοιγμα των θυρών Qtum στον δρομολογητή. Λειτουργεί μόνο αν ο δρομολογητής σας υποστηρίζει τη λειτουργία UPnP.</translation>
+        <source>Automatically open the QtumX client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Αυτόματο άνοιγμα των θυρών QtumX στον δρομολογητή. Λειτουργεί μόνο αν ο δρομολογητής σας υποστηρίζει τη λειτουργία UPnP.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
         <translation>Απόδοση θυρών με χρήστη &amp;UPnP</translation>
     </message>
     <message>
-        <source>Connect to the Qtum network through a SOCKS5 proxy.</source>
-        <translation>Σύνδεση στο Qtum δίκτυο μέσω διαμεσολαβητή SOCKS5 (π.χ. για σύνδεση μέσω Tor)</translation>
+        <source>Connect to the QtumX network through a SOCKS5 proxy.</source>
+        <translation>Σύνδεση στο QtumX δίκτυο μέσω διαμεσολαβητή SOCKS5 (π.χ. για σύνδεση μέσω Tor)</translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -720,8 +840,8 @@
         <translation>Φόρμα</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Qtum network after a connection is established, but this process has not completed yet.</source>
-        <translation>Οι πληροφορίες που εμφανίζονται μπορεί να είναι ξεπερασμένες. Το πορτοφόλι σας συγχρονίζεται αυτόματα με το δίκτυο Qtum μετά από μια σύνδεση, αλλά αυτή η διαδικασία δεν έχει ακόμη ολοκληρωθεί. </translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the QtumX network after a connection is established, but this process has not completed yet.</source>
+        <translation>Οι πληροφορίες που εμφανίζονται μπορεί να είναι ξεπερασμένες. Το πορτοφόλι σας συγχρονίζεται αυτόματα με το δίκτυο QtumX μετά από μια σύνδεση, αλλά αυτή η διαδικασία δεν έχει ακόμη ολοκληρωθεί. </translation>
     </message>
     <message>
         <source>Watch-only:</source>
@@ -801,8 +921,8 @@
         <translation>Ποσό</translation>
     </message>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Εισάγετε μια διεύθυνση Qtum (π.χ. %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>Εισάγετε μια διεύθυνση QtumX (π.χ. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1064,7 +1184,15 @@
         <source>Remove</source>
         <translation>Αφαίρεση</translation>
     </message>
-    </context>
+    <message>
+        <source>Copy label</source>
+        <translation>Αντιγραφή ετικέτας</translation>
+    </message>
+    <message>
+        <source>Copy amount</source>
+        <translation>Αντιγραφή ποσού</translation>
+    </message>
+</context>
 <context>
     <name>ReceiveRequestDialog</name>
     <message>
@@ -1083,9 +1211,29 @@
         <source>&amp;Save Image...</source>
         <translation>&amp;Αποθήκευση εικόνας...</translation>
     </message>
+    <message>
+        <source>Address</source>
+        <translation>Διεύθυνση</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Ετικέτα</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
+    <message>
+        <source>Date</source>
+        <translation>Ημερομήνια</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Ετικέτα</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(χωρίς ετικέτα)</translation>
+    </message>
     </context>
 <context>
     <name>SendCoinsDialog</name>
@@ -1209,7 +1357,15 @@
         <source>S&amp;end</source>
         <translation>Αποστολη</translation>
     </message>
-    </context>
+    <message>
+        <source>Copy amount</source>
+        <translation>Αντιγραφή ποσού</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(χωρίς ετικέτα)</translation>
+    </message>
+</context>
 <context>
     <name>SendCoinsEntry</name>
     <message>
@@ -1233,8 +1389,8 @@
         <translation>Αυτή είναι μια απλή πληρωμή.</translation>
     </message>
     <message>
-        <source>The Qtum address to send the payment to</source>
-        <translation>Η διεύθυνση Qtum που θα σταλεί η πληρωμή</translation>
+        <source>The QtumX address to send the payment to</source>
+        <translation>Η διεύθυνση QtumX που θα σταλεί η πληρωμή</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -1290,8 +1446,8 @@
         <translation>&amp;Υπογραφή Μηνύματος</translation>
     </message>
     <message>
-        <source>The Qtum address to sign the message with</source>
-        <translation>Διεύθυνση Qtum που θα σταλεί το μήνυμα</translation>
+        <source>The QtumX address to sign the message with</source>
+        <translation>Διεύθυνση QtumX που θα σταλεί το μήνυμα</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -1322,8 +1478,8 @@
         <translation>Αντέγραφη της επιλεγμενης διεύθυνσης στο πρόχειρο του συστηματος</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Qtum address</source>
-        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως σας ανήκει μια συγκεκριμένη διεύθυνση Qtum</translation>
+        <source>Sign the message to prove you own this QtumX address</source>
+        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως σας ανήκει μια συγκεκριμένη διεύθυνση QtumX</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1342,12 +1498,12 @@
         <translation>&amp;Επιβεβαίωση μηνύματος</translation>
     </message>
     <message>
-        <source>The Qtum address the message was signed with</source>
-        <translation>Διεύθυνση Qtum η οποία το μήνυμα έχει υπογραφεί</translation>
+        <source>The QtumX address the message was signed with</source>
+        <translation>Διεύθυνση QtumX η οποία το μήνυμα έχει υπογραφεί</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Qtum address</source>
-        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως υπογραφθηκε απο μια συγκεκριμένη διεύθυνση Qtum</translation>
+        <source>Verify the message to ensure it was signed with the specified QtumX address</source>
+        <translation>Υπογράψτε ένα μήνυμα για ν' αποδείξετε πως υπογραφθηκε απο μια συγκεκριμένη διεύθυνση QtumX</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -1374,6 +1530,70 @@
 </context>
 <context>
     <name>TransactionDesc</name>
+    <message>
+        <source>Open until %1</source>
+        <translation>Ανοιχτό μέχρι %1</translation>
+    </message>
+    <message>
+        <source>%1/offline</source>
+        <translation>%1/αποσυνδεδεμένο</translation>
+    </message>
+    <message>
+        <source>0/unconfirmed, %1</source>
+        <translation>0/ανεπιβεβαίωτο, %1</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <translation>Ημερομηνία</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Πηγή</translation>
+    </message>
+    <message>
+        <source>Generated</source>
+        <translation>Παράχθηκε</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>Από</translation>
+    </message>
+    <message>
+        <source>unknown</source>
+        <translation>Άγνωστο</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>Προς</translation>
+    </message>
+    <message>
+        <source>own address</source>
+        <translation>δική σας διεύθυνση</translation>
+    </message>
+    <message>
+        <source>watch-only</source>
+        <translation>παρακολούθηση-μόνο</translation>
+    </message>
+    <message>
+        <source>label</source>
+        <translation>ετικέτα</translation>
+    </message>
+    <message>
+        <source>Credit</source>
+        <translation>Πίστωση</translation>
+    </message>
+    <message>
+        <source>not accepted</source>
+        <translation>μη έγκυρο</translation>
+    </message>
+    <message>
+        <source>Total credit</source>
+        <translation>Συνολική πίστωση</translation>
+    </message>
+    <message>
+        <source>Transaction fee</source>
+        <translation>Κόστος συναλλαγής</translation>
+    </message>
     </context>
 <context>
     <name>TransactionDescDialog</name>
@@ -1384,9 +1604,73 @@
     </context>
 <context>
     <name>TransactionTableModel</name>
+    <message>
+        <source>Date</source>
+        <translation>Ημερομήνια</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Ετικέτα</translation>
+    </message>
+    <message>
+        <source>Open until %1</source>
+        <translation>Ανοιχτό μέχρι %1</translation>
+    </message>
+    <message>
+        <source>watch-only</source>
+        <translation>παρακολούθηση-μόνο</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(χωρίς ετικέτα)</translation>
+    </message>
     </context>
 <context>
     <name>TransactionView</name>
+    <message>
+        <source>Copy address</source>
+        <translation>Αντιγραφή διεύθυνσης</translation>
+    </message>
+    <message>
+        <source>Copy label</source>
+        <translation>Αντιγραφή ετικέτας</translation>
+    </message>
+    <message>
+        <source>Copy amount</source>
+        <translation>Αντιγραφή ποσού</translation>
+    </message>
+    <message>
+        <source>Copy transaction ID</source>
+        <translation>Αντιγραφή ταυτότητας συναλλαγής</translation>
+    </message>
+    <message>
+        <source>Copy raw transaction</source>
+        <translation>Αντιγραφή ανεπεξέργαστης συναλλαγής</translation>
+    </message>
+    <message>
+        <source>Edit label</source>
+        <translation>Επεξεργασία ετικέτας</translation>
+    </message>
+    <message>
+        <source>Comma separated file (*.csv)</source>
+        <translation>Αρχείο οριοθετημένο με κόμματα (*.csv)</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <translation>Ημερομήνια</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Ετικέτα</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Διεύθυνση</translation>
+    </message>
+    <message>
+        <source>Exporting Failed</source>
+        <translation>Αποτυχία Εξαγωγής</translation>
+    </message>
     </context>
 <context>
     <name>UnitDisplayStatusBarControl</name>
@@ -1431,8 +1715,8 @@
         <translation>Εκτέλεση στο παρασκήνιο κι αποδοχή εντολών</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Core</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Core</translation>
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>

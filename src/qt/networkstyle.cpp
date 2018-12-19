@@ -92,5 +92,11 @@ const NetworkStyle *NetworkStyle::instantiate(const QString &networkId)
                     network_styles[x].titleAddText);
         }
     }
-    return 0;
+
+    QString titleAddText = "[" + networkId + "]";
+    return new NetworkStyle(
+            network_styles[0].appName,
+            network_styles[0].iconColorHueShift,
+            network_styles[0].iconColorSaturationReduction,
+            titleAddText.toStdString().c_str());
 }
