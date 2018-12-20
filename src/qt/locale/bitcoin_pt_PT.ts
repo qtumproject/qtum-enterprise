@@ -418,8 +418,8 @@
         <translation>Barra de ferramentas dos separadores</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Solicitar pagamentos (gera códigos QR e qtum: URIs)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Solicitar pagamentos (gera códigos QR e qtumx: URIs)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,8 +430,8 @@
         <translation>Mostrar a lista de rótulos e endereços de receção usados</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Abrir URI qtum: ou pedido de pagamento</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Abrir URI qtumx: ou pedido de pagamento</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -859,8 +859,8 @@
         <translation>Utilizar uma pasta de dados personalizada:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Approximately %1 GB of data will be stored in this directory.</source>
@@ -1283,8 +1283,8 @@
         <translation>Erro do pedido de pagamento</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>Impossível iniciar o controlador de qtum: click-to-pay</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>Impossível iniciar o controlador de qtumx: click-to-pay</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2282,8 +2282,8 @@
         <translation>Introduza um rótulo para este endereço para o adicionar à sua lista de endereços usados</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Uma mensagem que estava anexada ao URI qtum: que será armazenada com a transação para sua referência. Nota: Esta mensagem não será enviada através da rede QtumX.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Uma mensagem que estava anexada ao URI qtumx: que será armazenada com a transação para sua referência. Nota: Esta mensagem não será enviada através da rede QtumX.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2950,7 +2950,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opções:</translation>

@@ -418,7 +418,7 @@
         <translation>툴바 색인표</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
         <translation>지불 요청하기 (QR코드와 큐텀이 생성됩니다: URIs)</translation>
     </message>
     <message>
@@ -430,8 +430,8 @@
         <translation>한번 이상 사용된 받는 주소와 주소 제목의 목록을 보여줍니다.</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>qtum: URI 또는 지불요청 열기</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>qtumx: URI 또는 지불요청 열기</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -875,7 +875,7 @@
         <translation>커스텀 데이터 폴더 사용:</translation>
     </message>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>비트코인</translation>
     </message>
     <message>
@@ -887,8 +887,8 @@
         <translation>약 %1GB의 데이터가 이 디렉토리에 저장됩니다.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1은 Qtum 블록 체인의 사본을 다운로드하여 저장합니다.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1은 QtumX 블록 체인의 사본을 다운로드하여 저장합니다.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1326,7 +1326,7 @@
         <translation>지불 요청 오류</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
+        <source>Cannot start qtumx: click-to-pay handler</source>
         <translation>큐텀을 시작할 수 없습니다: 지급제어기를 클릭하시오</translation>
     </message>
     <message>
@@ -2377,7 +2377,7 @@
         <translation>사용된 주소 목록에 새 주소를 추가하기 위해 라벨 이름을 입력해 주세요. </translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
         <translation>큐텀에 첨부된 메시지: 참고용으로 거래와 함께 저장될 URI. 메모: 이 메시지는 큐텀 네트워크로 전송되지 않습니다.</translation>
     </message>
     <message>
@@ -3117,7 +3117,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>옵션:</translation>

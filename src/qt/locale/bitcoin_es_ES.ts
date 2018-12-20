@@ -63,11 +63,11 @@
     </message>
     <message>
         <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Estas son sus direcciones Qtum para enviar pagos. Verifique siempre la cantidad y la dirección de recibimiento antes de enviar monedas.</translation>
+        <translation>Estas son sus direcciones QtumX para enviar pagos. Verifique siempre la cantidad y la dirección de recibimiento antes de enviar monedas.</translation>
     </message>
     <message>
         <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Estas son sus direcciones Qtum para recibir pagos. Se recomienda utilizar una nueva dirección de recibimiento para cada transacción</translation>
+        <translation>Estas son sus direcciones QtumX para recibir pagos. Se recomienda utilizar una nueva dirección de recibimiento para cada transacción</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -414,8 +414,8 @@
         <translation>Barra de pestañas</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Solicitar pagos (generando códigos QR e identificadores URI "qtum:")</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Solicitar pagos (generando códigos QR e identificadores URI "qtumx:")</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -426,8 +426,8 @@
         <translation>Muestra la lista de direcciones de recepción y etiquetas</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Abrir un identificador URI "qtum:" o una petición de pago</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Abrir un identificador URI "qtumx:" o una petición de pago</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -859,8 +859,8 @@
         <translation>Utilizar un directorio de datos personalizado:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -1246,8 +1246,8 @@
         <translation>Fallo en la solicitud de pago</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>No se puede iniciar qtum: encargado click-para-pagar</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>No se puede iniciar qtumx: encargado click-para-pagar</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2208,8 +2208,8 @@
         <translation>Introduce una etiqueta para esta dirección para añadirla a la lista de direcciones utilizadas</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Un mensaje que se adjuntó a la qtum: URL que será almacenada con la transacción para su referencia. Nota: Este mensaje no se envía a través de la red QtumX.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Un mensaje que se adjuntó a la qtumx: URL que será almacenada con la transacción para su referencia. Nota: Este mensaje no se envía a través de la red QtumX.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2888,7 +2888,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opciones:

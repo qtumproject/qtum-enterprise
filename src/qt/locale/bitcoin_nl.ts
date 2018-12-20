@@ -418,8 +418,8 @@
         <translation>Tab-werkbalk</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Vraag betaling aan (genereert QR-codes en qtum: URI's)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Vraag betaling aan (genereert QR-codes en qtumx: URI's)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,8 +430,8 @@
         <translation>Toon de lijst met gebruikte ontvangstadressen en labels</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Open een qtum: URI of betalingsverzoek</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Open een qtumx: URI of betalingsverzoek</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -875,8 +875,8 @@
         <translation>Gebruik een aangepaste gegevensmap:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -887,8 +887,8 @@
         <translation>Gemiddeld %1 GB aan data zal worden opgeslagen in deze map.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1 zal een kopie van de blokketen van Qtum downloaden en opslaan.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1 zal een kopie van de blokketen van QtumX downloaden en opslaan.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1326,7 +1326,7 @@
         <translation>Fout bij betalingsverzoek</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
+        <source>Cannot start qtumx: click-to-pay handler</source>
         <translation>Kan qtum niet starten: click-to-pay handler</translation>
     </message>
     <message>
@@ -2376,8 +2376,8 @@
         <translation>Vul een label voor dit adres in om het aan de lijst met gebruikte adressen toe te voegen</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Een bericht dat werd toegevoegd aan de qtum: URI welke wordt opgeslagen met de transactie ter referentie. Opmerking: Dit bericht zal niet worden verzonden over het QtumXnetwerk.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Een bericht dat werd toegevoegd aan de qtumx: URI welke wordt opgeslagen met de transactie ter referentie. Opmerking: Dit bericht zal niet worden verzonden over het QtumXnetwerk.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -3112,7 +3112,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opties:</translation>

@@ -158,7 +158,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Block creation options:</source>
         <translation>ব্লক তৈরির অপশনগুলো:</translation>

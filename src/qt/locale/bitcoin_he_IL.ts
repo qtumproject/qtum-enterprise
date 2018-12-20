@@ -113,7 +113,7 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>ביטקוין</translation>
     </message>
     </context>
@@ -226,6 +226,6 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     </context>
 </TS>

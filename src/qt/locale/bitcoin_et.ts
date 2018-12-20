@@ -366,11 +366,11 @@
         <translation>Vahelehe tööriistariba</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
         <translation>Loo maksepäring (genereerib QR koodid ja qtumi: URId)</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
+        <source>Open a qtumx: URI or payment request</source>
         <translation>Ava qtumi: URI või maksepäring</translation>
     </message>
     <message>
@@ -683,8 +683,8 @@
         <translation>Teretulemast</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Error</source>
@@ -1944,7 +1944,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Valikud:</translation>

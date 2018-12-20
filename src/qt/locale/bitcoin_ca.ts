@@ -414,8 +414,8 @@
         <translation>Barra d'eines de les pestanyes</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Sol·licita pagaments (genera codis QR i qtum: URI)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Sol·licita pagaments (genera codis QR i qtumx: URI)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -426,8 +426,8 @@
         <translation>Mostra la llista d'adreces de recepció i etiquetes utilitzades</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Obre una qtum: sol·licitud d'URI o pagament</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Obre una qtumx: sol·licitud d'URI o pagament</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -863,8 +863,8 @@
         <translation>Utilitza un directori de dades personalitzat:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -875,7 +875,7 @@
         <translation>Aproximadament %1 GB de dades s'emmagatzemaran en aquest directori.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
         <translation>%1 descarregarà i emmagatzemarà una còpia de la cadena de blocs Qtum.</translation>
     </message>
     <message>
@@ -1282,8 +1282,8 @@
         <translation>Error de la sol·licitud de pagament</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>No es pot iniciar qtum: controlador click-to-pay</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>No es pot iniciar qtumx: controlador click-to-pay</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2268,8 +2268,8 @@
         <translation>Introduïu una etiqueta per a aquesta adreça per afegir-la a la llista d'adreces utilitzades</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Un missatge que s'ha adjuntat al qtum: URI que s'emmagatzemarà amb la transacció per a la vostra referència. Nota: el missatge no s'enviarà a través de la xarxa QtumX.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Un missatge que s'ha adjuntat al qtumx: URI que s'emmagatzemarà amb la transacció per a la vostra referència. Nota: el missatge no s'enviarà a través de la xarxa QtumX.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2988,7 +2988,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opcions:</translation>

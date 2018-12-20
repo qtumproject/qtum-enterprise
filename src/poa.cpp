@@ -367,8 +367,7 @@ bool BasicPoa::initMiner(const std::string str_miner) {
         return false;
     }
 
-    CKeyID keyid(boost::get<CKeyID>(dest));
-	_miner = keyid;
+	_miner = boost::get<CKeyID>(dest);
 	if (!getRewardScript()) {
 		return false;
 	}

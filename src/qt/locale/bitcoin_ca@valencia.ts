@@ -374,8 +374,8 @@
         <translation>Barra d'eines de les pestanyes</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Sol·licita pagaments (genera codis QR i qtum: URI)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Sol·licita pagaments (genera codis QR i qtumx: URI)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -386,8 +386,8 @@
         <translation>Mostra la llista d'adreces de recepció i etiquetes utilitzades</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Obri una qtum: sol·licitud d'URI o pagament</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Obri una qtumx: sol·licitud d'URI o pagament</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -472,8 +472,8 @@
         <translation>El moneder està &lt;b&gt;encriptat&lt;/b&gt; i actualment &lt;b&gt;bloquejat&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Qtum can no longer continue safely and will quit.</source>
-        <translation>Ha tingut lloc un error fatal. Qtum no pot continuar executant-se de manera segura i es tancará.</translation>
+        <source>A fatal error occurred. QtumX can no longer continue safely and will quit.</source>
+        <translation>Ha tingut lloc un error fatal. QtumX no pot continuar executant-se de manera segura i es tancará.</translation>
     </message>
 </context>
 <context>
@@ -755,8 +755,8 @@
         <translation>Utilitza un directori de dades personalitzat:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -1066,8 +1066,8 @@
         <translation>Error en la sol·licitud de pagament</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>No es pot iniciar qtum: gestor clica-per-pagar</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>No es pot iniciar qtumx: gestor clica-per-pagar</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -1876,8 +1876,8 @@
         <translation>Introduïu una etiqueta per a esta adreça per afegir-la a la llista d'adreces utilitzades</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Un missatge que s'ha adjuntat al qtum: URI que s'emmagatzemarà amb la transacció per a la vostra referència. Nota: el missatge no s'enviarà a través de la xarxa QtumX.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Un missatge que s'ha adjuntat al qtumx: URI que s'emmagatzemarà amb la transacció per a la vostra referència. Nota: el missatge no s'enviarà a través de la xarxa QtumX.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2504,7 +2504,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opcions:</translation>

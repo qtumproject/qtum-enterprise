@@ -418,8 +418,8 @@
         <translation>タブツールバー</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>支払いを要求する (QRコードとqtum:ではじまるURIを生成する)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>支払いを要求する (QRコードとqtumx:ではじまるURIを生成する)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,8 +430,8 @@
         <translation>支払いを受け取るアドレスとラベルのリストを表示する</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>qtum: URIまたは支払いリクエストを開く</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>qtumx: URIまたは支払いリクエストを開く</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -875,8 +875,8 @@
         <translation>任意のデータ ディレクトリを使用:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -887,7 +887,7 @@
         <translation>おおむね%1GBのデータがこのディレクトリに保存されます。</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
         <translation>%1はQtumのブロックチェーンの複製をダウンロードし保存します。</translation>
     </message>
     <message>
@@ -1326,7 +1326,7 @@
         <translation>支払いのリクエストのエラーです</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
+        <source>Cannot start qtumx: click-to-pay handler</source>
         <translation>QtumX を起動できません: click-to-pay handler</translation>
     </message>
     <message>
@@ -2376,8 +2376,8 @@
         <translation>このアドレスに対するラベルを入力することで、使用済みアドレスの一覧に追加することができます</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>qtum: URIに添付されていたメッセージです。これは参照用としてトランザクションとともに保存されます。注意：このメッセージはQtumXネットワークを通して送信されるわけではありません。</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>qtumx: URIに添付されていたメッセージです。これは参照用としてトランザクションとともに保存されます。注意：このメッセージはQtumXネットワークを通して送信されるわけではありません。</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -3116,7 +3116,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>オプション:</translation>

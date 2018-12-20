@@ -138,7 +138,7 @@
         <translation>నిష్క్రమించు</translation>
     </message>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>బిట్కోయిన్</translation>
     </message>
     <message>
@@ -197,7 +197,7 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>బిట్కోయిన్</translation>
     </message>
     <message>
@@ -386,9 +386,9 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
-        <source>Qtum Core</source>
+        <source>QtumX Core</source>
         <translation>బిట్కోయిన్ కోర్</translation>
     </message>
     <message>

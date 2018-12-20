@@ -410,8 +410,8 @@
         <translation>Orebalk</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Versoek betalings (genereer QR-kodes en qtum: URI's)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Versoek betalings (genereer QR-kodes en qtumx: URI's)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -422,8 +422,8 @@
         <translation>Vertoon die lys van gebruikte ontvangers-adresse en etikette</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Skep 'n qtum: URI of betalingsversoek</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Skep 'n qtumx: URI of betalingsversoek</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -516,8 +516,8 @@
         <translation>Inkomende transaksie</translation>
     </message>
     <message>
-        <source>A fatal error occurred. Qtum can no longer continue safely and will quit.</source>
-        <translation>'N fatale fout het voorgekom. Qtum kan nie meer veilig voortgaan nie en sal nou toemaak.</translation>
+        <source>A fatal error occurred. QtumX can no longer continue safely and will quit.</source>
+        <translation>'N fatale fout het voorgekom. QtumX kan nie meer veilig voortgaan nie en sal nou toemaak.</translation>
     </message>
 </context>
 <context>
@@ -710,8 +710,8 @@
         <translation>Wysig stuur adres</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Qtum address.</source>
-        <translation>Die ingevoerde adres "%1" is nie 'n geldige Qtum adres nie.</translation>
+        <source>The entered address "%1" is not a valid QtumX address.</source>
+        <translation>Die ingevoerde adres "%1" is nie 'n geldige QtumX adres nie.</translation>
     </message>
     <message>
         <source>The entered address "%1" is already in the address book.</source>
@@ -823,8 +823,8 @@
         <translation>Gebruik 'n persoonlike data gids:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1188,8 +1188,8 @@
         <translation>Bedrag</translation>
     </message>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Voer in 'n Qtum adres (bv. %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>Voer in 'n QtumX adres (bv. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1912,7 +1912,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opsies:</translation>

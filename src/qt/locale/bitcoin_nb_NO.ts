@@ -414,7 +414,7 @@
         <translation>Hjelpelinje for fliker</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
         <translation>Be om betalinger (genererer QR-koder og qtum-URIer)</translation>
     </message>
     <message>
@@ -426,8 +426,8 @@
         <translation>Vis lista over brukte mottakeradresser og merkelapper</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Åpne en qtum: URI eller betalingsforespørsel</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Åpne en qtumx: URI eller betalingsforespørsel</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -466,8 +466,8 @@
         <translation>Oppdatert</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Qtum command-line options</source>
-        <translation>Vis %1-hjelpemeldingen for å få en liste over mulige Qtum-kommandolinjealternativer</translation>
+        <source>Show the %1 help message to get a list with possible QtumX command-line options</source>
+        <translation>Vis %1-hjelpemeldingen for å få en liste over mulige QtumX-kommandolinjealternativer</translation>
     </message>
     <message>
         <source>%1 client</source>
@@ -535,8 +535,8 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Error</source>
@@ -684,7 +684,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Information</source>
         <translation>Informasjon</translation>

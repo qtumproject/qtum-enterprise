@@ -419,7 +419,7 @@ Var vänlig och försök igen.</translation>
         <translation>Verktygsfält för tabbar</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
         <translation>Begär betalning (genererar QR-koder och qtum-URI)</translation>
     </message>
     <message>
@@ -431,8 +431,8 @@ Var vänlig och försök igen.</translation>
         <translation>Visa listan av använda mottagningsadresser och etiketter</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Öppna en qtum: URI eller betalningsbegäran</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Öppna en qtumx: URI eller betalningsbegäran</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -868,8 +868,8 @@ Var vänlig och försök igen.</translation>
         <translation>Använd en anpassad datakatalog:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -880,8 +880,8 @@ Var vänlig och försök igen.</translation>
         <translation>Ungefär %1 GB data kommer att lagras i den här katalogen.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1 kommer att hämta och lagra en kopia av Qtum-blockkedjan.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1 kommer att hämta och lagra en kopia av QtumX-blockkedjan.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1295,8 +1295,8 @@ Var vänlig och försök igen.</translation>
         <translation>Fel vid betalningsbegäran</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>Kan inte starta qtum: klicka-och-betala handhavare</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>Kan inte starta qtumx: klicka-och-betala handhavare</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2301,7 +2301,7 @@ Var vänlig och försök igen.</translation>
         <translation>Ange en etikett för denna adress att adderas till listan över använda adresser</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
         <translation>Ett meddelande som bifogades qtum-URI, vilket lagras med transaktionen som referens. NB: Meddelandet kommer inte att sändas över QtumXnätverket.</translation>
     </message>
     <message>
@@ -3025,7 +3025,7 @@ Var vänlig och försök igen.</translation>
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Inställningar:</translation>

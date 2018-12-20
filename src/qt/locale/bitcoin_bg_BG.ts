@@ -892,7 +892,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>QtumX Core</source>
         <translation>Биткойн ядро</translation>

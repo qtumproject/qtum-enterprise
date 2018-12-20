@@ -233,7 +233,7 @@
 <context>
     <name>Intro</name>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>Биткойн</translation>
     </message>
     <message>
@@ -558,7 +558,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Сонголтууд:</translation>

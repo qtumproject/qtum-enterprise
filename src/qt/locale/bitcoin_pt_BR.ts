@@ -414,8 +414,8 @@
         <translation>Barra de ferramentas</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Solicitações de pagamentos (gera códigos QR e qtum: URIs)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Solicitações de pagamentos (gera códigos QR e qtumx: URIs)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -426,8 +426,8 @@
         <translation>Mostrar a lista de endereços de recebimento usados ​​e rótulos</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Abrir um qtum: URI ou cobrança</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Abrir um qtumx: URI ou cobrança</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -868,8 +868,8 @@ Esta sincronização inicial é muito exigente e pode expor problemas de hardwar
         <translation>Use um diretório de dados personalizado:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -880,8 +880,8 @@ Esta sincronização inicial é muito exigente e pode expor problemas de hardwar
         <translation>Aproximadamente %1 GB de dados serão armazenados neste diretório.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1 irá baixar e armazenar uma cópia da blockchain do Qtum</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1 irá baixar e armazenar uma cópia da blockchain do QtumX</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1311,8 +1311,8 @@ Esta sincronização inicial é muito exigente e pode expor problemas de hardwar
         <translation>Erro no pedido de pagamento</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>Não foi possível iniciar qtum: manipulador click-to-pay</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>Não foi possível iniciar qtumx: manipulador click-to-pay</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2357,8 +2357,8 @@ Esta sincronização inicial é muito exigente e pode expor problemas de hardwar
         <translation>Digite um rótulo para este endereço para adicioná-lo no catálogo</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>A mensagem que foi anexada ao qtum: URI na qual será gravada na transação para sua referência. Nota: Essa mensagem não será gravada publicamente na rede QtumX.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>A mensagem que foi anexada ao qtumx: URI na qual será gravada na transação para sua referência. Nota: Essa mensagem não será gravada publicamente na rede QtumX.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -3097,7 +3097,7 @@ Esta sincronização inicial é muito exigente e pode expor problemas de hardwar
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opções:</translation>

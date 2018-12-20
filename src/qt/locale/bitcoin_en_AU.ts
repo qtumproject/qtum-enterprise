@@ -158,7 +158,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Error initializing block database</source>
         <translation>Error initialising block database</translation>

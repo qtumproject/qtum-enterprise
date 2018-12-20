@@ -418,8 +418,8 @@
         <translation>Faneværktøjslinje</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Anmod om betalinger (genererer QR-koder og “qtum:”-URI'er)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Anmod om betalinger (genererer QR-koder og “qtumx:”-URI'er)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,8 +430,8 @@
         <translation>Vis listen over brugte modtagelsesadresser og -mærkater</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Åbn en “qtum:”-URI eller betalingsanmodning</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Åbn en “qtumx:”-URI eller betalingsanmodning</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -875,8 +875,8 @@
         <translation>Brug tilpasset mappe for data:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -887,8 +887,8 @@
         <translation>Omtrent %1 GB data vil blive gemt i denne mappe.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1 vil downloade og gemme en kopi af Qtum-blokkæden.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1 vil downloade og gemme en kopi af QtumX-blokkæden.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1326,8 +1326,8 @@
         <translation>Fejl i betalingsanmodning</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>Kan ikke starte qtum: click-to-pay-håndtering</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>Kan ikke starte qtumx: click-to-pay-håndtering</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -2376,7 +2376,7 @@
         <translation>Indtast et mærkat for denne adresse for at føje den til listen over brugte adresser</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
         <translation>En besked, som blev føjet til “bitcon:”-URI'en, som vil gemmes med transaktionen til din reference. Bemærk: Denne besked vil ikke blive sendt over QtumX-netværket.</translation>
     </message>
     <message>
@@ -3116,7 +3116,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Indstillinger:</translation>

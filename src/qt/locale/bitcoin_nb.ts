@@ -418,8 +418,8 @@
         <translation>Verktøylinje for faner</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Forespør betalinger (genererer QR-koder og qtum: URIer)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Forespør betalinger (genererer QR-koder og qtumx: URIer)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,7 +430,7 @@
         <translation>Vis listen over bruke mottaksadresser og merkelapper</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
+        <source>Open a qtumx: URI or payment request</source>
         <translation>Åpne en QtumX: URI eller betalingsetterspørring</translation>
     </message>
     <message>
@@ -482,8 +482,8 @@
         <translation>Oppdatert</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Qtum command-line options</source>
-        <translation>Vis %1 hjelpemeldingen for å få en liste med mulige Qtum kommandolinjevalg.</translation>
+        <source>Show the %1 help message to get a list with possible QtumX command-line options</source>
+        <translation>Vis %1 hjelpemeldingen for å få en liste med mulige QtumX kommandolinjevalg.</translation>
     </message>
     <message>
         <source>%1 client</source>
@@ -746,8 +746,8 @@
         <translation>Rediger utsendingsadresse</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Qtum address.</source>
-        <translation>Den angitte adressen "%1" er ikke en gyldig Qtum-adresse.</translation>
+        <source>The entered address "%1" is not a valid QtumX address.</source>
+        <translation>Den angitte adressen "%1" er ikke en gyldig QtumX-adresse.</translation>
     </message>
     <message>
         <source>The entered address "%1" is already in the address book.</source>
@@ -875,8 +875,8 @@
         <translation>Bruk en egendefinert datamappe:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -887,8 +887,8 @@
         <translation>Omtrent %1GB data vil bli lagret i denne mappen.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
-        <translation>%1 vil laste ned og lagre en kopi av Qtum blokkjeden.</translation>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
+        <translation>%1 vil laste ned og lagre en kopi av QtumX blokkjeden.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1322,8 +1322,8 @@
         <translation>Feil ved betalingsforespørsel</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
-        <translation>Kan ikke starte qtum: Klikk-og-betal håndterer</translation>
+        <source>Cannot start qtumx: click-to-pay handler</source>
+        <translation>Kan ikke starte qtumx: Klikk-og-betal håndterer</translation>
     </message>
     <message>
         <source>URI handling</source>
@@ -1338,7 +1338,7 @@
         <translation>Ugyldig betalingsadresse %1</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Qtum address or malformed URI parameters.</source>
+        <source>URI cannot be parsed! This can be caused by an invalid QtumX address or malformed URI parameters.</source>
         <translation>URI kan ikke fortolkes! Dette kan være forårsaket av en ugyldig qtum-adresse eller feilformede URI-parametre.</translation>
     </message>
     <message>
@@ -2249,7 +2249,7 @@
         <translation><numerusform>Antatt bekreftelsesbegynnelse innen %n blokk.</numerusform><numerusform>Antatt bekreftelsesbegynnelse innen %n blokker.</numerusform></translation>
     </message>
     <message>
-        <source>Warning: Invalid Qtum address</source>
+        <source>Warning: Invalid QtumX address</source>
         <translation>Advarsel Ugyldig qtum-adresse</translation>
     </message>
     <message>
@@ -2340,7 +2340,7 @@
         <translation>Skriv inn en merkelapp for denne adressen for å legge den til listen av brukte adresser</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
         <translation>En melding som var tilknyttet qtumen: URI vil bli lagret med transaksjonen for din oversikt. Denne meldingen vil ikke bli sendt over QtumX-nettverket.</translation>
     </message>
     <message>
@@ -3080,7 +3080,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Innstillinger:</translation>

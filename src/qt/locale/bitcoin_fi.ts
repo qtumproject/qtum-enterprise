@@ -418,8 +418,8 @@
         <translation>Välilehtipalkki</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Pyydä maksuja (Luo QR koodit ja qtum: URIt)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Pyydä maksuja (Luo QR koodit ja qtumx: URIt)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -430,8 +430,8 @@
         <translation>Näytä vastaanottamiseen käytettyjen osoitteiden ja nimien lista</translation>
     </message>
     <message>
-        <source>Open a qtum: URI or payment request</source>
-        <translation>Avaa qtum: URI tai maksupyyntö</translation>
+        <source>Open a qtumx: URI or payment request</source>
+        <translation>Avaa qtumx: URI tai maksupyyntö</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -867,8 +867,8 @@
         <translation>Määritä oma kansio:</translation>
     </message>
     <message>
-        <source>Qtum</source>
-        <translation>Qtum</translation>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>At least %1 GB of data will be stored in this directory, and it will grow over time.</source>
@@ -879,7 +879,7 @@
         <translation>Noin %1 GB tietoa varastoidaan tähän hakemistoon.</translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Qtum block chain.</source>
+        <source>%1 will download and store a copy of the QtumX block chain.</source>
         <translation>%1 lataa ja tallentaa kopion Qtumin lohkoketjusta.</translation>
     </message>
     <message>
@@ -1286,7 +1286,7 @@
         <translation>Maksupyyntövirhe</translation>
     </message>
     <message>
-        <source>Cannot start qtum: click-to-pay handler</source>
+        <source>Cannot start qtumx: click-to-pay handler</source>
         <translation>Qtumia ei voi käynnistää: klikkaa-maksaaksesi -käsittelijän virhe</translation>
     </message>
     <message>
@@ -1302,8 +1302,8 @@
         <translation>Virheellinen maksuosoite %1</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Qtum address or malformed URI parameters.</source>
-        <translation>URIa ei voitu jäsentää! Tämä voi johtua virheellisestä Qtum-osoitteesta tai väärin muotoilluista URI parametreista.</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid QtumX address or malformed URI parameters.</source>
+        <translation>URIa ei voitu jäsentää! Tämä voi johtua virheellisestä QtumX-osoitteesta tai väärin muotoilluista URI parametreista.</translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -2181,8 +2181,8 @@
         <translation>Maksa vain vaadittu kulu %1 </translation>
     </message>
     <message>
-        <source>Warning: Invalid Qtum address</source>
-        <translation>Varoitus: Virheellinen Qtum-osoite </translation>
+        <source>Warning: Invalid QtumX address</source>
+        <translation>Varoitus: Virheellinen QtumX-osoite </translation>
     </message>
     <message>
         <source>Warning: Unknown change address</source>
@@ -2268,8 +2268,8 @@
         <translation>Aseta nimi tälle osoitteelle lisätäksesi sen käytettyjen osoitteiden listalle.</translation>
     </message>
     <message>
-        <source>A message that was attached to the qtum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
-        <translation>Viesti joka liitettiin qtum: URI:iin tallennetaan rahansiirtoon viitteeksi. Tätä viestiä ei lähetetä QtumX-verkkoon.</translation>
+        <source>A message that was attached to the qtumx: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the QtumX network.</source>
+        <translation>Viesti joka liitettiin qtumx: URI:iin tallennetaan rahansiirtoon viitteeksi. Tätä viestiä ei lähetetä QtumX-verkkoon.</translation>
     </message>
     <message>
         <source>Pay To:</source>
@@ -2972,7 +2972,7 @@
     </message>
 </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Asetukset:</translation>

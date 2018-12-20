@@ -62,12 +62,12 @@
         <translation>Alınan Adresler</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Bunlar ödeme göndermek için gereken Qtum adreslerinizdir. Para göndermeden önce her zaman miktarı ve alıcı adresi kontrol edin.</translation>
+        <source>These are your QtumX addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Bunlar ödeme göndermek için gereken QtumX adreslerinizdir. Para göndermeden önce her zaman miktarı ve alıcı adresi kontrol edin.</translation>
     </message>
     <message>
-        <source>These are your Qtum addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Bunlar ödeme almak için kullanılacak Qtum adreslerinizdir. Her işlem için yeni bir ödeme alma adresi kullanılması tavsiye edilir.</translation>
+        <source>These are your QtumX addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Bunlar ödeme almak için kullanılacak QtumX adreslerinizdir. Her işlem için yeni bir ödeme alma adresi kullanılması tavsiye edilir.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -286,8 +286,8 @@
         <translation>Bloklar disk üzerinde yeniden indeksleniyor...</translation>
     </message>
     <message>
-        <source>Send coins to a Qtum address</source>
-        <translation>Qtum adresine madeni para gönderin</translation>
+        <source>Send coins to a QtumX address</source>
+        <translation>QtumX adresine madeni para gönderin</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -302,7 +302,7 @@
         <translation>Onay mesajı...</translation>
     </message>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>Qtum
 </translation>
     </message>
@@ -458,8 +458,8 @@
         <translation>Gönderim adresini düzenleyin</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Qtum address.</source>
-        <translation>Girilen adres "%1" Qtum adresiyle eşleşmiyor.</translation>
+        <source>The entered address "%1" is not a valid QtumX address.</source>
+        <translation>Girilen adres "%1" QtumX adresiyle eşleşmiyor.</translation>
     </message>
     <message>
         <source>The entered address "%1" is already in the address book.</source>
@@ -515,7 +515,7 @@
         <translation>Hoş geldiniz</translation>
     </message>
     <message>
-        <source>Qtum</source>
+        <source>QtumX</source>
         <translation>Qtum
 </translation>
     </message>
@@ -661,8 +661,8 @@
 <context>
     <name>QObject</name>
     <message>
-        <source>Enter a Qtum address (e.g. %1)</source>
-        <translation>Qtum adresinizi girin (örneğin %1)</translation>
+        <source>Enter a QtumX address (e.g. %1)</source>
+        <translation>QtumX adresinizi girin (örneğin %1)</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -1042,8 +1042,8 @@
         <translation>Coin gönderimini onaylayın</translation>
     </message>
     <message>
-        <source>Warning: Invalid Qtum address</source>
-        <translation>Uyarı: Hatalı Qtum adresi</translation>
+        <source>Warning: Invalid QtumX address</source>
+        <translation>Uyarı: Hatalı QtumX adresi</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -1333,7 +1333,7 @@
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Ayarlar:</translation>
@@ -1343,8 +1343,8 @@
         <translation>JSON-RPC komutları ile komut satırını onaylayın</translation>
     </message>
     <message>
-        <source>Qtum Core</source>
-        <translation>Qtum Çekirdeği</translation>
+        <source>QtumX Core</source>
+        <translation>QtumX Çekirdeği</translation>
     </message>
     <message>
         <source>&lt;category&gt; can be:</source>
