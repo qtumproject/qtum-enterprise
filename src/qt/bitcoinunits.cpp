@@ -4,6 +4,7 @@
 
 #include <qt/bitcoinunits.h>
 
+#include <util.h>
 #include <primitives/transaction.h>
 
 #include <QStringList>

@@ -397,7 +397,7 @@ UniValue getpoaminerlist(const JSONRPCRequest& request) {
 
     UniValue miner_list_arr(UniValue::VARR);
     for (const CKeyID& keyid: miner_list) {
-        miner_list_arr.push_back(CBitcoinAddress(keyid).ToString());
+        miner_list_arr.push_back(EncodeDestination(keyid));
     }
 
     UniValue result(UniValue::VOBJ);
@@ -1163,8 +1163,8 @@ static const CRPCCommand commands[] =
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
     { "mining",             "getsubsidy",             &getsubsidy,             {"height"} },
     { "mining",             "getstakinginfo",         &getstakinginfo,         {} },
-	{ "mining",             "setpoaminer",            &setpoaminer,            true,  {"address"} },
-	{ "mining",             "getpoaminerlist",        &getpoaminerlist,        true,  {"height"} },
+	{ "mining",             "setpoaminer",            &setpoaminer,            {"address"} },
+	{ "mining",             "getpoaminerlist",        &getpoaminerlist,        {"height"} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
 

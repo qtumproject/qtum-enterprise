@@ -178,7 +178,7 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     if (Poa::isPoaChain()) {
     	CKeyID miner;
     	if (Poa::BasicPoa::getInstance()->getBlockMiner(blockindex, miner)) {
-    		result.push_back(Pair("miner", CBitcoinAddress(miner).ToString()));
+    		result.push_back(Pair("miner", EncodeDestination(miner)));
     	}
     }
 
@@ -240,7 +240,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     if (Poa::isPoaChain()) {
     	CKeyID miner;
     	if (Poa::BasicPoa::getInstance()->getBlockMiner(block, miner)) {
-    		result.push_back(Pair("miner", CBitcoinAddress(miner).ToString()));
+    		result.push_back(Pair("miner", EncodeDestination(miner)));
     	}
     }
 

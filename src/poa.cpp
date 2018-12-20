@@ -1,12 +1,12 @@
-#include "poa.h"
-#include "util.h"
-#include "utilstrencodings.h"
-#include "utiltime.h"
-#include "validation.h"
-#include "base58.h"
-#include "timedata.h"
-#include "script/standard.h"
-#include "consensus/merkle.h"
+#include <poa.h>
+#include <util.h>
+#include <utilstrencodings.h>
+#include <utiltime.h>
+#include <validation.h>
+#include <base58.h>
+#include <timedata.h>
+#include <script/standard.h>
+#include <consensus/merkle.h>
 
 #include <algorithm>
 #include <boost/algorithm/string/classification.hpp>
@@ -253,19 +253,19 @@ bool MinerList::init() {
 	std::set<CKeyID> initial_miner_set;
 	std::string strMinerList;
 	for (const std::string& strAddress : vecMinerList) {
-		CBitcoinAddress address(strAddress);
-		CKeyID keyID;
-		if (!address.GetKeyID(keyID)) {
-			LogPrintf("ERROR: %s: wrong address in the miner list arg\n", __func__);
-			return false;
-		}
+	    CTxDestination dest = DecodeDestination(strAddress);
+	    if (!IsValidDestination(dest)) {
+            LogPrintf("ERROR: %s: invalid address in the miner list arg\n", __func__);
+            return false;
+	    }
+	    CKeyID keyID(boost::get<CKeyID>(dest));
 		auto ret = initial_miner_set.insert(keyID);
 		if (!ret.second) {  // duplicate miner
 			LogPrintf("ERROR: %s: duplicate miner in the miner list arg\n", __func__);
 			return false;
 		}
 		_initial_miner_list.push_back(keyID);
-		strMinerList += address.ToString() + ",";
+		strMinerList += EncodeDestination(dest) + ",";
 	}
 
 	if (_initial_miner_list.size() == 0) {
@@ -313,7 +313,7 @@ bool MinerList::getNextBlockAuthorizedMiners(
 	// debug log
 	std::string miner_list_str;
 	for (const CKeyID& keyid: miner_list) {
-		miner_list_str += CBitcoinAddress(keyid).ToString() + ",";
+		miner_list_str += EncodeDestination(keyid) + ",";
 	}
 	if (miner_list_str.size() != 0) {
 		miner_list_str.pop_back();
@@ -361,13 +361,13 @@ bool BasicPoa::initMiner(const std::string str_miner) {
 		return false;
 	}
 
-	CBitcoinAddress address(str_miner);
-	CKeyID keyid;
-	if (!address.GetKeyID(keyid)) {
-		LogPrintf("ERROR: %s: wrong miner address format %s\n", __func__, str_miner.c_str());
-		return false;
-	}
+    CTxDestination dest = DecodeDestination(str_miner);
+    if (!IsValidDestination(dest)) {
+        LogPrintf("ERROR: %s: invalid miner\n", __func__);
+        return false;
+    }
 
+    CKeyID keyid(boost::get<CKeyID>(dest));
 	_miner = keyid;
 	if (!getRewardScript()) {
 		return false;
@@ -423,7 +423,7 @@ bool BasicPoa::canMineNextBlock(
 			miner);
 	if (it == next_block_miner_list.end()) {
 		LogPrint(BCLog::COINSTAKE, "%s: miner %s is not in next_block_miner_list, so can not mine\n",
-				__func__, CBitcoinAddress(miner).ToString().c_str());
+				__func__, EncodeDestination(miner).c_str());
 		return false;
 	}
 
@@ -520,7 +520,7 @@ bool BasicPoa::checkBlock(const CBlockHeader& block) {
 	// determine the miner can mine this block
 	uint32_t assigned_block_time;
 	if (!canMineNextBlock(miner, it_prev->second, assigned_block_time)) {
-		LogPrintf("WARNING: %s: miner %s is not authorized to mine block %s\n", __func__, CBitcoinAddress(miner).ToString(), hash.ToString().c_str());
+		LogPrintf("WARNING: %s: miner %s is not authorized to mine block %s\n", __func__, EncodeDestination(miner).c_str());
 		return false;
 	}
 
@@ -664,7 +664,7 @@ bool BasicPoa::getNextBlockMinerList(
 	// debug log
 	std::string next_block_miner_list_str;
 	for (const CKeyID& keyid: next_block_miner_list) {
-		next_block_miner_list_str += CBitcoinAddress(keyid).ToString() + ",";
+		next_block_miner_list_str += EncodeDestination(keyid) + ",";
 	}
 	if (next_block_miner_list_str.size() != 0) {
 		next_block_miner_list_str.pop_back();
@@ -724,7 +724,7 @@ bool BasicPoa::getBlockMiner(const CBlockHeader& block, CKeyID& keyid) {
 	// write cache
 	if (!writeBlockMinerToCache(hash, keyid)) {
 		LogPrintf("ERROR: %s: fail to write block %s miner %s to cache\n",
-				__func__, hash.GetHex().c_str(), CBitcoinAddress(keyid).ToString().c_str());
+				__func__, hash.GetHex().c_str(), EncodeDestination(keyid).c_str());
 	}
 
 	return true;
@@ -754,7 +754,7 @@ bool BasicPoa::getBlockMiner(const CBlockIndex* p_index, CKeyID& keyid) {
 	// write cache
 	if (!writeBlockMinerToCache(hash, keyid)) {
 		LogPrintf("ERROR: %s: fail to write block %s miner %s to cache\n",
-				__func__, hash.GetHex().c_str(), CBitcoinAddress(keyid).ToString().c_str());
+				__func__, hash.GetHex().c_str(), EncodeDestination(keyid).c_str());
 	}
 
 	return true;

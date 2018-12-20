@@ -3,11 +3,11 @@
 
 #include <vector>
 #include <set>
-#include "miner.h"
-#include "dbwrapper.h"
-#include "chainparams.h"
-#include "wallet/wallet.h"
-#include "qtum/qtumDGP.h"
+#include <miner.h>
+#include <dbwrapper.h>
+#include <chainparams.h>
+#include <wallet/wallet.h>
+#include <qtum/qtumDGP.h>
 
 namespace Poa {
 const size_t BLOCK_MINER_CACHE_SIZE = 1 << 13;  // 1MB
