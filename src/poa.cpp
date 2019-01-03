@@ -91,7 +91,7 @@ void ThreadPoaMiner() {
 	BasicPoa* p_basic_poa = BasicPoa::getInstance();
 
 	while (!p_basic_poa->hasMiner()) {
-		LogPrintf("%s: no PoA miner specified, the mining process is halted\n", __func__);
+	    LogPrint(BCLog::COINSTAKE, "%s: no PoA miner specified, the mining process is halted\n", __func__);
 		MilliSleep(keySleepInterval);
 		continue;
 	}
