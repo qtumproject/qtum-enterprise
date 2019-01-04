@@ -1070,14 +1070,15 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
 
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-            "sendrawtransaction \"hexstring\" ( allowhighfees )\n"
+            "sendrawtransaction \"hexstring\" ( allowhighfees, walletaware )\n"
             "\nSubmits raw transaction (serialized, hex-encoded) to local node and network.\n"
             "\nAlso see createrawtransaction and signrawtransaction calls.\n"
             "\nArguments:\n"
             "1. \"hexstring\"    (string, required) The hex string of the raw transaction)\n"
             "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "3. walletaware      (boolean, optional, default=true) Wait for the wallet to be aware of the transaction\n"
             "\nResult:\n"
             "\"hex\"             (string) The transaction hash in hex\n"
             "\nExamples:\n"
@@ -1095,7 +1096,7 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
 
     std::promise<void> promise;
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL, UniValue::VBOOL});
 
     // parse hex string from parameter
     CMutableTransaction mtx;
@@ -1107,6 +1108,10 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
     CAmount nMaxRawTxFee = maxTxFee;
     if (!request.params[1].isNull() && request.params[1].get_bool())
         nMaxRawTxFee = 0;
+
+    bool walletAware = true;
+    if (!request.params[2].isNull() && !request.params[2].get_bool())
+        walletAware = false;
 
     { // cs_main scope
     LOCK(cs_main);
@@ -1137,9 +1142,13 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
             // where a user might call sendrawtransaction with a transaction
             // to/from their wallet, immediately call some wallet RPC, and get
             // a stale result because callbacks have not yet been processed.
-            CallFunctionInValidationInterfaceQueue([&promise] {
+            if (walletAware) {
+                CallFunctionInValidationInterfaceQueue([&promise] {
+                    promise.set_value();
+                });
+            } else {
                 promise.set_value();
-            });
+            }
         }
     } else if (fHaveChain) {
         throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
@@ -1172,7 +1181,7 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "createrawtransaction",   &createrawtransaction,   {"inputs","outputs","locktime","replaceable"} },
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   {"hexstring","iswitness"} },
     { "rawtransactions",    "decodescript",           &decodescript,           {"hexstring"} },
-    { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
+    { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees","walletaware"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
     { "rawtransactions",    "gethexaddress",          &gethexaddress,          {"address",} },
