@@ -100,7 +100,7 @@ void ThreadPoaMiner() {
 
 	// get the miner's key from wallet
 	while (!p_basic_poa->initMinerKey()) {
-		LogPrintf("%s: fail to get the miner's private key from wallet, wait for the import\n", __func__);
+	    LogPrint(BCLog::COINSTAKE, "%s: fail to get the miner's private key from wallet, waiting for import of it\n", __func__);
 		MilliSleep(keySleepInterval);
 		continue;
 	}
@@ -127,7 +127,17 @@ void ThreadPoaMiner() {
 			continue;
 		}
 
-		// generate new block
+        // keep waiting until the assigned next_block_time
+        while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
+            LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
+            MilliSleep(minerSleepInterval);
+        }
+        if (chainActive.Tip() != p_current_index) {
+            LogPrint(BCLog::COINSTAKE, "%s: the chain tip changes during block time waiting, continue\n", __func__);
+            continue;
+        }
+
+		// generate a new block
 		std::shared_ptr<CBlock> pblock;
 		if (!p_basic_poa->createNextBlock(next_block_time, pblock)) {
 			LogPrintf("ERROR: %s: fail to create a new block next to the chain tip, continue\n", __func__);
@@ -139,16 +149,7 @@ void ThreadPoaMiner() {
 		}
 		LogPrint(BCLog::COINSTAKE, "%s: new block is created\n%s\n", __func__, pblock->ToString().c_str());
 
-		// wait and add the block, if new block is mined during wait
-		while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
-			LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
-			MilliSleep(minerSleepInterval);
-		}
-		if (chainActive.Tip() != p_current_index) {
-			LogPrint(BCLog::COINSTAKE, "%s: the chain tip changes during block time waiting, continue\n", __func__);
-			continue;
-		}
-
+		// accept the new block
         bool fNewBlock = false;
         if (!ProcessNewBlock(Params(), pblock, true, &fNewBlock)) {
         	LogPrintf("ERROR: %s: process new block fail %s\n", __func__, pblock->ToString().c_str());
