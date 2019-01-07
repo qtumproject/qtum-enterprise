@@ -144,14 +144,16 @@ public:
 	bool initMinerKey();  // try to get the miner's key from wallet
 
 	// determine if the miner can mine the next block
-	// if true then return the next_block_time
+	// if true then return the assigned_block_time and assigned_timeout
 	bool canMineNextBlock(
 			const CKeyID& miner,
 			const CBlockIndex* p_current_index,
-			uint32_t& next_block_time);  // for validation
+			uint32_t& assigned_block_time,
+			uint32_t& assigned_timeout);  // for validation
 	bool canMineNextBlock(
 			const CBlockIndex* p_current_index,
-			uint32_t& next_block_time);  // for mining
+			uint32_t& assigned_block_time,
+			uint32_t& assigned_timeout);  // for mining
 
 	// create a new block for the miner
 	bool createNextBlock(
