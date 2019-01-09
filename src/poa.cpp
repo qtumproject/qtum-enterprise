@@ -116,9 +116,9 @@ void ThreadPoaMiner() {
 		p_last_index = p_current_index;
 
 		// determine if the miner can mine the next block, and get the block time
-		uint32_t assigned_block_time;
+		uint32_t next_block_time;
 		uint32_t assigned_timeout;
-		if (!p_basic_poa->canMineNextBlock(p_current_index, assigned_block_time, assigned_timeout)) {
+		if (!p_basic_poa->canMineNextBlock(p_current_index, next_block_time, assigned_timeout)) {
 			LogPrint(BCLog::COINSTAKE, "%s: the miner is not able to mine a block next to the chain tip, continue\n",
 					__func__);
 			continue;
@@ -128,8 +128,31 @@ void ThreadPoaMiner() {
 			continue;
 		}
 
-        // keep waiting until the assigned_block_time
-        while (GetAdjustedTime() < assigned_block_time && chainActive.Tip() == p_current_index) {
+        // keep waiting until the next_block_time
+        while (GetAdjustedTime() < next_block_time && chainActive.Tip() == p_current_index) {
+            LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
+            MilliSleep(minerSleepInterval);
+        }
+        if (chainActive.Tip() != p_current_index) {
+            LogPrint(BCLog::COINSTAKE, "%s: the chain tip changes during block time waiting, continue\n", __func__);
+            continue;
+        }
+
+        // if mine_mode is SCAR, continue waiting if there is no transaction in mempool
+        if (p_basic_poa->getMineMode() == MineMode::SCAR) {
+            while (mempool.size() == 0 && chainActive.Tip() == p_current_index) {
+                LogPrint(BCLog::COINSTAKE, "%s: waiting for transactions\n", __func__);
+                MilliSleep(minerSleepInterval);
+            }
+            if (chainActive.Tip() != p_current_index) {
+                LogPrint(BCLog::COINSTAKE, "%s: the chain tip changes during block time waiting, continue\n", __func__);
+                continue;
+            }
+            next_block_time = GetAdjustedTime();  // update next_block_time
+        }
+
+        // keep waiting until the assigned_timeout
+        while (GetAdjustedTime() < (next_block_time + assigned_timeout) && chainActive.Tip() == p_current_index) {
             LogPrint(BCLog::COINSTAKE, "%s: waiting for the new block time\n", __func__);
             MilliSleep(minerSleepInterval);
         }
@@ -140,7 +163,7 @@ void ThreadPoaMiner() {
 
 		// generate a new block
 		std::shared_ptr<CBlock> pblock;
-		if (!p_basic_poa->createNextBlock(assigned_block_time, pblock)) {
+		if (!p_basic_poa->createNextBlock((next_block_time + assigned_timeout), pblock)) {
 			LogPrintf("ERROR: %s: fail to create a new block next to the chain tip, continue\n", __func__);
 			continue;
 		}
@@ -354,7 +377,7 @@ bool BasicPoa::initParams() {
 	return true;
 }
 
-bool BasicPoa::initMiner(const std::string str_miner) {
+bool BasicPoa::initMiner(const std::string str_miner, MineMode mine_mode) {
 	// init the miner address and its reward script
 	if (str_miner.size() == 0) {
 		return false;
@@ -373,6 +396,8 @@ bool BasicPoa::initMiner(const std::string str_miner) {
 	if (!getRewardScript()) {
 		return false;
 	}
+
+	_mine_mode = mine_mode;
 
 	return true;
 }
@@ -403,7 +428,7 @@ bool BasicPoa::initMinerKey() {
 bool BasicPoa::canMineNextBlock(
 		const CKeyID& miner,
 		const CBlockIndex* p_current_index,
-		uint32_t& assigned_block_time,
+		uint32_t& next_block_time,
 		uint32_t& assigned_timeout) {
 
 	if (miner.IsNull()
@@ -431,10 +456,10 @@ bool BasicPoa::canMineNextBlock(
 
 	// get block time
 	uint32_t miner_index = std::distance(next_block_miner_list.begin(), it);
+	next_block_time = (uint32_t)(p_current_index->nTime) + _interval;
 	assigned_timeout = miner_index * _timeout;
-	assigned_block_time = (uint32_t)(p_current_index->nTime) + _interval + assigned_timeout;
-	LogPrint(BCLog::COINSTAKE, "%s: assigned_block_time = %s + %s + %s * %s = %s\n",
-					__func__, p_current_index->nTime, _interval, miner_index, _timeout, assigned_block_time);
+	LogPrint(BCLog::COINSTAKE, "%s: next_block_time = %s, assigned_timeout=%s\n",
+					__func__, next_block_time, assigned_timeout);
 
 	return true;
 }
@@ -442,23 +467,23 @@ bool BasicPoa::canMineNextBlock(
 // for mining
 bool BasicPoa::canMineNextBlock(
 		const CBlockIndex* p_current_index,
-		uint32_t& assigned_block_time,
+		uint32_t& next_block_time,
 		uint32_t& assigned_timeout) {
 
 	if (p_current_index == nullptr || p_current_index->phashBlock == nullptr) {
 		return false;
 	}
 
-	if (!canMineNextBlock(_miner, p_current_index, assigned_block_time, assigned_timeout)) {
+	if (!canMineNextBlock(_miner, p_current_index, next_block_time, assigned_timeout)) {
 		return false;
 	}
 
 	// time adjustment for miner, for the case of long time no block
 	uint32_t current_time = GetAdjustedTime();
-	if (assigned_block_time < current_time) {
-	    assigned_block_time = current_time + assigned_timeout;
-		LogPrint(BCLog::COINSTAKE, "%s: adjust the assigned_block_time to %d\n",
-				__func__, assigned_block_time);
+	if (next_block_time < current_time) {
+	    next_block_time = current_time;
+		LogPrint(BCLog::COINSTAKE, "%s: adjust the next_block_time to %d\n",
+				__func__, next_block_time);
 	}
 
 	return true;
@@ -522,17 +547,17 @@ bool BasicPoa::checkBlock(const CBlockHeader& block) {
 	}
 
 	// determine the miner can mine this block
-	uint32_t assigned_block_time;
+	uint32_t next_block_time;
 	uint32_t assigned_timeout;
-	if (!canMineNextBlock(miner, it_prev->second, assigned_block_time, assigned_timeout)) {
+	if (!canMineNextBlock(miner, it_prev->second, next_block_time, assigned_timeout)) {
 		LogPrintf("WARNING: %s: miner %s is not authorized to mine block %s\n", __func__, EncodeDestination(miner).c_str());
 		return false;
 	}
 
 	// block time should be later than the assigned time
-	if (block.nTime < assigned_block_time) {
-		LogPrintf("%s: block %s time %d is earlier than assigned time %d\n",
-				__func__, hash.ToString().c_str(), block.nTime, assigned_block_time);
+	if (block.nTime < (next_block_time + assigned_timeout)) {
+		LogPrintf("%s: block %s time %d is earlier than assigned time (%d + %d)\n",
+				__func__, hash.ToString().c_str(), block.nTime, next_block_time, assigned_timeout);
 		return false;
 	}
 

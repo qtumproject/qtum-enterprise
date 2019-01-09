@@ -17,6 +17,11 @@ const dev::Address MINER_LIST_DGP_ADDR = dev::Address("0000000000000000000000000
 const uint32_t DEFAULT_POA_INTERVAL = 10;
 const uint32_t DEFAULT_POA_TIMEOUT = 3;
 
+enum class MineMode {
+    GREEDY,
+    SCAR,
+};
+
 bool isPoaChain();  // call this function after the chainparams is initiated
 std::string const& genesisInfo();  // genesis state for poa, add a dgp for miner list
 void ThreadPoaMiner();  // mining thread
@@ -64,6 +69,7 @@ private:
 	CKeyID _miner;
 	uint32_t _interval;
 	uint32_t _timeout;
+	MineMode _mine_mode;
 
 	CScript _reward_script;  // a p2pkh script to the miner
 
@@ -111,7 +117,7 @@ private:
 	// singleton pattern, lazy initialization
 	static BasicPoa* _instance;
 	BasicPoa():
-		_interval(0), _timeout(0),
+		_interval(0), _timeout(0), _mine_mode(MineMode::GREEDY),
 		_block_miner_cache(
 				GetDataDir() / "poa_block_miner_cache",
 				BLOCK_MINER_CACHE_SIZE,
@@ -137,22 +143,23 @@ public:
 	}
 
 	bool initParams();  // parse params from cmd line
-	bool initMiner(const std::string str_miner);
+	bool initMiner(const std::string str_miner, MineMode mine_mode = MineMode::GREEDY);
 	bool hasMiner() {  // determine if the miner is specified
 		return !_miner.IsNull();
 	}
 	bool initMinerKey();  // try to get the miner's key from wallet
+	MineMode getMineMode() {return _mine_mode;}
 
 	// determine if the miner can mine the next block
 	// if true then return the assigned_block_time and assigned_timeout
 	bool canMineNextBlock(
 			const CKeyID& miner,
 			const CBlockIndex* p_current_index,
-			uint32_t& assigned_block_time,
+			uint32_t& next_block_time,
 			uint32_t& assigned_timeout);  // for validation
 	bool canMineNextBlock(
 			const CBlockIndex* p_current_index,
-			uint32_t& assigned_block_time,
+			uint32_t& next_block_time,
 			uint32_t& assigned_timeout);  // for mining
 
 	// create a new block for the miner

@@ -320,14 +320,15 @@ UniValue getstakinginfo(const JSONRPCRequest& request)
 
 
 UniValue setpoaminer(const JSONRPCRequest& request) {
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 1)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-                "setpoaminer \"address\"\n"
+                "setpoaminer \"address\" ( mode )\n"
 
                         "\nset the miner for the PoA consensus.\n"
 
                         "\nArguments:\n"
                         "1. \"address\"      (string, required) The base58 address\n"
+                        "2. \"mode\"         (string, optional) The mining mode of PoA, which can be \"greedy\" (default) or \"scar\"\n"
 
                         "\nNote: The miner's private key should be imported to the wallet.\n"
 
@@ -344,7 +345,17 @@ UniValue setpoaminer(const JSONRPCRequest& request) {
     	throw JSONRPCError(RPC_INTERNAL_ERROR, "The PoA miner has been set before, please restart to set a new miner");
     }
 
-    if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str())) {
+    Poa::MineMode mine_mode = Poa::MineMode::GREEDY;
+    if (!request.params[1].isNull()) {
+        std::string mode = request.params[1].get_str();
+        if (mode == "scar") {
+            mine_mode = Poa::MineMode::SCAR;
+        } else if (mode != "greedy") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "unknown mode " + mode);
+        }
+    }
+
+    if (!Poa::BasicPoa::getInstance()->initMiner(request.params[0].get_str(), mine_mode)) {
     	throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid QtumX address");
     }
 
@@ -1163,7 +1174,7 @@ static const CRPCCommand commands[] =
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
     { "mining",             "getsubsidy",             &getsubsidy,             {"height"} },
     { "mining",             "getstakinginfo",         &getstakinginfo,         {} },
-	{ "mining",             "setpoaminer",            &setpoaminer,            {"address"} },
+	{ "mining",             "setpoaminer",            &setpoaminer,            {"address", "mode"} },
 	{ "mining",             "getpoaminerlist",        &getpoaminerlist,        {"height"} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
