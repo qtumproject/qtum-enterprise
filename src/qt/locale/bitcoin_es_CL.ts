@@ -206,8 +206,8 @@
         <translation>Barra de pestañas</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and qtum: URIs)</source>
-        <translation>Pide pagos (genera codigos QR and qtum: URls)</translation>
+        <source>Request payments (generates QR codes and qtumx: URIs)</source>
+        <translation>Pide pagos (genera codigos QR and qtumx: URls)</translation>
     </message>
     <message>
         <source>Error</source>
@@ -316,6 +316,10 @@
     <message>
         <source>Welcome</source>
         <translation>bienvenido</translation>
+    </message>
+    <message>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
     </message>
     <message>
         <source>Error</source>
@@ -427,6 +431,10 @@
         <source>Confirm options reset</source>
         <translation>Confirmar reestablecimiento de las opciones</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
     </context>
 <context>
     <name>OverviewPage</name>
@@ -459,7 +467,11 @@
         <source>%1 and %2</source>
         <translation>%1 y %2</translation>
     </message>
-    </context>
+    <message>
+        <source>unknown</source>
+        <translation>desconocido</translation>
+    </message>
+</context>
 <context>
     <name>QObject::QObject</name>
     </context>
@@ -585,14 +597,6 @@
     <message>
         <source>Transaction Fee:</source>
         <translation>Comisión transacción:</translation>
-    </message>
-    <message>
-        <source>normal</source>
-        <translation>normal</translation>
-    </message>
-    <message>
-        <source>fast</source>
-        <translation>rapido</translation>
     </message>
     <message>
         <source>Send to multiple recipients at once</source>
@@ -750,7 +754,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Options:</source>
         <translation>Opciones:
@@ -811,14 +815,6 @@
 </translation>
     </message>
     <message>
-        <source>Loading addresses...</source>
-        <translation>Cargando direcciónes...</translation>
-    </message>
-    <message>
-        <source>Invalid -proxy address: '%s'</source>
-        <translation>Dirección -proxy invalida: '%s'</translation>
-    </message>
-    <message>
         <source>Insufficient funds</source>
         <translation>Fondos insuficientes</translation>
     </message>
@@ -827,20 +823,12 @@
         <translation>Cargando el index de bloques...</translation>
     </message>
     <message>
-        <source>Add a node to connect to and attempt to keep the connection open</source>
-        <translation>Agrega un nodo para conectarse and attempt to keep the connection open</translation>
-    </message>
-    <message>
         <source>Loading wallet...</source>
         <translation>Cargando cartera...</translation>
     </message>
     <message>
         <source>Cannot downgrade wallet</source>
         <translation>No es posible desactualizar la billetera</translation>
-    </message>
-    <message>
-        <source>Cannot write default address</source>
-        <translation>No se pudo escribir la dirección por defecto</translation>
     </message>
     <message>
         <source>Rescanning...</source>

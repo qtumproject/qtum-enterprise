@@ -101,6 +101,10 @@
 <context>
     <name>Intro</name>
     <message>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>Ката</translation>
     </message>
@@ -148,6 +152,10 @@
     <message>
         <source>none</source>
         <translation>жок</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ката</translation>
     </message>
     </context>
 <context>
@@ -334,7 +342,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Information</source>
         <translation>Маалымат</translation>

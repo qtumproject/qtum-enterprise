@@ -93,6 +93,10 @@
         <source>W&amp;allet</source>
         <translation>Πορτοφόλι</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Σφάλμα</translation>
+    </message>
     </context>
 <context>
     <name>OverviewPage</name>
@@ -190,7 +194,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Insufficient funds</source>
         <translation>Κεφάλαια μη επαρκή</translation>

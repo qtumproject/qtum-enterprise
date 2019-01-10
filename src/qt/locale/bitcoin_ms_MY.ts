@@ -352,7 +352,7 @@ Alihkan fail data ke dalam tab semasa</translation>
     </message>
     <message>
         <source>&amp;Debug window</source>
-        <translation>Tetingkap Debug</translation>
+        <translation>Tetingkap windows</translation>
     </message>
     <message>
         <source>Open debugging and diagnostic console</source>
@@ -392,7 +392,7 @@ Alihkan fail data ke dalam tab semasa</translation>
     </message>
     <message>
         <source>Sign messages with your QtumX addresses to prove you own them</source>
-        <translation>Log mesej dengan alamat QtumX anda untuk membuktikan anda memilikinya</translation>
+        <translation>sahkan mesej bersama alamat qtum anda untuk menunjukkan alamat ini anda punya</translation>
     </message>
     <message>
         <source>Verify messages to ensure they were signed with specified QtumX addresses</source>
@@ -437,6 +437,10 @@ Alihkan fail data ke dalam tab semasa</translation>
     </context>
 <context>
     <name>Intro</name>
+    <message>
+        <source>QtumX</source>
+        <translation>QtumX</translation>
+    </message>
     </context>
 <context>
     <name>ModalOverlay</name>
@@ -580,6 +584,6 @@ Alihkan fail data ke dalam tab semasa</translation>
     </message>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     </context>
 </TS>

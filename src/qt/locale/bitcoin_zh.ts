@@ -53,6 +53,10 @@
     </context>
 <context>
     <name>OptionsDialog</name>
+    <message>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
     </context>
 <context>
     <name>OverviewPage</name>
@@ -166,7 +170,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Transaction too large for fee policy</source>
         <translation>根据费率标准，本次转账超额</translation>
@@ -178,10 +182,6 @@
     <message>
         <source>Warning</source>
         <translation>警告</translation>
-    </message>
-    <message>
-        <source>Loading addresses...</source>
-        <translation>正在载入地址...</translation>
     </message>
     <message>
         <source>Insufficient funds</source>

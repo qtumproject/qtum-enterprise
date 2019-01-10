@@ -1,12 +1,12 @@
-#include "token.h"
-#include "execrpccommand.h"
-#include "contractabi.h"
-#include "validation.h"
-#include "utilmoneystr.h"
-#include "base58.h"
-#include "utilstrencodings.h"
-#include "eventlog.h"
-#include "libethcore/ABI.h"
+#include <qt/token.h>
+#include <qt/execrpccommand.h>
+#include <qt/contractabi.h>
+#include <validation.h>
+#include <utilmoneystr.h>
+#include <base58.h>
+#include <utilstrencodings.h>
+#include <qt/eventlog.h>
+#include <libethcore/ABI.h>
 
 namespace Token_NS
 {
@@ -74,11 +74,12 @@ struct TokenData
 
 bool ToHash160(const std::string& strQtumAddress, std::string& strHash160)
 {
-    CBitcoinAddress qtumAddress(strQtumAddress);
-    if(qtumAddress.IsValid()){
-        CKeyID keyid;
-        qtumAddress.GetKeyID(keyid);
-        strHash160 = HexStr(valtype(keyid.begin(),keyid.end()));
+    CTxDestination qtumAddress = DecodeDestination(strQtumAddress);
+    if(!IsValidDestination(qtumAddress))
+        return false;
+    const CKeyID * keyid = boost::get<CKeyID>(&qtumAddress);
+    if(keyid){
+        strHash160 = HexStr(valtype(keyid->begin(),keyid->end()));
     }else{
         return false;
     }
@@ -89,10 +90,9 @@ bool ToQtumAddress(const std::string& strHash160, std::string& strQtumAddress)
 {
     uint160 key(ParseHex(strHash160.c_str()));
     CKeyID keyid(key);
-    CBitcoinAddress qtumAddress;
-    qtumAddress.Set(keyid);
-    if(qtumAddress.IsValid()){
-        strQtumAddress = qtumAddress.ToString();
+    CTxDestination qtumAddress = keyid;
+    if(IsValidDestination(qtumAddress)){
+        strQtumAddress = EncodeDestination(qtumAddress);
         return true;
     }
     return false;
@@ -570,6 +570,34 @@ bool Token::exec(const std::vector<std::string> &input, int func, std::vector<st
     return true;
 }
 
+void addTokenEvent(std::vector<TokenEvent> &tokenEvents, TokenEvent tokenEvent)
+{
+    // Check if the event is from an existing token transaction and update the value
+    bool found = false;
+    for(size_t i = 0; i < tokenEvents.size(); i++)
+    {
+        // Compare the event data
+        TokenEvent tokenTx = tokenEvents[i];
+        if(tokenTx.address != tokenEvent.address) continue;
+        if(tokenTx.sender != tokenEvent.sender) continue;
+        if(tokenTx.receiver != tokenEvent.receiver) continue;
+        if(tokenTx.blockHash != tokenEvent.blockHash) continue;
+        if(tokenTx.blockNumber != tokenEvent.blockNumber) continue;
+        if(tokenTx.transactionHash != tokenEvent.transactionHash) continue;
+
+        // Update the value
+        dev::u256 tokenValue = uintTou256(tokenTx.value) + uintTou256(tokenEvent.value);
+        tokenTx.value = u256Touint(tokenValue);
+        tokenEvents[i] = tokenTx;
+        found = true;
+        break;
+    }
+
+    // Add new event
+    if(!found)
+        tokenEvents.push_back(tokenEvent);
+}
+
 bool Token::execEvents(int64_t fromBlock, int64_t toBlock, int func, std::vector<TokenEvent> &tokenEvents)
 {
     // Check parameters
@@ -599,7 +627,7 @@ bool Token::execEvents(int64_t fromBlock, int64_t toBlock, int func, std::vector
         for(int i = 0; i < listLog.size(); i++)
         {
             // Skip the not needed events
-            QVariantMap variantLog = listLog[0].toMap();
+            QVariantMap variantLog = listLog[i].toMap();
             QList<QVariant> topicsList = variantLog.value("topics").toList();
             if(topicsList.count() < 3) continue;
             if(topicsList[0].toString().toStdString() != eventName) continue;
@@ -622,7 +650,7 @@ bool Token::execEvents(int64_t fromBlock, int64_t toBlock, int func, std::vector
             dev::u256 outData = dev::eth::ABIDeserialiser<dev::u256>::deserialise(o);
             tokenEvent.value = u256Touint(outData);
 
-            tokenEvents.push_back(tokenEvent);
+            addTokenEvent(tokenEvents, tokenEvent);
         }
     }
 

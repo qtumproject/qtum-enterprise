@@ -169,6 +169,10 @@
 <context>
     <name>Intro</name>
     <message>
+        <source>QtumX</source>
+        <translation>Биткоин</translation>
+    </message>
+    <message>
         <source>Error</source>
         <translation>қате</translation>
     </message>
@@ -184,6 +188,10 @@
     <message>
         <source>W&amp;allet</source>
         <translation>Әмиян</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>қате</translation>
     </message>
     </context>
 <context>
@@ -298,7 +306,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>qtum-core</name>
+    <name>qtumx-core</name>
     <message>
         <source>Information</source>
         <translation>Информация</translation>
