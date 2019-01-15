@@ -61,7 +61,7 @@ public:
     };
 
     /** Number of confirmation recommended for accepting a token transaction */
-    static const int RecommendedNumConfirmations = 10;
+    static const int RecommendedNumConfirmations = 1;
 
     TokenTransactionRecord():
             hash(), txid(), time(0), type(Other), address(""), debit(0), credit(0), label("")
